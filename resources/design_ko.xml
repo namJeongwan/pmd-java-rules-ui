@@ -1,0 +1,1504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="설계"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+설계 문제를 발견하는 데 도움이 되는 규칙입니다.
+    </description>
+
+    <rule name="AbstractClassWithoutAnyMethod"
+          language="java"
+          since="4.2"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="추상 메서드가 없으므로 abstract 키워드가 인스턴스화를 방지하기 위해 사용된 것으로 보입니다. 대신 private 또는 protected 생성자를 사용하세요."
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#abstractclasswithoutanymethod">
+        <description>
+추상 클래스가 어떤 메서드도 제공하지 않는 경우, 인스턴스화를 의도하지 않은 단순한 데이터 컨테이너
+역할을 할 수 있습니다. 이 경우 클래스를 오해의 소지가 있는 abstract로 만드는 것보다
+인스턴스화를 방지하기 위해 private 또는 protected 생성자를 사용하는 것이 더 좋습니다.
+        </description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration
+    [@Abstract = true() and @Interface = false()]
+    [ClassBody[not(ConstructorDeclaration | MethodDeclaration)]]
+    [not(pmd-java:hasAnnotation('com.google.auto.value.AutoValue')
+         or pmd-java:hasAnnotation('lombok.AllArgsConstructor')
+         or pmd-java:hasAnnotation('lombok.NoArgsConstructor')
+         or pmd-java:hasAnnotation('lombok.RequiredArgsConstructor'))
+    ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public abstract class Example {
+    String field;
+    int otherField;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidCatchingGenericException" ref="category/java/errorprone.xml/AvoidCatchingGenericException" deprecated="true" />
+
+    <rule name="AvoidDeeplyNestedIfStmts"
+          language="java"
+          since="1.0"
+          message="깊게 중첩된 if..then 문은 가독성이 떨어집니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.AvoidDeeplyNestedIfStmtsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#avoiddeeplynestedifstmts">
+        <description>
+깊게 중첩된 if-then 문은 읽기 어렵고 유지보수 시 오류가 발생하기 쉬우므로 생성을 피하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+  public void bar(int x, int y, int z) {
+    if (x>y) {
+      if (y>z) {
+        if (z==x) {
+         // !! too deep
+        }
+      }
+    }
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidRethrowingException"
+          language="java"
+          since="3.8"
+          message="예외를 잡아서 다시 던지기만 하는 catch 문은 피해야 합니다."
+          class="net.sourceforge.pmd.lang.java.rule.design.AvoidRethrowingExceptionRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#avoidrethrowingexception">
+        <description>
+잡은 예외를 단순히 다시 던지기만 하는 catch 블록은 코드 크기와 런타임 복잡성만 증가시킵니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public void bar() {
+    try {
+        // do something
+    }  catch (SomeException se) {
+       throw se;
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidThrowingNewInstanceOfSameException"
+          since="4.2.5"
+          language="java"
+          message="예외를 잡아서 같은 타입의 새 인스턴스로 감싸 던지는 catch 문은 피해야 합니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#avoidthrowingnewinstanceofsameexception">
+        <description>
+잡은 예외를 같은 타입의 새 인스턴스로 감싸서 다시 던지기만 하는 catch 블록은
+코드 크기와 런타임 복잡성만 증가시킵니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//CatchClause
+    [count(Block/*) = 1]
+    [CatchParameter/ClassType/@SimpleName = Block/ThrowStatement/ConstructorCall/ClassType/@SimpleName]
+    [Block/ThrowStatement/ConstructorCall/ArgumentList/@Size = 1]
+    /Block/ThrowStatement/ConstructorCall
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public void bar() {
+    try {
+        // do something
+    } catch (SomeException se) {
+        // harmless comment
+        throw new SomeException(se);
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidThrowingNullPointerException"
+          language="java"
+          since="1.8"
+          message="NullPointerException을 직접 던지는 것을 피하세요."
+          class="net.sourceforge.pmd.lang.java.rule.design.AvoidThrowingNullPointerExceptionRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#avoidthrowingnullpointerexception">
+        <description>
+<![CDATA[
+NullPointerException을 수동으로 던지는 것을 피하세요. 대부분의 사람들은 가상 머신이 이 예외를 던진
+것으로 생각하기 때문에 혼란을 줍니다. 메서드가 null 매개변수로 호출되는 것을 방지하려면
+IllegalArgumentException을 대신 사용하여 프로그래머가 의도적으로 발생시킨 예외임을 명확히
+할 수 있습니다. 그러나 이를 처리하는 더 좋은 방법이 있습니다:
+
+>*Effective Java, 3판, 항목 72: 표준 예외를 사용하라*
+>
+>모든 잘못된 메서드 호출은 결국 잘못된 인수나 상태로 귀결되지만,
+특정 종류의 잘못된 인수와 상태에 대해 표준적으로 사용되는 다른 예외가 있습니다.
+null 값이 금지된 매개변수에 호출자가 null을 전달하는 경우, 관례상
+IllegalArgumentException이 아닌 NullPointerException을 던져야 합니다.
+
+이를 구현하려면 `java.util.Objects.requireNonNull()`을 사용하는 것이 좋습니다
+(Java 1.7에서 도입). 이 메서드는 주로 여러 매개변수가 있는 메서드와 생성자에서
+매개변수 유효성 검사를 수행하기 위해 설계되었습니다.
+
+매개변수 유효성 검사는 다음과 같이 할 수 있습니다:
+```
+public class Foo {
+    private String exampleValue;
+
+    void setExampleValue(String exampleValue) {
+      // check, throw and assignment in a single standard call
+      this.exampleValue = Objects.requireNonNull(exampleValue, "exampleValue must not be null!");
+    }
+  }
+```
+]]>
+        </description>
+        <priority>1</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    void bar() {
+        throw new NullPointerException();
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidThrowingRawExceptionTypes"
+          language="java"
+          since="1.8"
+          message="원시 예외 타입 {0}을(를) 던지는 것을 피하세요."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#avoidthrowingrawexceptiontypes">
+        <description>
+특정 예외 타입을 던지는 것을 피하세요. 원시 RuntimeException, Throwable,
+Exception 또는 Error를 던지는 대신, 하위 클래스 예외나 에러를 사용하세요.
+        </description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ThrowStatement//ConstructorCall
+ /ClassType[
+ pmd-java:typeIsExactly('java.lang.Throwable')
+or
+ pmd-java:typeIsExactly('java.lang.Exception')
+or
+ pmd-java:typeIsExactly('java.lang.Error')
+or
+ pmd-java:typeIsExactly('java.lang.RuntimeException')
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo {
+    public void bar() throws Exception {
+        throw new Exception();
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidUncheckedExceptionsInSignatures"
+          since="6.13.0"
+          language="java"
+          message="메서드 또는 생성자는 ''throws'' 절에 비검사 예외 {0}을(를) 명시적으로 선언하지 않아야 합니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#avoiduncheckedexceptionsinsignatures">
+        <description>
+메서드 또는 생성자의 `throws` 절에 있는 비검사 예외를 보고합니다.
+Java는 호출자에게 비검사 예외를 처리하도록 강제하지 않으므로,
+문서화 목적 외에는 불필요합니다. 더 나은 방법은
+`@throws` Javadoc 태그로 예외 상황을 문서화하는 것으로, 더 설명적일 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ThrowsList/ClassType[pmd-java:typeIs('java.lang.RuntimeException')]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public void foo() throws RuntimeException {
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ClassWithOnlyPrivateConstructorsShouldBeFinal"
+          language="java"
+          since="4.1"
+          class="net.sourceforge.pmd.lang.java.rule.design.ClassWithOnlyPrivateConstructorsShouldBeFinalRule"
+          message="이 클래스는 private 생성자만 가지고 있으므로 final로 선언할 수 있습니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#classwithonlyprivateconstructorsshouldbefinal">
+        <description>
+컴파일 단위 외부에서 확장할 수 없는 클래스를 final로 만들 수 있다고 보고합니다.
+모든 생성자가 private이므로 하위 클래스에서 상위 생성자를 호출할 수 없기 때문입니다.
+        </description>
+        <priority>1</priority>
+        <example>
+<![CDATA[
+public class Foo {  //Should be final
+    private Foo() { }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="CognitiveComplexity"
+          language="java"
+          message="The {0} ''{1}'' has a cognitive complexity of {2}, current threshold is {3}"
+          since="6.35.0"
+          class="net.sourceforge.pmd.lang.java.rule.design.CognitiveComplexityRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#cognitivecomplexity">
+        <description><![CDATA[
+            매우 복잡한 메서드는 읽기 어렵고 유지보수 비용이 더 높습니다. 단일 메서드에 너무 많은 결정 로직을
+            포함하면 동작을 이해하기 어렵고 수정하기 더 어려워집니다.
+
+            인지적 복잡도는 사람이 메서드를 읽고 이해하는 것이 얼마나 어려운지를 측정하는 지표입니다.
+            제어 흐름에 중단이 포함된 코드는 더 복잡하며, 언어 축약 표현의 사용은 복잡도 수준을 증가시키지
+            않습니다. 중첩된 제어 흐름은 메서드를 이해하기 더 어렵게 만들 수 있으며, 제어 흐름의 추가
+            중첩마다 인지적 복잡도가 증가합니다.
+
+            인지적 복잡도에 대한 정보는 다음 원본 논문에서 확인할 수 있습니다:
+            <https://www.sonarsource.com/docs/CognitiveComplexity.pdf>
+
+            기본적으로 이 규칙은 복잡도가 15 이상인 메서드를 보고합니다. 보고된 메서드는 덜 복잡한
+            구성 요소로 분해해야 합니다.
+        ]]></description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+public class Foo {
+  // Has a cognitive complexity of 0
+  public void createAccount() {
+    Account account = new Account("PMD");
+    // save account
+  }
+
+  // Has a cognitive complexity of 1
+  public Boolean setPhoneNumberIfNotExisting(Account a, String phone) {
+    if (a.phone == null) {                          // +1
+      a.phone = phone;
+      return true;
+    }
+
+    return false;
+  }
+
+  // Has a cognitive complexity of 4
+  public void updateContacts(List<Contact> contacts) {
+    List<Contact> contactsToUpdate = new ArrayList<Contact>();
+
+    for (Contact contact : contacts) {                           // +1
+      if (contact.department.equals("Finance")) {                // +2 (nesting = 1)
+        contact.title = "Finance Specialist";
+        contactsToUpdate.add(contact);
+      } else if (contact.department.equals("Sales")) {           // +1
+        contact.title = "Sales Specialist";
+        contactsToUpdate.add(contact);
+      }
+    }
+    // save contacts
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="CollapsibleIfStatements"
+          language="java"
+          since="3.1"
+          message="이 if 문은 상위 if 문과 결합할 수 있습니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#collapsibleifstatements">
+        <description><![CDATA[
+조건을 불리언 `&&` 연산자로 결합하여 병합할 수 있는 중첩된 'if' 문을 보고합니다.
+        ]]></description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//IfStatement[@Else = false()]/IfStatement[@Else = false()]
+|
+//IfStatement[@Else = false()]/Block[count(*) = 1]/IfStatement[@Else = false()]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+class Foo {
+
+    void bar() {
+        if (x) {            // original implementation
+            if (y) {
+                // do stuff
+            }
+        }
+    }
+
+    void bar() {
+        if (x && y) {        // clearer implementation
+            // do stuff
+        }
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="CouplingBetweenObjects"
+          language="java"
+          since="1.04"
+          message="값 {0}은(는) 클래스 내의 높은 결합도를 나타낼 수 있습니다 (임계값: {1})"
+          class="net.sourceforge.pmd.lang.java.rule.design.CouplingBetweenObjectsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#couplingbetweenobjects">
+        <description>
+이 규칙은 객체 내의 고유한 속성, 지역 변수 및 반환 타입의 수를 계산합니다.
+지정된 임계값보다 높은 수치는 높은 결합도를 나타낼 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+import com.Blah;
+import org.Bar;
+import org.Bardo;
+
+public class Foo {
+    private Blah var1;
+    private Bar var2;
+
+    //followed by many imports of unique objects
+    ObjectC doWork() {
+        Bardo var55;
+        ObjectA var44;
+        ObjectZ var93;
+        return something();
+    }
+}
+]]>
+        </example>
+    </rule>
+
+
+    <rule name="CyclomaticComplexity"
+          language="java"
+          message="The {0} ''{1}'' has a{2} cyclomatic complexity of {3}."
+          since="1.03"
+          class="net.sourceforge.pmd.lang.java.rule.design.CyclomaticComplexityRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#cyclomaticcomplexity">
+        <description><![CDATA[
+메서드의 복잡성은 유지보수 비용과 가독성에 직접적으로 영향을 미칩니다. 단일 메서드에 너무 많은 결정 로직을
+집중시키면 동작을 읽고 변경하기 어려워집니다.
+
+순환 복잡도는 메서드의 결정 지점 수에 메서드 진입점 1을 더하여 메서드의 복잡성을 평가합니다.
+결정 지점은 제어 흐름이 프로그램의 다른 위치로 이동하는 곳입니다. 따라서 `if`, `while`, `for`,
+`case`와 같은 모든 제어 흐름 문을 포함합니다. 계산에 대한 자세한 내용은
+{% jdoc java::lang.java.metrics.JavaMetrics#CYCLO %} 문서를 참조하세요.
+
+일반적으로 1-4는 낮은 복잡도, 5-7은 보통 복잡도, 8-10은 높은 복잡도,
+11 이상은 매우 높은 복잡도를 나타냅니다. 기본적으로 이 규칙은 복잡도가 10 이상인 메서드를 보고합니다.
+또한 보통 복잡도의 메서드가 많은 클래스는 개별 메서드가 직접 보고되지 않더라도
+메서드 복잡도의 합이 80에 도달하면 보고됩니다.
+
+보고된 메서드는 여러 개의 작은 메서드로 분해해야 합니다. 보고된 클래스는
+하위 구성 요소로 분해하는 것이 좋습니다.]]>
+        </description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+class Foo {
+  void baseCyclo() {                // Cyclo = 1
+    highCyclo();
+  }
+
+  void highCyclo() {                // Cyclo = 10: reported!
+    int x = 0, y = 2;
+    boolean a = false, b = true;
+
+    if (a && (y == 1 ? b : true)) { // +3
+      if (y == x) {                 // +1
+        while (true) {              // +1
+          if (x++ < 20) {           // +1
+            break;                  // +1
+          }
+        }
+      } else if (y == t && !d) {    // +2
+        x = a ? y : x;              // +1
+      } else {
+        x = 2;
+      }
+    }
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="DataClass"
+          language="java"
+          since="6.0.0"
+          message="클래스 ''{0}''은(는) 데이터 클래스로 의심됩니다 (WOC={1}, NOPA={2}, NOAM={3}, WMC={4})"
+          class="net.sourceforge.pmd.lang.java.rule.design.DataClassRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#dataclass">
+        <description>
+데이터 클래스는 대부분의 상태를 노출하면서 복잡한 기능이 없는 단순한 데이터 홀더입니다.
+기능의 부재는 해당 동작이 다른 곳에 정의되어 있음을 나타낼 수 있으며, 이는 데이터-동작
+근접성이 낮다는 신호입니다. 내부를 직접 노출함으로써 데이터 클래스는 캡슐화를 깨뜨리고,
+따라서 시스템의 유지보수성과 이해도를 저하시킵니다. 또한 클래스는 데이터 표현에 강하게
+의존하는 경향이 있어 취약한 설계로 이어집니다.
+
+데이터 클래스를 리팩토링할 때는 좋은 데이터-동작 근접성을 회복하는 데 초점을 맞춰야 합니다.
+대부분의 경우 데이터에 대해 정의된 연산을 클래스 내부로 이동하는 것을 의미합니다.
+일부 다른 경우에는 클래스를 완전히 제거하고 데이터를 이전 클라이언트 클래스로 이동하는 것이
+합리적일 수 있습니다.
+
+이 규칙은 메트릭을 사용하여 탐지 전략을 구현합니다. 위반 메시지는
+이러한 메트릭의 값에 대한 정보를 제공합니다:
+* WMC: 클래스 복잡도 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHED_METHOD_COUNT %} 참조
+* WOC: 클래스의 '비사소성' 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHT_OF_CLASS %} 참조
+* NOPA: 공개 속성 수, {% jdoc java::lang.java.metrics.JavaMetrics#NUMBER_OF_PUBLIC_FIELDS %} 참조
+* NOAM: 공개 접근자 메서드 수, {% jdoc java::lang.java.metrics.JavaMetrics#NUMBER_OF_ACCESSORS %} 참조
+
+이 규칙은 다음 속성을 모두 가진 클래스를 찾아 갓 클래스를 식별합니다:
+* 높은 NOPA + NOAM
+* 낮은 WOC
+* 낮은 WMC
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class DataClass {
+
+  // class exposes public attributes
+  public String name = "";
+  public int bar = 0;
+  public int na = 0;
+
+  private int bee = 0;
+
+  // and private ones through getters
+  public void setBee(int n) {
+    bee = n;
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="DoNotExtendJavaLangError"
+          language="java"
+          since="4.0"
+          message="예외는 java.lang.Error를 확장해서는 안 됩니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#donotextendjavalangerror">
+        <description>
+Error는 시스템 예외입니다. 이를 확장하지 마세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration/ExtendsList/ClassType[pmd-java:typeIs('java.lang.Error')]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo extends Error { }
+]]>
+        </example>
+    </rule>
+
+    <rule name="ExceptionAsFlowControl"
+          language="java"
+          since="1.8"
+          message="{0}번째 줄에서 던져진 예외가 이 블록에서 잡힙니다."
+          class="net.sourceforge.pmd.lang.java.rule.design.ExceptionAsFlowControlRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#exceptionasflowcontrol">
+        <description>
+이 규칙은 감싸는 try 문에서 던져지고 잡히는 예외를 보고합니다.
+예외를 `goto` 문의 한 형태로 사용하는 것은 권장되지 않습니다. 이는 실제 예외를
+숨기고, 특히 디버깅 시 제어 흐름을 불명확하게 만들 수 있습니다.
+위반을 수정하려면 필요한 유효성 검사를 추가하거나 대체 제어 구조를 사용하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public void bar() {
+    try {
+        try {
+        } catch (Exception e) {
+            throw new WrapperException(e);
+            // this is essentially a GOTO to the WrapperException catch block
+        }
+    } catch (WrapperException e) {
+        // do some more stuff
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ExcessiveImports"
+          language="java"
+          since="1.04"
+          message="많은 수의 임포트({0})는 객체 내의 높은 결합도를 나타낼 수 있습니다; 현재 임계값은 {1}입니다."
+          class="net.sourceforge.pmd.lang.java.rule.design.ExcessiveImportsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#excessiveimports">
+        <description>
+많은 수의 임포트는 객체 내의 높은 결합도를 나타낼 수 있습니다. 이 규칙은
+고유한 임포트의 수를 계산하고 사용자 지정 임계값을 초과하면 위반을 보고합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+import blah.blah.Baz;
+import blah.blah.Bif;
+// 28 others from the same package elided
+public class Foo {
+    public void doWork() {}
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ExcessiveParameterList"
+          language="java"
+          since="0.9"
+          message="긴 매개변수 목록을 피하세요 ({0}개의 매개변수 - 임계값은 {1}입니다)."
+          class="net.sourceforge.pmd.lang.java.rule.design.ExcessiveParameterListRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#excessiveparameterlist">
+        <description>
+매개변수가 많은 메서드는 유지보수가 어렵습니다. 특히 대부분의 매개변수가 같은 데이터 타입을
+공유하는 경우 더욱 그렇습니다. 이러한 상황은 일반적으로 많은 매개변수를 감싸는 새로운 객체가
+필요함을 나타냅니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public void addPerson(      // too many arguments liable to be mixed up
+    int birthYear, int birthMonth, int birthDate, int height, int weight, int ssn) {
+
+    . . . .
+}
+
+public void addPerson(      // preferred approach
+    Date birthdate, BodyMeasurements measurements, int ssn) {
+
+    . . . .
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ExcessivePublicCount"
+          language="java"
+          since="1.04"
+          message="이 클래스에는 {0}개의 public 메서드와 속성이 있습니다; 현재 임계값은 {1}입니다."
+          class="net.sourceforge.pmd.lang.java.rule.design.ExcessivePublicCountRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#excessivepubliccount">
+        <description>
+많은 수의 public 메서드와 속성을 가진 클래스는 조합적 부작용이 빠르게 증가하고 위험이 커지므로
+불균형적인 테스트 노력을 필요로 합니다. 이러한 클래스를 더 작은 클래스로 리팩토링하면
+테스트 가능성과 신뢰성이 향상될 뿐만 아니라 새로운 변형을 쉽게 개발할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    public String value;
+    public Bar something;
+    public Variable var;
+    // [... more more public attributes ...]
+
+    public void doWork() {}
+    public void doMoreWork() {}
+    public void doWorkAgain() {}
+    // [... more more public methods ...]
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="FinalFieldCouldBeStatic"
+          language="java"
+          since="1.1"
+          message="final 필드 {0}은(는) static으로 만들 수 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.FinalFieldCouldBeStaticRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#finalfieldcouldbestatic">
+        <description>
+final 필드가 컴파일 타임 상수에 할당된 경우, static으로 만들어 런타임에 각 객체에서
+오버헤드를 줄일 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+  public final int BAR = 42; // this could be static and save some space
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="GodClass"
+          language="java"
+          since="5.0"
+          message="갓 클래스 가능성 (WMC={0}, ATFD={2}, TCC={1})"
+          class="net.sourceforge.pmd.lang.java.rule.design.GodClassRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#godclass">
+        <description>
+갓 클래스 규칙은 메트릭을 사용하여 갓 클래스 설계 결함을 탐지합니다. 갓 클래스는 너무 많은 일을 하고,
+매우 크고 지나치게 복잡합니다. 더 객체 지향적이 되도록 분리해야 합니다.
+이 규칙은 "Object-Oriented Metrics in Practice"에 설명된 탐지 전략을 사용합니다.
+위반은 전체 클래스에 대해 보고됩니다.
+
+이 규칙은 메트릭을 사용하여 탐지 전략을 구현합니다. 위반 메시지는
+이러한 메트릭의 값에 대한 정보를 제공합니다:
+* WMC: 클래스 복잡도 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHED_METHOD_COUNT %} 참조
+* ATFD: 클래스가 외부 데이터를 얼마나 사용하는지 측정, {% jdoc java::lang.java.metrics.JavaMetrics#ACCESS_TO_FOREIGN_DATA %} 참조
+* TCC: 메서드들이 얼마나 밀접하게 관련되어 있는지 측정, {% jdoc java::lang.java.metrics.JavaMetrics#TIGHT_CLASS_COHESION %} 참조
+
+이 규칙은 다음 속성을 모두 가진 클래스를 찾아 갓 클래스를 식별합니다:
+* 높은 WMC
+* 높은 ATFD
+* 낮은 TCC
+
+참고 문헌:
+
+Michele Lanza and Radu Marinescu. *Object-Oriented Metrics in Practice:
+Using Software Metrics to Characterize, Evaluate, and Improve the Design
+of Object-Oriented Systems.* Springer, Berlin, 1 edition, October 2006. Page 80.
+        </description>
+        <priority>3</priority>
+    </rule>
+
+    <rule name="ImmutableField"
+          language="java"
+          since="2.0"
+          message="필드 ''{0}''은(는) final로 선언할 수 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.ImmutableFieldRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#immutablefield">
+        <description>
+객체 초기화가 끝난 후 값이 변경되지 않는 non-final 필드를 보고하며,
+따라서 final로 표시할 수 있습니다.
+
+이 규칙은 필드 값 자체가 깊게 불변인지는 강제하지 않습니다.
+모든 멤버 필드가 final로 선언되어 있더라도 객체는 여전히 변경 가능한 상태를 가질 수 있습니다.
+이를 얕은 불변성이라고 합니다. 변경 가능성에 대한 자세한 내용은
+*Effective Java, 3판, 항목 17: 변경 가능성을 최소화하라*를 참조하세요.
+
+제한 사항: 현재는 private 필드만 확인할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+  private int x; // could be final
+  public Foo() {
+      x = 7;
+  }
+  public void foo() {
+     int a = x + 2;
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="InvalidJavaBean"
+          language="java"
+          since="6.52.0"
+          message="빈 ''{0}''에 프로퍼티 ''{1}''에 대한 getter가 없습니다."
+          class="net.sourceforge.pmd.lang.java.rule.design.InvalidJavaBeanRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#invalidjavabean">
+        <description>
+[JavaBeans API 명세](https://download.oracle.com/otndocs/jcp/7224-javabeans-1.01-fr-spec-oth-JSpec/)를 따르지 않는 빈을 식별합니다.
+
+각 non-static 필드는 getter와 setter 메서드를 모두 가져야 합니다. 필드가 내부적으로만 사용되고
+빈 프로퍼티가 아닌 경우, 해당 필드는 `transient`로 표시해야 합니다.
+
+이 규칙은 필드의 타입이 getter의 반환 타입과 동일한지 확인합니다. 그리고 이 타입이
+setter에서 사용되는 타입과 일치하는지 확인합니다.
+
+이 규칙은 또한 인자가 없는 생성자 또는 기본 생성자가 사용 가능한지 확인합니다.
+
+선택적으로 이 규칙은 빈이 `java.io.Serializable`을 구현하는지도 확인합니다. 이는 원래
+JavaBeans 명세의 요구 사항이지만, 요즘 프레임워크들은 이를 엄격하게 요구하지 않습니다.
+
+빈이 아닌 클래스에서 많은 거짓 양성을 피하기 위해, 이 규칙은 `packages` 프로퍼티를
+구성하여 명시적으로 활성화해야 합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+package org.example.beans;
+public class MyBean {        // <-- bean is not serializable, missing "implements Serializable"
+    private String label;    // <-- missing setter for property "label"
+
+    public String getLabel() {
+        return label;
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="LawOfDemeter"
+          language="java"
+          since="5.0"
+          message="디미터 법칙의 잠재적 위반 ({0})"
+          class="net.sourceforge.pmd.lang.java.rule.design.LawOfDemeterRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#lawofdemeter">
+        <description>
+디미터 법칙은 "친구하고만 대화하라"라는 간단한 규칙입니다. 이 법칙은
+서로 다른 추상화 수준의 클래스나 객체 간의 결합도를 줄이기 위해
+특정 거리 정의에 따라 "너무 먼 곳"에서 데이터를 가져오는 것을 금지합니다.
+
+이 규칙은 객체가 얼마나 "먼지"를 정량화하는 "차수(degree)" 개념을 사용합니다.
+차수가 너무 높은 표현식은 특정 방식으로만 사용할 수 있습니다. 표현식의 차수는
+귀납적으로 정의됩니다:
+- `this`의 차수는 0
+- 메서드 매개변수의 차수는 1
+- 메서드에서 새로 생성된 객체의 차수는 1
+- 정적 변수의 차수는 1
+- `expr.field`와 같은 필드 접근 표현식의 차수는 `expr`의 차수에 1을 더한 값
+- `expr.getFoo()`와 같은 "getter 표현식"의 차수는 `expr`의 차수에 1을 더한 값
+- `expr.withFoo("")`와 같은 "변환 표현식"의 차수는 `expr`의 차수와 동일
+- 변수의 차수는 해당 변수에 도달하는 모든 할당의 최대 차수
+
+직관적으로 getter를 더 많이 호출할수록 차수가 증가합니다. 결국
+차수가 보고 임계값(속성 `trustRadius`)에 도달하면 해당 표현식이 보고됩니다.
+계산의 세부 사항은 컬렉션 사용(리스트나 배열에 있는 객체는 컨테이너와 같은 차수를 가짐),
+빌더 패턴, 추상화 경계를 깨지 않는 것으로 보이는 getter 등의 일반적인 패턴을
+허용하도록 더 복잡하게 구성되어 있습니다.
+
+이 규칙은 많은 거짓 양성과 낮은 우선순위 경고가 발생하기 쉽습니다.
+`trustRadius` 속성을 증가시키면 이를 크게 줄일 수 있습니다. 기본
+`trustRadius` 1은 원래 디미터 법칙에 해당합니다 (신뢰할 수 없는 값에 대해
+하나의 getter 호출만 허용됩니다). 주어진 `trustRadius` 값에 대해:
+- `trustRadius` 이하의 차수를 가진 표현식은 보고되지 않습니다
+- 정확히 `trustRadius + 1` 차수의 표현식은 현재 메서드에서 반환되거나
+다른 메서드의 인수로 전달되는 경우를 제외하고 보고됩니다. 이 예외가 없으면
+예를 들어 메서드 매개변수에서 어떤 정보도 추출할 수 없습니다.
+- `trustRadius + 1`보다 엄격히 큰 차수의 값은 보고되지 않습니다.
+직관적으로 차수 `n > 1`의 값을 얻으려면 차수 `n - 1`의 표현식을 사용해야 하므로,
+`n > trustRadius + 1`인 경우, 보고될 차수 `trustRadius + 1`의 값을 사용하고 있는 것입니다.
+
+참고 문헌:
+
+*   Andrew Hunt, David Thomas, and Ward Cunningham. The Pragmatic Programmer. From Journeyman to Master. Addison-Wesley Longman, Amsterdam, October 1999.;
+*   K.J. Lieberherr and I.M. Holland. Assuring good style for object-oriented programs. Software, IEEE, 6(5):38–48, 1989.;
+*   &lt;http://www.ccs.neu.edu/home/lieber/LoD.html>
+*   &lt;http://en.wikipedia.org/wiki/Law_of_Demeter>
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    /**
+     * This example will result in one violation.
+     */
+    public void example(Bar b) { // b has degree 1
+        // `b.getC()` has degree 2, it's breaking a boundary of abstraction and so is reported.
+        b.getC().doIt();
+        // To respect the law of Demeter, Bar should encapsulate its
+        // C member more properly, eg by exposing a method like this:
+        b.callDoItOnC();
+
+        // a constructor call, not a method call.
+        D d = new D();
+        // this method call is ok, because we have create the new
+        // instance of D locally.
+        d.doSomethingElse();
+    }
+}
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="LogicInversion"
+          language="java"
+          since="5.0"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="논리 보수 연산자 대신 반대 연산자를 사용하세요."
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#logicinversion">
+        <description>
+논리 보수 연산자로 전체 표현식을 부정하는 대신 반대 연산자를 사용하세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//UnaryExpression[@Operator='!']/InfixExpression[@Operator = ('==', '!=', '<', '>', '<=', '>=')]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public boolean bar(int a, int b) {
+
+    if (!(a == b)) { // use !=
+         return false;
+     }
+
+    if (!(a < b)) { // use >=
+         return false;
+    }
+
+    return true;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="LoosePackageCoupling"
+          language="java"
+          since="5.0"
+          message="패키지 계층 ''{1}'' 외부에서 ''{0}''을(를) 사용하는 것은 권장되지 않습니다; 대신 권장 클래스를 사용하세요"
+          class="net.sourceforge.pmd.lang.java.rule.design.LoosePackageCouplingRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#loosepackagecoupling">
+        <description>
+구성된 허용 클래스 중 하나를 사용하는 경우를 제외하고,
+구성된 패키지 계층 외부에서 해당 패키지 계층의 클래스를 사용하는 것을 피하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+package some.package;
+
+import some.other.package.subpackage.subsubpackage.DontUseThisClass;
+
+public class Bar {
+    DontUseThisClass boo = new DontUseThisClass();
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="MutableStaticState"
+          language="java"
+          since="6.35.0"
+          message="non-final, non-private 정적 필드를 사용하지 마세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#mutablestaticstate">
+        <description>
+            non-private 정적 필드는 final로 선언하여 상수(또는 불변 참조)로 만들어야 합니다.
+
+            non-private non-final 정적 필드는 캡슐화를 깨뜨리고 찾기 어려운
+            버그를 유발할 수 있습니다. 이러한 필드는 프로그램 어디서든 수정할 수 있기 때문입니다.
+            호출자는 non-private non-final 정적 필드에 쉽게 접근하고 수정할 수 있습니다.
+            접근이나 수정을 방어할 수 없으며, 새로 설정된 값을 검증할 수도 없습니다.
+
+            이 규칙을 사용하는 경우,
+            {% rule java/errorprone/AssignmentToNonFinalStatic %} 규칙은 필요하지 않습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//FieldDeclaration[pmd-java:modifiers() = "static"][not(pmd-java:modifiers() = ("private", "final"))]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+            <![CDATA[
+public class Greeter { public static Foo foo = new Foo(); ... }       // avoid this
+public class Greeter { public static final Foo FOO = new Foo(); ... } // use this instead
+]]>
+        </example>
+    </rule>
+
+    <rule name="NcssCount"
+          language="java"
+          message="The {0} ''{1}'' has a NCSS line count of {2}."
+          since="6.0.0"
+          class="net.sourceforge.pmd.lang.java.rule.design.NcssCountRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#ncsscount">
+        <description>
+이 규칙은 NCSS(비주석 소스 문장) 메트릭을 사용하여 클래스, 메서드 또는 생성자의
+코드 줄 수를 결정합니다. NCSS는 주석과 빈 줄을 무시하고 실제 문장만 계산합니다.
+계산에 대한 자세한 내용은 {% jdoc java::lang.java.metrics.JavaMetrics#NCSS %} 문서를 참조하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+import java.util.Collections;       // +0
+import java.io.IOException;         // +0
+
+class Foo {                         // +1, total Ncss = 12
+
+  public void bigMethod()           // +1
+      throws IOException {
+    int x = 0, y = 2;               // +1
+    boolean a = false, b = true;    // +1
+
+    if (a || b) {                   // +1
+      try {                         // +1
+        do {                        // +1
+          x += 2;                   // +1
+        } while (x < 12);
+
+        System.exit(0);             // +1
+      } catch (IOException ioe) {   // +1
+        throw new PatheticFailException(ioe); // +1
+      }
+    } else {
+      assert false;                 // +1
+    }
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="NPathComplexity"
+          language="java"
+          since="3.9"
+          message="The {0} ''{1}'' has an NPath complexity of {2}, current threshold is {3}"
+          class="net.sourceforge.pmd.lang.java.rule.design.NPathComplexityRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#npathcomplexity">
+        <description>
+메서드의 NPath 복잡도는 해당 메서드를 통과하는 비순환 실행 경로의 수입니다.
+순환 복잡도가 메서드의 결정 지점 수를 세는 반면, NPath는 메서드 블록의
+처음부터 끝까지의 전체 경로 수를 셉니다. 이 메트릭은 같은 블록 내
+문장의 복잡도를 곱하기 때문에 기하급수적으로 증가합니다. 계산에 대한 자세한 내용은
+{% jdoc java::lang.java.metrics.JavaMetrics#NPATH %} 문서를 참조하세요.
+
+일반적으로 200의 임계값이 복잡도를 줄이고 가독성을 높이기 위한
+조치를 취해야 하는 시점으로 간주됩니다.
+        </description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+public class Foo {
+  public static void bar() { // Ncss = 252: reported!
+    boolean a, b = true;
+    try { // 2 * 2 + 2 = 6
+      if (true) { // 2
+        List buz = new ArrayList();
+      }
+
+      for(int i = 0; i < 19; i++) { // * 2
+        List buz = new ArrayList();
+      }
+    } catch(Exception e) {
+      if (true) { // 2
+        e.printStackTrace();
+      }
+    }
+
+    while (j++ < 20) { //  * 2
+      List buz = new ArrayList();
+    }
+
+    switch(j) { // * 7
+      case 1:
+      case 2: break;
+      case 3: j = 5; break;
+      case 4: if (b && a) { bar(); } break;
+      default: break;
+    }
+
+    do { // * 3
+        List buz = new ArrayList();
+    } while (a && j++ < 30);
+  }
+}
+ ]]>
+        </example>
+    </rule>
+
+    <rule name="PublicMemberInNonPublicType"
+          language="java"
+          since="7.21.0"
+          message="non-public 타입에서 선언된 public 멤버 ''{0}''"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#publicmemberinnonpublictype">
+        <description>
+non-public 타입은 자체 멤버를 public으로 선언해서는 안 됩니다. 가시성이 실질적으로
+private, package-private 또는 protected로 제한되므로 public 수정자의 사용이 오해를 불러일으킵니다.
+non-public 타입 내에서 멤버를 public으로 선언하면 혼란을 야기하고, 나중에 해당 타입을
+public으로 변경할 경우 모든 public 멤버가 노출되는 의도치 않은 결과를 초래할 수 있습니다.
+그러나 non-public 타입이 상위 클래스로부터 public 멤버를 상속받는 것은 상위 클래스의 설계에
+포함된 것이므로 허용됩니다.
+
+이러한 문제를 피하기 위해, 이 멤버들은 적절하게 protected, package-private 또는 private으로
+선언해야 합니다. 이러한 멤버의 가시성을 변경하면 public 하위 타입의 API에 의도치 않게
+영향을 미칠 수 있습니다. 구체적으로, package-private 상위 타입의 public 하위 타입은
+상위 타입의 모든 public 메서드를 상속합니다. 이 메서드들을 private으로 변환하면
+하위 타입에서도 제거되어 하위 타입의 public API가 의도치 않게 변경될 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//(MethodDeclaration|ConstructorDeclaration|CompactConstructorDeclaration|
+   FieldDeclaration|
+   ClassDeclaration|EnumDeclaration|AnnotationTypeDeclaration)
+  [@EffectiveVisibility != 'public']
+  [@Visibility = 'public']
+  [@Overridden = false() or not(@Overridden)]
+  [not(ancestor::ClassDeclaration[@Interface = true()] or ancestor::AnnotationTypeDeclaration)]
+(: Make sure, we return nodes that implement getName() for {0} in the rule message :)
+!(if (self::FieldDeclaration) then VariableDeclarator else .)
+]]></value>
+            </property>
+        </properties>
+        <example><![CDATA[
+class Wrong {
+    public void method() {} // violation
+    public int field; // violation
+}
+
+class Correct {
+    void method() {}
+    // or even
+    private void privateMethod() {}
+
+    int field;
+    // or even
+    private int privateField;
+}
+]]></example>
+    </rule>
+
+    <rule name="SignatureDeclareThrowsException"
+          language="java"
+          since="1.2"
+          message="메서드/생성자는 java.lang.Exception을 명시적으로 던져서는 안 됩니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.SignatureDeclareThrowsExceptionRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#signaturedeclarethrowsexception">
+        <description>
+메서드/생성자는 일반적인 java.lang.Exception을 명시적으로 던져서는 안 됩니다. 메서드에서
+어떤 예외가 던져질 수 있는지 불분명하기 때문입니다. 이러한 모호한 인터페이스를
+문서화하고 이해하기 어려울 수 있습니다. RuntimeException에서 파생된 클래스나
+검사 예외를 사용하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public void foo() throws Exception {
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="SimplifiedTernary"
+          language="java"
+          since="5.4.0"
+          message="이 조건 표현식은 || 또는 &amp;&amp;로 단순화할 수 있습니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#simplifiedternary">
+        <description>
+<![CDATA[
+`condition ? literalBoolean : foo` 또는 `condition ? foo : literalBoolean` 형태의
+삼항 표현식을 보고합니다.
+
+이러한 표현식은 다음과 같이 단순화할 수 있습니다:
+* `condition ? true : expr`은 `condition || expr`로 단순화
+* `condition ? false : expr`은 `!condition && expr`로 단순화
+* `condition ? expr : true`은 `!condition || expr`로 단순화
+* `condition ? expr : false`은 `condition && expr`로 단순화
+]]>
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ConditionalExpression[BooleanLiteral and not(NullLiteral)]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo {
+    public boolean test() {
+        return condition ? true : something(); // can be as simple as return condition || something();
+    }
+
+    public void test2() {
+        final boolean value = condition ? false : something(); // can be as simple as value = !condition && something();
+    }
+
+    public boolean test3() {
+        return condition ? something() : true; // can be as simple as return !condition || something();
+    }
+
+    public void test4() {
+        final boolean otherValue = condition ? something() : false; // can be as simple as condition && something();
+    }
+
+    public boolean test5() {
+        return condition ? true : false; // can be as simple as return condition;
+    }
+}
+]]>
+        </example>
+    </rule>
+
+
+    <rule name="SimplifyBooleanExpressions"
+          language="java"
+          since="1.05"
+          message="불리언 표현식에서 불필요한 비교를 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#simplifybooleanexpressions">
+        <description>
+불리언 표현식에서 불필요한 비교를 피하세요. 이는 목적이 없고 가독성에 영향을 미칩니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//InfixExpression[@Operator = ("==", "!=")]/BooleanLiteral
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Bar {
+  // can be simplified to
+  // bar = isFoo();
+  private boolean bar = (isFoo() == true);
+
+  public isFoo() { return false;}
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="SimplifyBooleanReturns"
+          language="java"
+          since="0.9"
+          message="이 if 문은 `{0}`으로 대체할 수 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.SimplifyBooleanReturnsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#simplifybooleanreturns">
+        <description>
+불리언을 반환할 때 불필요한 if-then-else 문을 피하세요. 조건 테스트의 결과를
+대신 반환할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public boolean isBarEqualTo(int x) {
+    if (bar == x) {      // this bit of code...
+        return true;
+    } else {
+        return false;
+    }
+}
+
+public boolean isBarEqualTo(int x) {
+    return bar == x;    // can be replaced with this
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="SimplifyConditional"
+          language="java"
+          since="3.1"
+          message="instanceof 앞에 null 검사를 할 필요가 없습니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.SimplifyConditionalRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#simplifyconditional">
+        <description>
+instanceof 앞에 null을 검사할 필요가 없습니다; instanceof 키워드는 null 인수가 주어지면 false를 반환합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+class Foo {
+  void bar(Object x) {
+    if (x != null && x instanceof Bar) {
+      // just drop the "x != null" check
+    }
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="SingularField"
+          language="java"
+          since="3.1"
+          message="''{0}''은(는) 지역 변수로 대체할 수 있습니다."
+          class="net.sourceforge.pmd.lang.java.rule.design.SingularFieldRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#singularfield">
+        <description>
+지역 변수로 변환할 수 있는 필드를 보고합니다. 이는 필드가 사용되는 모든 메서드에서
+처음 읽기 전에 할당되기 때문입니다. 따라서 메서드 호출 전에 필드가 가지고 있던
+값은 관찰되지 않을 수 있으므로, 포함 객체에 저장할 필요가 없을 수 있습니다.
+
+제한 사항:
+* 현재는 private 필드만 확인할 수 있습니다.
+* 이 규칙은 스레딩을 인식하지 않으므로 동시성 코드에서 거짓 양성이 발생할 수 있습니다.
+이러한 거짓 양성은 억제로 처리하는 것이 가장 좋습니다 (`ignoredAnnotations` 속성도 참조하세요).
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    private int x; // this will be reported
+
+    public int foo(int y) {
+       x = y + 5; // assigned before any read
+       return x;
+    }
+
+    public int fooOk(int y) {
+       int z = y + 5; // might as well be a local like here
+       return z;
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="SwitchDensity"
+          language="java"
+          since="1.02"
+          message="switch 문에서 레이블 대비 문장의 비율이 높습니다. 리팩토링을 고려하세요."
+          class="net.sourceforge.pmd.lang.java.rule.design.SwitchDensityRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#switchdensity">
+        <description>
+switch 문에서 레이블 대비 문장의 비율이 높다는 것은 switch 문이 과부하되어 있음을
+의미합니다. 문장을 새로운 메서드로 이동하거나 switch 변수를 기반으로
+하위 클래스를 생성하는 것을 고려하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+  public void bar(int x) {
+    switch (x) {
+      case 1: {
+        // lots of statements
+        break;
+      } case 2: {
+        // lots of statements
+        break;
+      }
+    }
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="TooManyFields"
+          language="java"
+          since="3.0"
+          message="필드가 너무 많습니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#toomanyfields">
+        <description>
+필드가 너무 많은 클래스는 다루기 어려울 수 있으며, 관련 필드를 새로운 객체로 그룹화하여
+필드 수를 줄이도록 재설계해야 할 수 있습니다. 예를 들어, 개별 city/state/zip 필드를
+가진 클래스는 이를 단일 Address 필드로 통합할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="maxfields" type="Integer" description="허용되는 최대 필드 수" min="1" max="1000" value="15"/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration/ClassBody
+  [count(FieldDeclaration
+            [not(pmd-java:modifiers() = 'final')]
+            [not(pmd-java:modifiers() = 'static')]
+        ) > $maxfields]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Person {   // too many separate fields
+   int birthYear;
+   int birthMonth;
+   int birthDate;
+   float height;
+   float weight;
+}
+
+public class Person {   // this is more manageable
+   Date birthDate;
+   BodyMeasurements measurements;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="TooManyMethods"
+          language="java"
+          since="4.2"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="이 클래스에는 메서드가 너무 많습니다. 리팩토링을 고려하세요."
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#toomanymethods">
+        <description>
+메서드가 너무 많은 클래스는 복잡도를 줄이고 더 세분화된 객체를 만들기 위해
+리팩토링하기에 좋은 후보입니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="maxmethods" type="Integer" description="메서드 수 보고 임계값" min="1" max="1000" value="10"/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+ //ClassDeclaration/ClassBody
+     [
+      count(MethodDeclaration[
+         not (
+                (starts-with(@Name,'get') or starts-with(@Name,'set') or starts-with(@Name,'is'))
+                and
+                count(Block/*) <= 1
+            )
+      ]) > $maxmethods
+   ]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="UselessOverridingMethod"
+          language="java"
+          since="3.3"
+          message="오버라이딩 메서드가 단순히 super를 호출하기만 합니다"
+          class="net.sourceforge.pmd.lang.java.rule.design.UselessOverridingMethodRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#uselessoverridingmethod">
+        <description>
+오버라이딩 메서드가 단순히 상위 클래스에 정의된 동일한 메서드를 호출하기만 합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public void foo(String bar) {
+    super.foo(bar);      // why bother overriding?
+}
+
+public String foo() {
+    return super.foo();  // why bother overriding?
+}
+
+@Id
+public Long getId() {
+    return super.getId();  // OK if 'ignoreAnnotations' is false, which is the default behavior
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseObjectForClearerAPI"
+          language="java"
+          since="4.2.6"
+          message="많은 String 인수를 사용하는 대신, 해당 값들을 담는 컨테이너 객체 사용을 고려하세요."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#useobjectforclearerapi">
+        <description>
+public 메서드를 작성할 때는 API 관점에서 생각해야 합니다. 메서드가 public이면 다른 클래스가
+이를 사용하므로 포괄적이고 발전 가능한 API를 제공해야 합니다. 많은 정보를 단순한
+String의 나열로 전달하는 경우, 그 정보를 나타내는 객체를 사용하는 것을 고려하세요.
+더 간단한 API(예: doWork(Workload workload)와 같은)를 얻을 수 있고, 더 중요하게는
+추가 데이터를 전달해야 할 때 API를 수정하지 않고 Workload를 수정하거나 확장하기만
+하면 됩니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//MethodDeclaration[pmd-java:modifiers() = 'public']
+    [count(FormalParameters/FormalParameter[pmd-java:typeIs('java.lang.String')]) > 3]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class MyClass {
+    public void connect(String username,
+        String pssd,
+        String databaseName,
+        String databaseAddress)
+        // Instead of those parameters object
+        // would ensure a cleaner API and permit
+        // to add extra data transparently (no code change):
+        // void connect(UserData data);
+    {
+
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseUtilityClass"
+          language="java"
+          since="0.3"
+          message="모든 메서드가 static입니다. 인스턴스화를 방지하기 위해 private 기본 생성자를 추가하는 것을 고려하세요."
+          class="net.sourceforge.pmd.lang.java.rule.design.UseUtilityClassRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_design.html#useutilityclass">
+        <description>
+정적 메서드만 있는 클래스의 경우 유틸리티 클래스로 만드는 것을 고려하세요.
+이는 추상 클래스에는 적용되지 않습니다. 하위 클래스에 비정적 메서드가 포함될 수
+있기 때문입니다. 또한 이 클래스를 유틸리티 클래스로 만들려면
+인스턴스화를 방지하기 위해 private 생성자를 추가하는 것을 잊지 마세요.
+(참고: 이 사용법은 PMD 5.1.0 이전에는 UseSingleton으로 알려져 있었습니다).
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class MaybeAUtility {
+  public static void foo() {}
+  public static void bar() {}
+}
+]]>
+        </example>
+    </rule>
+
+</ruleset>

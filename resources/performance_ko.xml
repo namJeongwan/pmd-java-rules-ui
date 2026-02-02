@@ -1,0 +1,941 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="성능"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+비최적화된 코드를 표시하는 규칙입니다.
+    </description>
+
+    <rule name="AddEmptyString"
+          language="java"
+          since="4.0"
+          message="빈 문자열을 추가하지 마십시오"
+          class="net.sourceforge.pmd.lang.java.rule.performance.AddEmptyStringRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#addemptystring">
+        <description>
+빈 문자열과 연결하여 리터럴을 문자열로 변환하는 것은 비효율적입니다.
+대신 타입별 `toString()` 메서드나 `String.valueOf()`를 사용하는 것이 훨씬 좋습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+String s = "" + 123;                // inefficient
+String t = Integer.toString(456);   // preferred approach
+]]>
+        </example>
+    </rule>
+
+    <rule name="AppendCharacterWithChar"
+          language="java"
+          since="3.5"
+          message="StringBuffer.append에서 문자를 문자열로 추가하는 것을 피하십시오."
+          class="net.sourceforge.pmd.lang.java.rule.performance.AppendCharacterWithCharRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#appendcharacterwithchar">
+        <description>
+StringBuffer/StringBuilder.append 메서드에서 문자를 문자열로 연결하는 것을 피하십시오.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+StringBuffer sb = new StringBuffer();
+sb.append("a");     // avoid this
+
+StringBuffer sb = new StringBuffer();
+sb.append('a');     // use this instead
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidArrayLoops"
+          language="java"
+          since="3.5"
+          message="Arrays.copyOf 또는 System.arraycopy가 더 효율적입니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#avoidarrayloops">
+        <description>
+두 배열 간에 데이터를 수동으로 복사하는 대신, 더 효율적인 `Arrays.copyOf` 또는
+`System.arraycopy` 메서드를 사용하십시오.
+
+배열의 일부만 복사하려면 `Arrays.copyOfRange` 또는 `System.arraycopy`를 사용하십시오.
+
+_같은_ 배열 내에서 요소를 복사/이동하려면 (예: 요소 이동), `System.arraycopy`를 사용하십시오.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//(ForStatement[ForUpdate//(UnaryExpression[@Operator=('++','--')] | AssignmentExpression[@Operator = ('+=', '-=')][NumericLiteral[@Image = '1']])]
+ | WhileStatement | DoStatement)
+    [not(.//ContinueStatement)]
+    [not(.//BreakStatement[not(parent::SwitchFallthroughBranch)])]
+    [not(.//ThrowStatement)]
+    [not(.//ReturnStatement)]
+    [count(Block//AssignmentExpression[@Operator='=']
+                                      (: no nested arrays or method calls as array index :)
+                                      [count(ArrayAccess[not(.//ArrayAccess)]
+                                                        [not(.//MethodCall)])=2]
+                                      (: array access indexes must be same (excluding constants) :)
+                                      [deep-equal(
+                                        sort(distinct-values(ArrayAccess[1]/(VariableAccess[2]|InfixExpression//VariableAccess)
+                                            (: don't consider array length accesses :)
+                                            [not(parent::FieldAccess[@Name='length'])]
+                                            [
+                                               (: exclude referenced constants :)
+                                               not(@Name = (ancestor::MethodDeclaration|//FieldDeclaration)//VariableDeclarator[NumericLiteral][not(../../../parent::ForInit)]/VariableId/@Name)
+                                               or
+                                               (: include loop variable :)
+                                               @Name = ancestor::ForStatement/ForInit/LocalVariableDeclaration/VariableDeclarator/VariableId/@Name
+                                            ]
+                                            /@Name)),
+                                        sort(distinct-values(ArrayAccess[2]/(VariableAccess[2]|InfixExpression//VariableAccess)
+                                            (: don't consider array length accesses :)
+                                            [not(parent::FieldAccess[@Name='length'])]
+                                            [
+                                               (: exclude referenced constants :)
+                                               not(@Name = (ancestor::MethodDeclaration|//FieldDeclaration)//VariableDeclarator[NumericLiteral][not(../../../parent::ForInit)]/VariableId/@Name)
+                                               or
+                                               (: include loop variable :)
+                                               @Name = ancestor::ForStatement/ForInit/LocalVariableDeclaration/VariableDeclarator/VariableId/@Name
+                                            ]
+                                            /@Name))
+                                      )]
+     )=1]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+class Scratch {
+    void copy_a_to_b() {
+        int[] a = new int[10];
+        int[] b = new int[10];
+        for (int i = 0; i < a.length; i++) {
+            b[i] = a[i];
+        }
+        // equivalent
+        b = Arrays.copyOf(a, a.length);
+        // equivalent
+        System.arraycopy(a, 0, b, 0, a.length);
+
+        int[] c = new int[10];
+        // this will not trigger the rule
+        for (int i = 0; i < c.length; i++) {
+            b[i] = a[c[i]];
+        }
+    }
+}
+]]>
+        </example>
+        <example>
+<![CDATA[
+class Scratch {
+    void shift_left(int[] a) {
+        for (int i = 0; i < a.length - 1; i++) {
+            a[i] = a[i + 1];
+        }
+        // equivalent
+        System.arraycopy(a, 1, a, 0, a.length - 1);
+    }
+    void shift_right(int[] a) {
+        for (int i = a.length - 1; i > 0; i--) {
+            a[i] = a[i - 1];
+        }
+        // equivalent
+        System.arraycopy(a, 0, a, 1, a.length - 1);
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidCalendarDateCreation"
+          since="6.25.0"
+          language="java"
+          message="현재 시간을 가져오기 위해 Calendar를 사용하고 있으며, 이는 비용이 많이 듭니다."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          typeResolution="true"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#avoidcalendardatecreation">
+        <description>
+문제: `java.util.Calendar`는 무거운 객체이며 생성 비용이 높습니다. 캘린더 계산이 필요한 경우에만
+사용해야 합니다.
+
+해결책: `new Date()`, Java 8 이상의 `java.time.LocalDateTime.now()` 또는 `ZonedDateTime.now()`를 사용하십시오.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//MethodCall[pmd-java:matchesSig("java.util.Calendar#getTime()") or pmd-java:matchesSig("java.util.Calendar#getTimeInMillis()")]
+  [*[1][local-name() = ('MethodCall', 'ConstructorCall')]
+                               [pmd-java:matchesSig("java.util.Calendar#getInstance()")
+                             or pmd-java:matchesSig("java.util.GregorianCalendar#getInstance()")
+                             or pmd-java:matchesSig("java.util.GregorianCalendar#new()")]
+  ]
+|
+//MethodCall[pmd-java:matchesSig("java.util.Calendar#getTime()") or pmd-java:matchesSig("java.util.Calendar#getTimeInMillis()")]
+   [*[1][local-name() = 'VariableAccess']]
+  (: ignore if .set* or .add or .clear or .roll is called on the variable :)
+  [not(VariableAccess/@Name = ancestor::Block//MethodCall[starts-with(@MethodName, "set") or @MethodName = ("add", "clear", "roll")]/VariableAccess/@Name)]
+  (: variable must be initialized with getInstance :)
+  [VariableAccess/@Name = ancestor::Block//LocalVariableDeclaration/VariableDeclarator[
+     (MethodCall | ConstructorCall)
+      [pmd-java:matchesSig("java.util.Calendar#getInstance()")
+       or pmd-java:matchesSig("java.util.GregorianCalendar#getInstance()")
+       or pmd-java:matchesSig("java.util.GregorianCalendar#new()")]
+  ]/VariableId/@Name]
+|
+//ConstructorCall[pmd-java:typeIs("org.joda.time.DateTime") or pmd-java:typeIs("org.joda.time.LocalDateTime")]
+  [ArgumentList[(MethodCall | ConstructorCall)
+       [pmd-java:matchesSig("java.util.Calendar#getInstance()")
+     or pmd-java:matchesSig("java.util.GregorianCalendar#getInstance()")
+     or pmd-java:matchesSig("java.util.GregorianCalendar#new()")]]
+  ]
+
+                ]]></value>
+            </property>
+        </properties>
+        <example>
+            <![CDATA[
+import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
+
+public class DateStuff {
+    private Date bad1() {
+        return Calendar.getInstance().getTime(); // now
+    }
+    private Date good1a() {
+        return new Date(); // now
+    }
+    private LocalDateTime good1b() {
+        return LocalDateTime.now();
+    }
+    private long bad2() {
+        return Calendar.getInstance().getTimeInMillis();
+    }
+    private long good2() {
+        return System.currentTimeMillis();
+    }
+}
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidFileStream"
+          since="6.0.0"
+          message="FileInputStream, FileOutputStream, FileReader 또는 FileWriter의 인스턴스화를 피하십시오"
+          language="java"
+          minimumLanguageVersion="1.7"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#avoidfilestream">
+        <description>
+FileInputStream과 FileOutputStream 클래스에는 가비지 컬렉션 일시 중지를 유발하는
+finalizer 메서드가 포함되어 있습니다.
+자세한 내용은 [JDK-8080225](https://bugs.openjdk.org/browse/JDK-8080225)를 참조하십시오.
+
+FileReader와 FileWriter 생성자는 FileInputStream과 FileOutputStream을 인스턴스화하므로,
+finalizer 메서드가 호출되면서 가비지 컬렉션 문제가 다시 발생합니다.
+
+* `new FileInputStream(fileName)` 대신 `Files.newInputStream(Paths.get(fileName))`을 사용하십시오.
+* `new FileOutputStream(fileName)` 대신 `Files.newOutputStream(Paths.get(fileName))`을 사용하십시오.
+* `new FileReader(fileName)` 대신 `Files.newBufferedReader(Paths.get(fileName))`을 사용하십시오.
+* `new FileWriter(fileName)` 대신 `Files.newBufferedWriter(Paths.get(fileName))`을 사용하십시오.
+
+참고로, `java.nio` API는 더 이상 `FileNotFoundException`을 던지지 않으며, 대신
+`NoSuchFileException`을 던집니다. 코드에서 `FileNotFoundException`을 명시적으로 처리했다면
+이를 조정해야 합니다. 두 예외 모두 `IOException`의 하위 클래스이므로,
+이를 catch하면 둘 다 처리됩니다.
+        </description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ConstructorCall/ClassType[
+       pmd-java:typeIs('java.io.FileInputStream')
+    or pmd-java:typeIs('java.io.FileOutputStream')
+    or pmd-java:typeIs('java.io.FileReader')
+    or pmd-java:typeIs('java.io.FileWriter')
+  ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+    // these instantiations cause garbage collection pauses, even if properly closed
+
+    FileInputStream fis = new FileInputStream(fileName);
+    FileOutputStream fos = new FileOutputStream(fileName);
+    FileReader fr = new FileReader(fileName);
+    FileWriter fw = new FileWriter(fileName);
+
+    // the following instantiations help prevent Garbage Collection pauses, no finalization
+
+    try(InputStream is = Files.newInputStream(Paths.get(fileName))) {
+    }
+    try(OutputStream os = Files.newOutputStream(Paths.get(fileName))) {
+    }
+    try(BufferedReader br = Files.newBufferedReader(Paths.get(fileName), StandardCharsets.UTF_8)) {
+    }
+    try(BufferedWriter wr = Files.newBufferedWriter(Paths.get(fileName), StandardCharsets.UTF_8)) {
+    }
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidInstantiatingObjectsInLoops"
+          language="java"
+          since="2.2"
+          message="루프 내에서 새로운 객체를 인스턴스화하는 것을 피하십시오"
+          class="net.sourceforge.pmd.lang.java.rule.performance.AvoidInstantiatingObjectsInLoopsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#avoidinstantiatingobjectsinloops">
+        <description>
+루프 내에서 생성된 새 객체는 루프 외부에서 생성하여 재사용할 수 있는지 확인해야 합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Something {
+    public static void main( String as[] ) {
+        for (int i = 0; i < 10; i++) {
+            Foo f = new Foo(); // Avoid this whenever you can it's really expensive
+        }
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="BigIntegerInstantiation"
+          language="java"
+          since="3.9"
+          message="이미 존재하는 BigInteger 및 BigDecimal(ZERO, ONE, TEN)의 인스턴스를 생성하지 마십시오"
+          class="net.sourceforge.pmd.lang.java.rule.performance.BigIntegerInstantiationRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#bigintegerinstantiation">
+        <description>
+이미 존재하는 BigInteger(`BigInteger.ZERO`, `BigInteger.ONE`)의 인스턴스를 생성하지 마십시오.
+Java 1.5 이상에서는 BigInteger.TEN과 BigDecimal(`BigDecimal.ZERO`, `BigDecimal.ONE`, `BigDecimal.TEN`)을,
+Java 9 이상에서는 `BigInteger.TWO`를 사용하십시오.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+BigInteger bi1 = new BigInteger("1");    // reference BigInteger.ONE instead
+BigInteger bi2 = new BigInteger("0");    // reference BigInteger.ZERO instead
+BigInteger bi3;
+bi3 = new BigInteger("0");               // reference BigInteger.ZERO instead
+
+BigDecimal bd1 = new BigDecimal(0);      // reference BigDecimal.ZERO instead
+BigDecimal bd2 = new BigDecimal("0.") ;  // reference BigDecimal.ZERO instead
+BigDecimal bd3 = new BigDecimal(10);     // reference BigDecimal.TEN instead
+]]>
+        </example>
+    </rule>
+
+    <rule name="ConsecutiveAppendsShouldReuse"
+          language="java"
+          since="5.1"
+          message="StringBuffer(또는 StringBuilder).append가 대상 변수를 재사용하지 않고 연속적으로 호출되고 있습니다."
+          class="net.sourceforge.pmd.lang.java.rule.performance.ConsecutiveAppendsShouldReuseRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#consecutiveappendsshouldreuse">
+        <description>
+StringBuffer/StringBuilder .append의 연속 호출은 대상 객체를 재사용하여 체이닝해야 합니다. 이렇게 하면 더 작은 바이트코드를 생성하고,
+오버헤드를 줄이며, 인라이닝을 개선하여 성능을 향상시킬 수 있습니다. 전체 분석은 [여기](https://github.com/pmd/pmd/issues/202#issuecomment-274349067)에서 확인할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+String foo = " ";
+
+StringBuffer buf = new StringBuffer();
+buf.append("Hello"); // poor
+buf.append(foo);
+buf.append("World");
+
+StringBuffer buf = new StringBuffer();
+buf.append("Hello").append(foo).append("World"); // good
+]]>
+        </example>
+    </rule>
+
+    <rule name="ConsecutiveLiteralAppends"
+          language="java"
+          since="3.5"
+          message="StringBuffer(또는 StringBuilder).append가 리터럴로 {0}회 연속 호출되었습니다. 하나의 결합된 문자열로 단일 append를 사용하십시오."
+          class="net.sourceforge.pmd.lang.java.rule.performance.ConsecutiveLiteralAppendsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#consecutiveliteralappends">
+        <description>
+StringBuffer/StringBuilder.append(...)를 리터럴로 연속 호출하는 것은 피해야 합니다.
+리터럴은 상수이므로 이미 하나의 문자열 리터럴로 결합할 수 있으며, 이 문자열을
+단일 메서드 호출로 추가할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+StringBuilder buf = new StringBuilder();
+buf.append("Hello").append(" ").append("World");    // poor
+buf.append("Hello World");                          // good
+
+buf.append('h').append('e').append('l').append('l').append('o'); // poor
+buf.append("hello");                                             // good
+
+buf.append(1).append('m');  // poor
+buf.append("1m");           // good
+]]>
+        </example>
+    </rule>
+
+    <rule name="InefficientEmptyStringCheck"
+          language="java"
+          since="3.6"
+	        message="String.trim().length() == 0 / String.trim().isEmpty()는 빈 문자열을 검증하는 비효율적인 방법입니다."
+          class="net.sourceforge.pmd.lang.java.rule.performance.InefficientEmptyStringCheckRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#inefficientemptystringcheck">
+        <description>
+<![CDATA[
+`string.trim()` 또는 `string.strip()`의 길이를 확인하는 것은 문자열이 실제로 공백인지
+결정하는 비효율적인 방법입니다. 크기를 확인하기 위해 새로운 `String` 객체를 생성하기 때문입니다.
+Java 11부터는 `string.isBlank()`를 사용하여 문자열이 공백으로만 구성되어 있는지 결정할 수 있으며,
+이 검사는 `string.strip().isEmpty()`와 동일합니다. `string.trim().isEmpty()`의 의미를 얻으려면
+문자를 반복하면서 0x20과 비교할 수 있습니다:
+
+```java
+private boolean checkTrimEmpty(String str) {
+    return str.chars().allMatch(c -> c <= 0x20);
+}
+```
+
+null 검사를 포함하는 라이브러리 함수를 사용하는 것도 고려할 수 있습니다
+(예: commons-lang의 Apache `StringUtils#isBlank`,
+Spring 프레임워크의 `StringUtils#hasText`) 또는 다른 공백 정의를 사용할 수 있습니다
+(예: Guava의 Google `CharMatcher#whitespace`).
+
+`string.strip().isBlank()` 호출도 중복이며 `string.isBlank()`로 단순화해야 합니다.
+]]>
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public void bar(String string) {
+    if (string != null && string.trim().length() > 0) {
+        doSomething();
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="InefficientStringBuffering"
+          language="java"
+          since="3.4"
+          message="StringBuffer/StringBuilder 생성자 또는 append()에서 비리터럴을 연결하는 것을 피하십시오."
+          class="net.sourceforge.pmd.lang.java.rule.performance.InefficientStringBufferingRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#inefficientstringbuffering">
+        <description>
+StringBuffer 생성자 또는 append()에서 비리터럴을 연결하는 것을 피하십시오. 중간 버퍼가
+JVM에 의해 생성되고 파괴되어야 하기 때문입니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+// Avoid this, two buffers are actually being created here
+StringBuffer sb = new StringBuffer("tmp = "+System.getProperty("java.io.tmpdir"));
+
+// do this instead
+StringBuffer sb = new StringBuffer("tmp = ");
+sb.append(System.getProperty("java.io.tmpdir"));
+]]>
+        </example>
+    </rule>
+
+    <rule name="InsufficientStringBufferDeclaration"
+          language="java"
+          since="3.6"
+          message="{0}이(가) 크기 {1}로 초기화되었지만, 최소 {2}자가 추가되었습니다."
+          class="net.sourceforge.pmd.lang.java.rule.performance.InsufficientStringBufferDeclarationRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#insufficientstringbufferdeclaration">
+        <description>
+StringBuffer 또는 StringBuilder의 크기를 적절히 미리 설정하지 않으면 런타임 중에 여러 번
+크기를 재조정해야 할 수 있습니다. 이 규칙은 실제로 StringBuffer.append()에 전달되는
+총 문자 수를 결정하려고 시도하지만, "최악의 경우" 시나리오에 대한 최선의 추정을 나타냅니다.
+빈 StringBuffer/StringBuilder 생성자는 객체를 16자로 초기화합니다. 생성자의 길이를
+결정할 수 없는 경우 이 기본값이 사용됩니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+StringBuilder bad = new StringBuilder();
+bad.append("This is a long string that will exceed the default 16 characters");
+
+StringBuilder good = new StringBuilder(41);
+good.append("This is a long string, which is pre-sized");
+]]>
+        </example>
+    </rule>
+
+    <rule name="OptimizableToArrayCall"
+          language="java"
+          since="1.8"
+          minimumLanguageVersion="1.6"
+          message="이 Collection.toArray() 호출은 최적화할 수 있습니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#optimizabletoarraycall">
+        <description>
+컬렉션의 `toArray(E[])` 메서드 호출은 크기가 0인 대상 배열을 지정해야 합니다. 이렇게 하면 JVM이
+메모리 할당과 복사를 최대한 최적화할 수 있습니다.
+
+이 규칙의 이전 버전(PMD 6.0.0 이전)은 반대를 제안했지만, 현재 JVM 구현은
+대상 배열에 대한 완전한 제어권을 가질 때 항상 더 나은 성능을 보입니다. 또한 리플렉션을 통한
+배열 할당은 현재 직접 할당만큼 빠릅니다.
+
+[Arrays of Wisdom of the Ancients](https://shipilev.net/blog/2016/arrays-wisdom-ancients/)도 참조하십시오.
+
+참고: 올바른 타입의 배열이 필요하지 않은 경우, 배열 없이 사용하는 단순한 `toArray()` 메서드가
+더 빠르지만, `Object[]` 타입의 배열만 반환합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//MethodCall[pmd-java:matchesSig("java.util.Collection#toArray(_)")]
+    [ArgumentList/ArrayAllocation/ArrayType/ArrayDimensions/ArrayDimExpr[not(NumericLiteral[@Image="0"])]]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+List<Foo> foos = getFoos();
+
+// much better; this one allows the jvm to allocate an array of the correct size and effectively skip
+// the zeroing, since each array element will be overridden anyways
+Foo[] fooArray = foos.toArray(new Foo[0]);
+
+// inefficient, the array needs to be zeroed out by the jvm before it is handed over to the toArray method
+Foo[] fooArray = foos.toArray(new Foo[foos.size()]);
+]]>
+        </example>
+    </rule>
+
+    <rule name="RedundantFieldInitializer"
+          language="java"
+          since="5.0"
+          message="''${variableName}''에 대해 중복된 필드 초기화를 사용하지 마십시오"
+          class="net.sourceforge.pmd.lang.java.rule.performance.RedundantFieldInitializerRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#redundantfieldinitializer">
+        <description>
+Java는 알려진 기본값으로 필드를 초기화하므로, 동일한 기본값의 명시적 초기화는
+중복이며 더 큰 클래스 파일을 생성합니다(필드당 약 3개의 추가 바이트코드 명령어).
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class C {
+    boolean b   = false;    // examples of redundant initializers
+    byte by     = 0;
+    short s     = 0;
+    char c      = 0;
+    int i       = 0;
+    long l      = 0;
+
+    float f     = .0f;    // all possible float literals
+    double d    = 0d;     // all possible double literals
+    Object o    = null;
+
+    MyClass mca[] = null;
+    int i1 = 0, ia1[] = null;
+
+    class Nested {
+        boolean b = false;
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="StringInstantiation"
+          language="java"
+          since="1.0"
+          message="String 객체의 인스턴스화를 피하십시오; 이는 일반적으로 불필요합니다."
+          class="net.sourceforge.pmd.lang.java.rule.performance.StringInstantiationRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#stringinstantiation">
+        <description>
+String 객체의 인스턴스화를 피하십시오; 문자열은 불변이며 안전하게 공유할 수 있으므로 이는 일반적으로 불필요합니다.
+        </description>
+        <priority>2</priority>
+        <example>
+<![CDATA[
+private String bar = new String("bar"); // just do a String bar = "bar";
+]]>
+        </example>
+    </rule>
+
+    <rule name="StringToString"
+          language="java"
+          since="1.0"
+          message="이미 String인 객체에서 toString()을 호출하지 마십시오; 이는 불필요합니다."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#stringtostring">
+        <description>
+이미 문자열 인스턴스로 알려진 객체에서 toString()을 호출하는 것을 피하십시오; 이는 불필요합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    //MethodCall[pmd-java:matchesSig("java.lang.String#toString()")]
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+private String baz() {
+    String bar = "howdy";
+    return bar.toString();
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="TooFewBranchesForASwitchStatement" deprecated="true" ref="TooFewBranchesForSwitch"/>
+
+    <rule name="TooFewBranchesForSwitch"
+          language="java"
+          since="4.2"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="분기가 3개 미만인 switch는 비효율적이므로, 대신 'if 문'을 사용하십시오."
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#toofewbranchesforswitch">
+        <description>
+Switch 문은 복잡한 분기 동작을 지원하기 위한 것입니다. 몇 가지 경우에만 switch를 사용하는 것은
+바람직하지 않습니다. switch는 if-else 문만큼 이해하기 쉽지 않기 때문입니다. 이러한 경우
+코드 가독성을 높이기 위해 if-else 문을 사용하십시오.
+
+참고: 이 규칙은 PMD 7.7.0 이전에는 TooFewBranchesForASwitchStatement로 명명되었습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="minimumNumberCaseForASwitch" type="Integer" description="switch의 최소 분기 수" min="1" max="100" value="3"/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//(SwitchStatement | SwitchExpression)
+  [ count(*) > 1 ] (: ignore empty switch blocks :)
+  [ (count(*/SwitchLabel/*) + count(*/SwitchLabel[@Default = true()])) < $minimumNumberCaseForASwitch ]
+  (: do not consider exhaustive switches unless there is a default case :)
+  [@Exhaustive = false() or @DefaultCase = true()]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+// With a minimumNumberCaseForASwitch of 3
+public class Foo {
+    public void bar(int condition) {
+        switch (condition) {
+            case 1:
+                instruction;
+                break;
+            default:
+                break; // not enough for a 'switch' stmt, a simple 'if' stmt would have been more appropriate
+        }
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseArrayListInsteadOfVector"
+          language="java"
+          since="3.0"
+          message="Vector 대신 ArrayList를 사용하십시오"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#usearraylistinsteadofvector">
+        <description>
+스레드 안전 연산이 필요하지 않은 경우 ArrayList는 Vector보다 훨씬 더 나은 Collection 구현입니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ConstructorCall/ClassType[pmd-java:typeIsExactly('java.util.Vector') or pmd-java:typeIsExactly('Vector')]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+import java.util.*;
+public class SimpleTest extends TestCase {
+    public void testX() {
+    Collection c1 = new Vector();
+    Collection c2 = new ArrayList();    // achieves the same with much better performance
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseArraysAsList"
+          language="java"
+          since="3.5"
+          message="타이트한 루프 대신 asList를 사용하십시오"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#usearraysaslist">
+        <description>
+<![CDATA[
+`java.util.Arrays` 클래스에는 객체 배열에서 새 List를 생성할 때 사용해야 하는 `asList()` 메서드가 있습니다.
+배열의 모든 요소를 하나씩 복사하는 루프를 실행하는 것보다 더 빠릅니다.
+
+`Arrays.asList()`의 결과는 지정된 배열에 의해 지원되며,
+반환된 리스트의 변경 사항은 배열이 수정되는 결과를 초래합니다.
+이러한 이유로 `Arrays.asList()`의 반환 리스트에 새 요소를 추가하는 것은 불가능합니다
+(UnsupportedOperationException).
+이것이 불편한 경우(예: 동시 접근 때문) `new ArrayList<>(Arrays.asList(...))`를 사용해야 합니다.
+]]>
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ForStatement
+  [ForInit
+    [LocalVariableDeclaration
+      [PrimitiveType[@Kind = 'int']]
+      [VariableDeclarator[NumericLiteral[@IntLiteral][@Image = '0']]]
+    ]
+  ]
+  [*[2]//FieldAccess[@Name = 'length']/VariableAccess[pmd-java:typeIs("java.lang.Object[]")]]
+  [ForUpdate
+    [StatementExpressionList
+      [UnaryExpression[@Operator = '++']
+       | AssignmentExpression[@Operator = '+='][NumericLiteral[@IntLiteral][@Image = '1']]]
+    ]
+  ]
+  /*[last()][not(IfStatement)]/ExpressionStatement/
+    MethodCall
+      [pmd-java:matchesSig('java.util.List#add(_)')]
+      [ArgumentList/ArrayAccess
+        [VariableAccess[@Name = ancestor::ForStatement/ForInit/LocalVariableDeclaration/VariableDeclarator/VariableId/@Name]]
+      ]
+|
+//ForeachStatement
+  [VariableAccess[pmd-java:typeIs("java.lang.Object[]")]]
+  /*[last()][not(IfStatement)]/ExpressionStatement/MethodCall
+      [pmd-java:matchesSig('java.util.List#add(_)')]
+      [ArgumentList
+        [VariableAccess[@Name = ancestor::ForeachStatement/LocalVariableDeclaration/VariableDeclarator/VariableId/@Name]]
+      ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Test {
+    public void foo(Integer[] ints) {
+        // could just use Arrays.asList(ints)
+        List<Integer> l = new ArrayList<>(100);
+        for (int i = 0; i < ints.length; i++) {
+            l.add(ints[i]);
+        }
+
+        List<Integer> anotherList = new ArrayList<>();
+        for (int i = 0; i < ints.length; i++) {
+            anotherList.add(ints[i].toString()); // won't trigger the rule
+        }
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseIndexOfChar"
+          language="java"
+          since="3.5"
+          message="String.indexOf(char)는 String.indexOf(String)보다 빠릅니다."
+          class="net.sourceforge.pmd.lang.java.rule.performance.UseIndexOfCharRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#useindexofchar">
+        <description>
+단일 문자의 인덱스를 확인할 때는 String.indexOf(char)를 사용하십시오; 더 빠르게 실행됩니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+String s = "hello world";
+// avoid this
+if (s.indexOf("d") {}
+// instead do this
+if (s.indexOf('d') {}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseIOStreamsWithApacheCommonsFileItem"
+          since="6.25.0"
+          language="java"
+          message="메모리 집약적인 FileItem.get() 또는 FileItem.getString()을 피하십시오"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          typeResolution="true"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#useiostreamswithapachecommonsfileitem">
+        <description>
+문제: [FileItem.get()](https://javadoc.io/static/commons-fileupload/commons-fileupload/1.5/org/apache/commons/fileupload/FileItem.html#get--)
+및 [FileItem.getString()](https://javadoc.io/static/commons-fileupload/commons-fileupload/1.5/org/apache/commons/fileupload/FileItem.html#getString--)의 사용은
+전체 파일을 메모리에 로드하므로 메모리를 고갈시킬 수 있습니다.
+
+해결책: [FileItem.getInputStream()](https://javadoc.io/static/commons-fileupload/commons-fileupload/1.5/org/apache/commons/fileupload/FileItem.html#getInputStream--)
+및 버퍼링을 사용하십시오.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//MethodCall
+    [@MethodName = 'get' or @MethodName = 'getString']
+    [*[pmd-java:typeIs('org.apache.commons.fileupload.FileItem')]]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+            <![CDATA[
+import org.apache.commons.fileupload.FileItem;
+
+public class FileStuff {
+   private String bad(FileItem fileItem) {
+        return fileItem.getString();
+   }
+
+   private InputStream good(FileItem fileItem) {
+        return fileItem.getInputStream();
+   }
+}
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="UselessStringValueOf"
+          language="java"
+          since="3.8"
+          message="문자열에 추가하기 위해 String.valueOf를 호출할 필요가 없습니다."
+          class="net.sourceforge.pmd.lang.java.rule.performance.UselessStringValueOfRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#uselessstringvalueof">
+        <description>
+문자열에 추가하기 위해 String.valueOf를 호출할 필요가 없습니다; valueOf()의 인자를 직접 사용하면 됩니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public String convert(int i) {
+    String s;
+    s = "a" + String.valueOf(i);    // not required
+    s = "a" + i;                    // preferred approach
+    return s;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseStringBufferForStringAppends"
+          language="java"
+          since="3.1"
+          message="문자열 연결 시 += 대신 StringBuilder(비동기) 또는 StringBuffer(동기)를 사용하십시오"
+          class="net.sourceforge.pmd.lang.java.rule.performance.UseStringBufferForStringAppendsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#usestringbufferforstringappends">
+        <description>
+문자열 추가를 위한 '+=' 연산자의 사용은 JVM이 내부 StringBuffer를 생성하고 사용하게 만듭니다.
+이러한 연결이 상당수 사용되는 경우 StringBuilder 또는 스레드 안전한 StringBuffer를 명시적으로
+사용하는 것이 이를 피하기 위해 권장됩니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    String inefficientConcatenation() {
+        String result = "";
+        for (int i = 0; i < 10; i++) {
+            // warning: this concatenation will create one new StringBuilder per iteration
+            result += getStringFromSomeWhere(i);
+        }
+        return result;
+    }
+
+    String efficientConcatenation() {
+        // better would be to use one StringBuilder for the entire loop
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            result.append(getStringFromSomeWhere(i));
+        }
+        return result.toString();
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseStringBufferLength"
+          language="java"
+          since="3.4"
+          message="CharSequence.toString의 비효율적인 사용입니다; 대신 CharSequence.length를 호출하십시오."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_performance.html#usestringbufferlength">
+        <description>
+StringBuffer.toString().equals("") 또는 StringBuffer.toString().length() == ... 대신
+StringBuffer.length()를 사용하여 StringBuffer의 길이를 확인하십시오.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//MethodCall[pmd-java:matchesSig('_#length()')
+    and MethodCall[pmd-java:matchesSig('java.lang.CharSequence#toString()')]]
+|
+(: finds sb.toString().equals(someVar) where var is a final variable initialized with literal "" :)
+//MethodCall[pmd-java:matchesSig('_#equals(_)')
+  and MethodCall[pmd-java:matchesSig('java.lang.AbstractStringBuilder#toString()')]
+  and ArgumentList/VariableAccess[@Name = //VariableDeclarator[StringLiteral[@Image='""']]
+                                            /VariableId[pmd-java:modifiers() = 'final']/@Name]]
+|
+(: finds sb.toString().equals("") :)
+//MethodCall[pmd-java:matchesSig('_#equals(_)')
+  and MethodCall[pmd-java:matchesSig('java.lang.AbstractStringBuilder#toString()')]
+  and ArgumentList/StringLiteral[@Image='""']]
+]]></value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+StringBuffer sb = new StringBuffer();
+
+if (sb.toString().equals("")) {}        // inefficient
+
+if (sb.length() == 0) {}                // preferred
+]]>
+        </example>
+    </rule>
+
+
+    <!--
+    other optimization/performance should be like avoiding
+    "" + int
+    or "" + (int) i
+    and String.valueOf(int)
+
+    and using Integer.toString(int)
+
+    IntegerToStringShouldBeUsed
+    LongToStringShouldBeUsed
+    BooleanToStringShouldBeUsed
+    -->
+
+</ruleset>

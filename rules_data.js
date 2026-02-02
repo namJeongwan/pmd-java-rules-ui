@@ -1,0 +1,4270 @@
+const RULES_DATA =
+[
+  {
+    "name": "AvoidReassigningParameters",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "1.0",
+    "message": "''{0}''과(와) 같은 매개변수의 재할당을 피하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AvoidReassigningParametersRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidreassigningparameters",
+    "description": "메서드나 생성자의 입력 매개변수에 값을 재할당하는 것은 권장되지 않습니다. 이는 코드를 이해하기\n더 어렵게 만들 수 있기 때문입니다. 코드는 대개 매개변수 값이 변경되지 않는다는 가정 하에 읽히며,\n할당은 최소 놀람 원칙을 위반합니다. 이는 특히 매개변수가 메서드의 javadoc 등에 문서화되어 있고\n새 내용이 원래 문서화된 내용과 다른 경우에 문제가 됩니다.\n\n대신 임시 지역 변수를 사용하십시오. 이를 통해 새 이름을 할당할 수 있어 코드를 더 잘 이해할 수 있습니다.\n\n이 규칙은 메서드와 생성자를 모두 고려합니다. 형식 매개변수에 대한 할당이 여러 개인 경우,\n첫 번째 할당만 보고됩니다.",
+    "priority": 2,
+    "examples": [
+      "public class Hello {\n  private void greet(String name) {\n    name = name.trim();\n    System.out.println(\"Hello \" + name);\n\n    // preferred\n    String trimmedName = name.trim();\n    System.out.println(\"Hello \" + trimmedName);\n  }\n}"
+    ]
+  },
+  {
+    "name": "GuardLogStatement",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "5.1.0",
+    "message": "로거 호출은 로그 레벨 가드로 감싸야 합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.GuardLogStatementRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#guardlogstatement",
+    "description": "로그 레벨을 사용할 때마다 실제로 활성화되어 있는지 확인하거나, 그렇지 않으면 관련 문자열 생성 및\n조작과 메서드 호출을 건너뛰어야 합니다.\n\n로그 레벨 확인의 대안으로 매개변수 치환, 포맷터 또는 람다를 사용한 지연 로깅이 있습니다.\n사용 가능한 대안은 실제 로깅 프레임워크에 따라 다릅니다.",
+    "priority": 2,
+    "examples": [
+      "// Add this for performance - avoid manipulating strings if the logger may drop it\nif (log.isDebugEnabled()) {\n    log.debug(\"log something\" + param1 + \" and \" + param2 + \"concat strings\");\n}\n\n// Avoid the guarding if statement with substituting parameters\nlog.debug(\"log something {} and {}\", param1, param2);\n\n// Avoid the guarding if statement with formatters\nlog.debug(\"log something %s and %s\", param1, param2);\n\n// This is still an issue, method invocations may be expensive / have side-effects\nlog.debug(\"log something expensive: {}\", calculateExpensiveLoggingText());\n\n// Avoid the guarding if statement with lazy logging and lambdas\nlog.debug(\"log something expensive: {}\", () -> calculateExpensiveLoggingText());\n\n// … alternatively use method references\nlog.debug(\"log something expensive: {}\", this::calculateExpensiveLoggingText);"
+    ]
+  },
+  {
+    "name": "ImplicitFunctionalInterface",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.12.0",
+    "message": "의도를 명확히 하기 위해 이 인터페이스에 @FunctionalInterface 또는 @SuppressWarnings(&quot;PMD.ImplicitFunctionalInterface&quot;)를 추가하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.ImplicitFunctionalInterfaceRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#implicitfunctionalinterface",
+    "description": "`@FunctionalInterface` 어노테이션으로 명시적으로 선언되지 않은 함수형 인터페이스를 보고합니다.\n            인터페이스가 우연히 함수형 인터페이스인 경우, 이를 명확히 하기 위해\n            `@SuppressWarnings(&quot;PMD.ImplicitFunctionalInterface&quot;)` 어노테이션을 추가해야 합니다.",
+    "priority": 2,
+    "examples": [
+      "// The intent on this declaration is unclear, and the rule will report it.\n            public interface MyInterface {\n                void doSomething();\n            }\n\n            // This is clearly intended as a functional interface.\n            @FunctionalInterface\n            public interface MyInterface {\n                void doSomething();\n            }\n\n            // This is clearly NOT intended as a functional interface.\n            @SuppressWarnings(\"PMD.ImplicitFunctionalInterface\")\n            public interface MyInterface {\n                void doSomething();\n            }"
+    ]
+  },
+  {
+    "name": "AbstractClassWithoutAbstractMethod",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.0",
+    "message": "이 추상 클래스에는 추상 메서드가 없습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AbstractClassWithoutAbstractMethodRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#abstractclasswithoutabstractmethod",
+    "description": "추상 클래스에 추상 메서드가 포함되어 있지 않습니다. 추상 클래스는 불완전한 구현을 나타내며,\n하위 클래스에서 추상 메서드를 구현하여 완성해야 합니다. 클래스가 기본 클래스로만 사용되도록\n의도된 경우(직접 인스턴스화하지 않음), protected 생성자를 제공하여 직접 인스턴스화를 방지할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public abstract class Foo {\n  void int method1() { ... }\n  void int method2() { ... }\n  // consider using abstract methods or removing\n  // the abstract modifier and adding protected constructors\n}"
+    ]
+  },
+  {
+    "name": "AccessorClassGeneration",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "1.04",
+    "message": "생성자의 클래스 외부에서 private 생성자를 통한 인스턴스화를 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AccessorClassGenerationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#accessorclassgeneration",
+    "description": "생성자의 클래스 외부에서 private 생성자를 통해 인스턴스화하면 접근자(accessor)가 생성되는 경우가 많습니다.\n팩토리 메서드를 사용하거나 생성자를 non-private로 변경하면 이 상황을 제거할 수 있습니다.\n생성된 클래스 파일은 실제로 인터페이스입니다. 이는 접근하는 클래스에게 인터페이스를 보조 매개변수로\n받는 새로운 숨겨진 패키지 범위 생성자를 호출할 수 있는 능력을 부여합니다.\n이로 인해 private 생성자가 사실상 패키지 범위를 가진 것처럼 되어 식별하기 어렵습니다.\n\n_참고:_ 이 규칙은 Java 10 이하에서만 실행됩니다.\nJava 11부터 [JEP 181: Nest-Based Access Control](https://openjdk.org/jeps/181)이 구현되었습니다.\n즉, Java 11 이상에서는 접근자 클래스가 더 이상 생성되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Outer {\n void method(){\n  Inner ic = new Inner();//Causes generation of accessor class\n }\n public class Inner {\n  private Inner(){}\n }\n}"
+    ],
+    "maxLanguageVersion": "10"
+  },
+  {
+    "name": "AccessorMethodGeneration",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "5.5.4",
+    "message": "합성 접근자 메서드 없이 {0}에서 접근하려면 이 멤버에 패키지 가시성을 부여하는 것을 고려하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AccessorMethodGenerationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#accessormethodgeneration",
+    "description": "다른 클래스에서 private 필드/메서드에 접근할 때, Java 컴파일러는 패키지-private 가시성을 가진 접근자 메서드를\n생성합니다. 이는 오버헤드를 추가하고 Android에서는 dex 메서드 수에 영향을 줍니다.\n필드/메서드의 가시성을 private에서 패키지-private로 변경하면 이 상황을 피할 수 있습니다.\n\n\n_참고:_ 이 규칙은 Java 10 이하에서만 실행됩니다.\nJava 11부터 [JEP 181: Nest-Based Access Control](https://openjdk.org/jeps/181)이 구현되었습니다.\n즉, Java 11 이상에서는 접근자 클래스가 더 이상 생성되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "public class OuterClass {\n    private int counter;\n    /* package */ int id;\n\n    public class InnerClass {\n        InnerClass() {\n            OuterClass.this.counter++; // wrong accessor method will be generated\n        }\n\n        public int getOuterClassId() {\n            return OuterClass.this.id; // id is package-private, no accessor method needed\n        }\n    }\n}"
+    ],
+    "maxLanguageVersion": "10"
+  },
+  {
+    "name": "ArrayIsStoredDirectly",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "2.2",
+    "message": "사용자가 제공한 배열 ''{0}''이(가) 직접 저장되었습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.ArrayIsStoredDirectlyRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#arrayisstoreddirectly",
+    "description": "배열을 받는 생성자와 메서드는 객체를 복제하여 복사본을 저장해야 합니다.\n이렇게 하면 사용자의 향후 변경이 원본 배열에 영향을 미치는 것을 방지할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private String [] x;\n        public void foo (String [] param) {\n        // Don't do this, make a copy of the array at least\n        this.x=param;\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidMessageDigestField",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.18.0",
+    "message": "MessageDigest 타입의 필드를 선언하지 마십시오. 동기화되지 않은 접근은 문제를 일으킬 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidmessagedigestfield",
+    "description": "MessageDigest 인스턴스를 필드로 선언하면 이 인스턴스가 여러 스레드에서 직접 사용 가능하게 됩니다.\n            이러한 MessageDigest 인스턴스의 공유는 접근이 올바르게 동기화되지 않으면 잘못된 결과를 초래하므로\n            가능하면 피해야 합니다.\n            필요한 곳에서 새 인스턴스를 생성하여 로컬로 사용하십시오.\n            새 인스턴스를 생성하는 것이 공유 인스턴스에 대한 접근을 동기화하는 것보다 쉽습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.security.MessageDigest;\npublic class AvoidMessageDigestFieldExample {\n    private final MessageDigest sharedMd;\n    public AvoidMessageDigestFieldExample() throws Exception {\n        sharedMd = MessageDigest.getInstance(\"SHA-256\");\n    }\n    public byte[] calculateHashShared(byte[] data) {\n        // sharing a MessageDigest like this without synchronizing access\n        // might lead to wrong results\n        sharedMd.reset();\n        sharedMd.update(data);\n        return sharedMd.digest();\n    }\n\n    // better\n    public byte[] calculateHash(byte[] data) throws Exception {\n        MessageDigest md = MessageDigest.getInstance(\"SHA-256\");\n        md.update(data);\n        return md.digest();\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidPrintStackTrace",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.2",
+    "message": "printStackTrace() 사용을 피하고 대신 로거 호출을 사용하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidprintstacktrace",
+    "description": "printStackTrace() 사용을 피하고 대신 로거 호출을 사용하십시오.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n    void bar() {\n        try {\n            // do something\n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidReassigningCatchVariables",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.27.0",
+    "message": "catch된 예외 ''{0}''의 재할당을 피하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AvoidReassigningCatchVariablesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidreassigningcatchvariables",
+    "description": "catch 문에서 잡은 예외 변수의 재할당은 다음과 같은 이유로 피해야 합니다:\n\n1) 필요한 경우, 멀티 catch를 쉽게 추가할 수 있으며 코드는 여전히 컴파일됩니다.\n\n2) 최소 놀람 원칙에 따라, catch 문에서 잡은 변수가 항상 try 블록에서 던져진 것과 동일하도록 보장하고자 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public void foo() {\n        try {\n            // do something\n        } catch (Exception e) {\n            e = new NullPointerException(); // not recommended\n        }\n\n        try {\n            // do something\n        } catch (MyException | ServerException e) {\n            e = new RuntimeException(); // won't compile\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidReassigningLoopVariables",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.11.0",
+    "message": "루프 제어 변수 ''{0}''의 재할당을 피하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AvoidReassigningLoopVariablesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidreassigningloopvariables",
+    "description": "루프 변수의 재할당은 찾기 어려운 버그를 유발할 수 있습니다. 이러한 변수가 변경될 수 있는 방식을 방지하거나 제한하십시오.\n\nforeach 루프에서, `foreachReassign` 속성으로 설정:\n- `deny`: 루프 본문에서 루프 변수의 모든 재할당을 보고합니다. _이것이 기본값입니다._\n- `allow`: 루프 변수를 검사하지 않습니다.\n- `firstOnly`: 루프 본문의 첫 번째 문을 제외한 루프 변수의 모든 재할당을 보고합니다.\n            _사용 전 값의 정규화나 정리가 허용되지만 변수의 다른 변경은 허용되지 않는 경우에 유용합니다._\n\nfor 루프에서, `forReassign` 속성으로 설정:\n- `deny`: 루프 본문에서 제어 변수의 모든 재할당을 보고합니다. _이것이 기본값입니다._\n- `allow`: 제어 변수를 검사하지 않습니다.\n- `skip`: 조건부 증감(`++`, `--`, `+=`, `-=`)을 제외한 제어 변수의 모든 재할당을 보고합니다.\n            _제어 변수의 우발적 재할당이나 무조건적 증가를 방지합니다._",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  private void foo() {\n    for (String s : listOfStrings()) {\n      s = s.trim(); // OK, when foreachReassign is \"firstOnly\" or \"allow\"\n      doSomethingWith(s);\n\n      s = s.toUpper(); // OK, when foreachReassign is \"allow\"\n      doSomethingElseWith(s);\n    }\n\n    for (int i=0; i < 10; i++) {\n      if (check(i)) {\n        i++; // OK, when forReassign is \"skip\" or \"allow\"\n      }\n\n      i = 5;  // OK, when forReassign is \"allow\"\n\n      doSomethingWith(i);\n    }\n  }\n}"
+    ]
+  },
+  {
+    "name": "AvoidStringBufferField",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.2",
+    "message": "StringBuffer는 상당히 커질 수 있으므로 소유 클래스의 수명이 긴 경우 메모리 누수의 원인이 될 수 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidstringbufferfield",
+    "description": "StringBuffer/StringBuilder는 상당히 커질 수 있으므로 수명이 긴 객체 내에 보관될 경우\n메모리 누수의 원인이 될 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private StringBuffer buffer;    // potential memory leak as an instance variable;\n}"
+    ]
+  },
+  {
+    "name": "AvoidUsingHardCodedIP",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.1",
+    "message": "IP 주소 ''{0}''을(를) 하드코딩하지 마십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.AvoidUsingHardCodedIPRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#avoidusinghardcodedip",
+    "description": "하드코딩된 IP 주소가 있는 애플리케이션은 경우에 따라 배포가 불가능해질 수 있습니다.\nIP 주소를 외부화하는 것이 바람직합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private String ip = \"127.0.0.1\";     // not recommended\n}"
+    ]
+  },
+  {
+    "name": "CheckResultSet",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.1",
+    "message": "ResultSet의 탐색 메서드(next, previous, first, last)의 반환값을 항상 확인하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.CheckResultSetRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#checkresultset",
+    "description": "ResultSet의 탐색 메서드(next, previous, first, last)의 반환값을 항상 확인하십시오.\n반환값이 'false'인 경우 적절하게 처리해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "Statement stat = conn.createStatement();\nResultSet rst = stat.executeQuery(\"SELECT name FROM person\");\nrst.next();     // what if it returns false? bad form\nString firstName = rst.getString(1);\n\nStatement stat = conn.createStatement();\nResultSet rst = stat.executeQuery(\"SELECT name FROM person\");\nif (rst.next()) {    // result is properly examined and used\n    String firstName = rst.getString(1);\n    } else  {\n        // handle missing data\n}"
+    ]
+  },
+  {
+    "name": "ConstantsInInterface",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "5.5",
+    "message": "인터페이스에서 상수를 사용하는 것은 나쁜 관행입니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#constantsininterface",
+    "description": "인터페이스에서 상수를 사용하는 것은 나쁜 관행입니다. 인터페이스는 타입을 정의하며, 상수는 클래스나 열거형에 배치하는 것이 더 나은 구현 세부사항입니다. 상수가 열거 타입의 멤버로 가장 잘 볼 수 있다면 enum 타입으로 내보내야 합니다.\n다른 시나리오에서는 유틸리티 클래스 사용을 고려하십시오. Effective Java의 '인터페이스는 타입 정의용으로만 사용하라'를 참조하십시오.",
+    "priority": 3,
+    "examples": [
+      "public interface ConstantInterface {\n    public static final int CONST1 = 1; // violation, no fields allowed in interface!\n    static final int CONST2 = 1;        // violation, no fields allowed in interface!\n    final int CONST3 = 1;               // violation, no fields allowed in interface!\n    int CONST4 = 1;                     // violation, no fields allowed in interface!\n}\n\n// with ignoreIfHasMethods = false\npublic interface AnotherConstantInterface {\n    public static final int CONST1 = 1; // violation, no fields allowed in interface!\n\n    int anyMethod();\n}\n\n// with ignoreIfHasMethods = true\npublic interface YetAnotherConstantInterface {\n    public static final int CONST1 = 1; // no violation\n\n    int anyMethod();\n}"
+    ],
+    "properties": [
+      {
+        "name": "ignoreIfHasMethods",
+        "defaultValue": "true",
+        "description": "인터페이스가 메서드를 정의하는 경우 인터페이스의 상수를 무시할지 여부"
+      }
+    ]
+  },
+  {
+    "name": "DoubleBraceInitialization",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.16.0",
+    "message": "이중 중괄호 초기화는 피해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#doublebraceinitialization",
+    "description": "이중 중괄호 초기화는 컬렉션 등을 간결하게 초기화하는 패턴입니다. 그러나 이는 암묵적으로\n            새로운 .class 파일을 생성하며, 객체는 둘러싸는 객체에 대한 강한 참조를 보유합니다.\n            이러한 이유로 비록 장황하더라도 객체를 정상적으로 초기화하는 것이 바람직합니다.\n\n            이 규칙은 단일 초기화 블록만 있는 익명 클래스를 이중 중괄호 초기화의 인스턴스로 간주합니다.\n            현재 초기화 블록에서 호출된 메서드가 익명 클래스 외부에서 접근 가능한지 여부를 판단할 방법이 없으며,\n            그러한 합법적인 경우는 당분간 억제해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "// this is double-brace initialization\nreturn new ArrayList<String>(){{\n    add(\"a\");\n    add(\"b\");\n    add(\"c\");\n}};\n\n// the better way is to not create an anonymous class:\nList<String> a = new ArrayList<>();\na.add(\"a\");\na.add(\"b\");\na.add(\"c\");\nreturn a;"
+    ]
+  },
+  {
+    "name": "EnumComparison",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.19.0",
+    "message": "열거형은 ==를 사용하여 비교해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#enumcomparison",
+    "description": "열거형을 비교할 때 `equals()`는 피하고 `==`를 사용하는 것이 좋습니다.\n\n`==` 사용의 장점:\n* `equals()`와 동일한 의미\n* 잠재적인 null 포인터 예외에 대한 문제가 적음\n* 정적 타입 검사 지원: 호환되지 않는 두 열거형 타입을 비교하면 컴파일러가 알려줍니다.\n  equals를 사용하면 런타임에서만 알 수 있거나 전혀 알 수 없습니다.\n\n이 규칙은 SonarSource 규칙 [S4551](https://sonarsource.github.io/rspec/#/rspec/S4551)을 구현합니다.\n\n참고로, 원시 타입과 열거형만 `==`를 사용하여 비교해야 합니다. 다른 객체를 비교하려면\n`equals()`가 올바른 방법입니다. {%rule java/errorprone/CompareObjectsWithEquals %}\n및 {%rule java/errorprone/UseEqualsToCompareStrings %}을 참조하십시오.",
+    "priority": 3,
+    "examples": [
+      "enum Color { RED, GREEN, BLUE }\nclass ColorTester {\n  boolean isRed(Color color) {\n    return color.equals(Color.RED); // violation\n  }\n\n  boolean isGreen(Color color) {\n    return color == Color.GREEN; // preferred\n  }\n}"
+    ]
+  },
+  {
+    "name": "ExhaustiveSwitchHasDefault",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.10.0",
+    "message": "switch 블록은 default 케이스 없이도 모든 경우를 포괄합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#exhaustiveswitchhasdefault",
+    "description": "열거형이나 봉인된 클래스에 대해 switch를 사용할 때, 컴파일러는 모든 가능한 케이스가 처리되는지 확인합니다.\n케이스가 누락되면 컴파일 오류가 발생합니다. 그러나 default 케이스가 추가되면 이 컴파일러 검사가\n더 이상 수행되지 않아 런타임에서 버그를 발견하기 어려워집니다.\n\ndefault 케이스를 사용하지 않으면 새로운 열거형 상수나 봉인된 클래스 계층에 새 하위 클래스가\n추가될 때마다 컴파일 오류가 발생합니다. 런타임이 아닌 컴파일 타임에 이 문제를 발견할 수 있습니다.\n\n참고: 수정 방법이 단순히 default 케이스를 제거하는 것만은 아닙니다. 구현해야 할 누락된 케이스가 있을 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n    enum MyEnum { A, B };\n\n    void doSomething(MyEnum e) {\n        switch(e) {\n            case A -> System.out.println(\"a\");\n            case B -> System.out.println(\"b\");\n            default -> System.out.println(\"unnecessary default\");\n        };\n    }\n}"
+    ]
+  },
+  {
+    "name": "ForLoopCanBeForeach",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.0.0",
+    "message": "이 'for' 루프는 'foreach' 루프로 대체할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.ForLoopCanBeForeachRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#forloopcanbeforeach",
+    "description": "안전하게 foreach 구문으로 대체할 수 있는 루프를 보고합니다. 이 규칙은 리스트, 배열 및 반복자에 대한\n루프를 고려합니다. 루프가 인덱스 변수를 리스트나 배열의 요소에 접근하는 데만 사용하고,\n업데이트 문이 하나만 있으며, 리스트나 배열의 *모든* 요소를 왼쪽에서 오른쪽으로 순회하는 경우에만\n안전하게 대체할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyClass {\n  void loop(List<String> l) {\n    for (int i = 0; i < l.size(); i++) { // pre Java 1.5\n      System.out.println(l.get(i));\n    }\n\n    for (String s : l) {        // post Java 1.5\n      System.out.println(s);\n    }\n  }\n}"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "ForLoopVariableCount",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.11.0",
+    "message": "'for' 문에 제어 변수가 너무 많습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#forloopvariablecount",
+    "description": "'for' 루프에 제어 변수가 많으면 루프가 어떤 값 범위를 순회하는지 파악하기 어려워집니다.\n기본적으로 이 규칙은 변수가 하나만 있는 일반 'for' 루프를 허용합니다.",
+    "priority": 3,
+    "examples": [
+      "// this will be reported with the default setting of at most one control variable in a for loop\nfor (int i = 0, j = 0; i < 10; i++, j += 2) {\n   foo();"
+    ],
+    "properties": [
+      {
+        "name": "maximumVariables",
+        "defaultValue": "1",
+        "description": "일반 for 문의 제어 변수 수"
+      }
+    ]
+  },
+  {
+    "name": "JUnit4SuitesShouldUseSuiteAnnotation",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.0",
+    "message": "JUnit 4에서는 suite 메서드가 아닌 어노테이션으로 테스트 스위트를 나타냅니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#junit4suitesshouldusesuiteannotation",
+    "description": "JUnit 3에서는 suite() 메서드로 테스트 스위트를 나타냅니다. JUnit 4에서는\n@RunWith(Suite.class) 어노테이션으로 스위트를 나타냅니다.",
+    "priority": 3,
+    "examples": [
+      "public class BadExample extends TestCase{\n\n    public static Test suite(){\n        return new Suite();\n    }\n}\n\n@RunWith(Suite.class)\n@SuiteClasses( { TestOne.class, TestTwo.class })\npublic class GoodTest {\n}"
+    ]
+  },
+  {
+    "name": "LabeledStatement",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.18.0",
+    "message": "''{0}''과(와) 같은 레이블이 지정된 문의 사용을 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#labeledstatement",
+    "description": "이 규칙은 레이블이 지정된 문의 사용을 감지합니다. 기본적으로 레이블이 있는 루프는 허용하여\n레이블과 함께 `break` / `continue`를 사용할 수 있습니다. 이는 `allowLoops` 속성을 통해\n모든 레이블을 감지하도록 변경할 수 있습니다.\n\n레이블은 제어 흐름을 이해하기 어렵게 만들며 피해야 합니다. goto 문과 혼동될 수 있으며\n코드를 읽고 유지보수하기 어렵게 만듭니다.\n\n내부 루프에서 빠져나와야 하는 경우, 여러 루프를 함수로 리팩토링하는 것을 고려하십시오.\n그러면 break를 return으로 대체할 수 있습니다.\n\n이 규칙은 SonarSource 규칙 [S1119](https://sonarsource.github.io/rspec/#/rspec/S1119)를 구현합니다.\n\n사용되지 않는 레이블을 감지하려면 {% rule UnusedLabel %} 규칙을 사용하십시오.",
+    "priority": 3,
+    "examples": [
+      "class Scratch {\n    public static void main(String[] args) {\n        int x = 1;\n        lbl1: while (true) {          // violation: labeled statement on loop (when property allowLoops=false)\n            lbl2: if (x == 3) {       // violation: labeled statement\n                x++;\n                break lbl2;\n            }\n            lbl3: if (x == 4) {\n                break lbl1;\n            }\n            System.out.println(x);\n            x++;\n        }\n    }\n}",
+      "// Bad\nouter:\nfor (int i = 0; i < 10; i++) {\n    for (int j = 0; j < 10; j++) {\n        break outer; // violation - labeled break (when allowLoops=false)\n        continue outer; // violation - labeled continue (when allowLoops=false)\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "allowLoops",
+        "defaultValue": "true",
+        "description": "루프 문(do, while, for) 앞의 레이블을 허용할지 여부"
+      }
+    ]
+  },
+  {
+    "name": "LiteralsFirstInComparisons",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.24.0",
+    "message": "문자열 비교에서 리터럴을 먼저 배치하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.LiteralsFirstInComparisonsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#literalsfirstincomparisons",
+    "description": "모든 문자열 비교에서 리터럴을 먼저 배치하십시오. 두 번째 인수가 null이면 NullPointerException을\n            피할 수 있으며, 단순히 false를 반환합니다. compareTo 및 compareToIgnoreCase에서\n            리터럴 위치를 바꾸면 결과가 변경될 수 있으니 예제를 참조하십시오.\n\n            컴파일 타임 상수 문자열은 리터럴과 동일하게 취급됩니다. 이는 클래스 파일에 인라인되어\n            반드시 null이 아니므로 런타임에 NPE를 발생시킬 수 없기 때문입니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n    boolean bar(String x) {\n        return x.equals(\"2\"); // should be \"2\".equals(x)\n    }\n    boolean bar(String x) {\n        return x.equalsIgnoreCase(\"2\"); // should be \"2\".equalsIgnoreCase(x)\n    }\n    boolean bar(String x) {\n        return (x.compareTo(\"bar\") > 0); // should be: \"bar\".compareTo(x) < 0\n    }\n    boolean bar(String x) {\n        return (x.compareToIgnoreCase(\"bar\") > 0); // should be: \"bar\".compareToIgnoreCase(x) < 0\n    }\n    boolean bar(String x) {\n        return x.contentEquals(\"bar\"); // should be \"bar\".contentEquals(x)\n    }\n\n    static final String CONSTANT = \"const\";\n    {\n        CONSTANT.equals(\"literal\"); // not reported, this is effectively the same as writing \"const\".equals(\"foo\")\n    }\n}"
+    ]
+  },
+  {
+    "name": "LooseCoupling",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "0.7",
+    "message": "''{0}''과(와) 같은 구현 타입 사용을 피하고 대신 인터페이스를 사용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.LooseCouplingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#loosecoupling",
+    "description": "구현 타입(예: `HashSet`)에 대한 과도한 결합은 요구사항이 변경될 때 대체 구현을 사용하는 능력을\n제한합니다. 가능한 경우, 보다 일반적인 타입(예: `Set`)을 사용하여 변수와 매개변수를 선언하십시오.\n\n이 규칙은 구체적인 컬렉션 타입의 사용을 보고합니다. 인터페이스와 동일하게 취급해야 하는\n사용자 정의 타입은 `allowedTypes` 속성으로 구성할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.ArrayList;\nimport java.util.HashSet;\n\npublic class Bar {\n    // sub-optimal approach\n    private ArrayList<SomeType> list = new ArrayList<>();\n\n    public HashSet<SomeType> getFoo() {\n        return new HashSet<SomeType>();\n    }\n\n    // preferred approach\n    private List<SomeType> list = new ArrayList<>();\n\n    public Set<SomeType> getFoo() {\n        return new HashSet<SomeType>();\n    }\n}"
+    ]
+  },
+  {
+    "name": "MethodReturnsInternalArray",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "2.2",
+    "message": "''{0}''을(를) 반환하면 내부 배열이 노출될 수 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.MethodReturnsInternalArrayRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#methodreturnsinternalarray",
+    "description": "내부 배열을 호출자에게 노출하면 객체 캡슐화를 위반합니다. 요소를 소유하지 않는 외부에서\n제거하거나 교체할 수 있기 때문입니다. 배열의 복사본을 반환하는 것이 더 안전합니다.",
+    "priority": 3,
+    "examples": [
+      "public class SecureSystem {\n    UserData [] ud;\n    public UserData [] getUserData() {\n        // Don't return directly the internal array, return a copy\n        return ud;\n    }\n}"
+    ]
+  },
+  {
+    "name": "MissingOverride",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.2.0",
+    "message": "메서드 ''{0}''에 @Override 어노테이션이 누락되었습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.MissingOverrideRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#missingoverride",
+    "description": "오버라이드된 메서드에 @Override를 추가하면 컴파일 타임에 해당 메서드가 실제로 오버라이드하는지\n            확인할 수 있어 리팩토링에 도움이 되고 의도를 명확히 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo implements Runnable {\n                // This method is overridden, and should have an @Override annotation\n                public void run() {\n\n                }\n            }"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "NonExhaustiveSwitch",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "1.0",
+    "message": "switch 문이나 표현식은 모든 경우를 포괄해야 합니다. default 케이스(또는 누락된 열거형 분기)를 추가하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#nonexhaustiveswitch",
+    "description": "switch 문은 제어 흐름을 따라가기 쉽도록 모든 경우를 포괄해야 합니다.\n            이는 `default` 케이스를 추가하거나, switch가 열거형 타입인 경우 각 열거형 상수에 대한\n            switch 분기를 보장하여 달성할 수 있습니다.\n\n            패턴 매칭을 사용하는 Switch 문은 컴파일러가 이미 모든 케이스가 처리되는지 확인하므로\n            이 규칙에서 고려하지 않습니다. Switch 표현식도 마찬가지로 이 규칙에서 고려하지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {{\n    int x = 2;\n    switch (x) {\n      case 1: int j = 6;\n      case 2: int j = 8;\n      // missing default: here\n    }\n}}"
+    ]
+  },
+  {
+    "name": "PreserveStackTrace",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.7",
+    "message": "던져진 예외가 모든 코드 경로에서 예외 ''{0}''의 스택 트레이스를 보존하지 않습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.PreserveStackTraceRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#preservestacktrace",
+    "description": "catch 블록 내에서 던져지지만 해당 catch 블록이 선언한 예외 매개변수를 참조하지 않는 예외를 보고합니다.\n원래 예외의 스택 트레이스가 손실되어 던져진 예외의 정보가 줄어들 수 있습니다.\n\n스택 트레이스를 보존하려면 원래 예외를 `Throwable#initCause`를 사용하여 새 예외의 원인으로 사용하거나,\n생성자 인수로 새 예외에 전달할 수 있습니다. `Throwable#addSuppressed`를 사용하여 보존할 수도 있습니다.\n이 규칙은 실제로 원래 예외를 인수로 받는 모든 메서드나 생성자가 원래 스택 트레이스를 보존한다고 가정합니다.\n\n이 규칙은 `InvocationTargetException`과 `PrivilegedActionException`이 원인 예외로 대체되는 것을 허용합니다.\n폐기된 스택 트레이스 부분은 이러한 경우 JDK 내부 코드뿐이므로 그다지 유용하지 않습니다.\n또한 이름이 `ignored`로 시작하는 예외도 무시합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void good() {\n        try{\n            Integer.parseInt(\"a\");\n        } catch (Exception e) {\n            throw new Exception(e); // Ok, this initializes the cause of the new exception\n        }\n        try {\n            Integer.parseInt(\"a\");\n        } catch (Exception e) {\n            throw (IllegalStateException)new IllegalStateException().initCause(e); // second possibility to create exception chain.\n        }\n    }\n    void wrong() {\n        try{\n            Integer.parseInt(\"a\");\n        } catch (Exception e) {\n            // Violation: this only preserves the message and not the stack trace\n            throw new Exception(e.getMessage());\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "PrimitiveWrapperInstantiation",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.37.0",
+    "message": "`new {0}(...)`을 사용하지 말고 `{0}.valueOf(...)`를 사용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.PrimitiveWrapperInstantiationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#primitivewrapperinstantiation",
+    "description": "원시 래퍼 생성자의 사용을 보고합니다. Java 9부터 더 이상 사용되지 않으며 사용하지 말아야 합니다.\n            Java 9 이전에도 해당하는 정적 `valueOf` 팩토리 메서드(Java 1.5부터 컴파일러에 의해\n            자동으로 삽입될 수 있음)로 대체할 수 있습니다.\n            이는 매번 새 인스턴스를 생성하는 대신 공통 인스턴스를 재사용할 수 있는 장점이 있습니다.\n\n            `Boolean`의 경우, `Boolean.valueOf` 대신 명명된 상수 `Boolean.TRUE`와 `Boolean.FALSE`가\n            선호됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n                private Integer ZERO = new Integer(0);      // violation\n                private Integer ZERO1 = Integer.valueOf(0); // better\n                private Integer ZERO1 = 0;                  // even better\n            }"
+    ]
+  },
+  {
+    "name": "RelianceOnDefaultCharset",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.17.0",
+    "message": "기본 문자셋에 의존하지 말고 문자셋을 지정하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.RelianceOnDefaultCharsetRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#relianceondefaultcharset",
+    "description": "JVM의 기본 문자셋을 사용하는 API에 대해 문자셋을 반드시 지정하여 서로 다른 JVM, 프로그램 및\n서버 간에 안정적인 인코딩 동작을 보장하십시오. 플랫폼의 기본 문자셋을 사용하면 코드의 이식성이\n떨어지고 다른 시스템에서 실행할 때 예기치 않은 동작이 발생할 수 있습니다.\n\n또한 Java 18부터 이러한 API의 기본 문자셋은 일관되게 UTF-8입니다\n([JEP 400](https://openjdk.org/jeps/400) 참조). 이로 인해 다른 시스템에서의 예기치 않은 동작은\n줄어들지만, 특히 UTF-8이 원하는 문자셋이 아닌 경우 문자셋을 명시적으로 지정하는 것이 여전히 권장됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void bad() throws IOException {\n        new InputStreamReader(inputStream);  // violation\n        new OutputStreamWriter(outputStream);  // violation\n        URLEncoder.encode(\"test string\");  // violation (deprecated)\n        new PrintStream(outputStream);  // violation\n        new PrintWriter(\"output.txt\");  // violation\n        new Scanner(inputStream);  // violation\n        new Formatter();  // violation\n        \"test\".getBytes();  // violation\n        new ByteArrayOutputStream().toString();  // violation\n        new FileReader(\"input.txt\");  // violation\n        new FileWriter(\"output.txt\");  // violation\n    }\n\n    void good() throws IOException {\n        new InputStreamReader(inputStream, StandardCharsets.UTF_8);  // ok\n        new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);  // ok\n        URLEncoder.encode(\"test string\", StandardCharsets.UTF_8);  // ok\n        new PrintStream(outputStream, true, StandardCharsets.UTF_8);  // ok\n        new PrintWriter(\"output.txt\", StandardCharsets.UTF_8);  // ok\n        new Scanner(inputStream, StandardCharsets.UTF_8);  // ok\n        new Formatter(Locale.US);  // ok\n        \"test\".getBytes(StandardCharsets.UTF_8);  // ok\n        new ByteArrayOutputStream().toString(StandardCharsets.UTF_8);  // ok\n        new FileReader(\"input.txt\", StandardCharsets.UTF_8);  // ok\n        new FileWriter(\"output.txt\", StandardCharsets.UTF_8);  // ok\n    }\n}"
+    ]
+  },
+  {
+    "name": "ReplaceEnumerationWithIterator",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.4",
+    "message": "이 Enumeration을 더 새로운 java.util.Iterator로 대체하는 것을 고려하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#replaceenumerationwithiterator",
+    "description": "Enumeration 사용을 더 새로운 java.util.Iterator로 대체하는 것을 고려하십시오.",
+    "priority": 3,
+    "examples": [
+      "public class Foo implements Enumeration {\n    private int x = 42;\n    public boolean hasMoreElements() {\n        return true;\n    }\n    public Object nextElement() {\n        return String.valueOf(i++);\n    }\n}"
+    ]
+  },
+  {
+    "name": "ReplaceHashtableWithMap",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.4",
+    "message": "이 Hashtable을 더 새로운 java.util.Map으로 대체하는 것을 고려하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#replacehashtablewithmap",
+    "description": "스레드 안전성이 필요하지 않은 경우 Hashtable 사용을 더 새로운 java.util.Map으로 대체하는 것을 고려하십시오.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void bar() {\n        Hashtable h = new Hashtable();\n    }\n}"
+    ]
+  },
+  {
+    "name": "ReplaceVectorWithList",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.4",
+    "message": "이 Vector를 더 새로운 java.util.List로 대체하는 것을 고려하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#replacevectorwithlist",
+    "description": "비용이 많이 드는 스레드 안전 작업이 필요하지 않은 경우 Vector 사용을 더 새로운 java.util.ArrayList로 대체하는 것을 고려하십시오.",
+    "priority": 3,
+    "examples": [
+      "import java.util.Vector;\npublic class Foo {\n    void bar() {\n        Vector v = new Vector();\n    }\n}"
+    ]
+  },
+  {
+    "name": "SimplifiableTestAssertion",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.37.0",
+    "message": "어설션은 {0}을(를) 사용하여 단순화할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.SimplifiableTestAssertionRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#simplifiabletestassertion",
+    "description": "보다 구체적인 어설션 메서드를 사용하여 단순화할 수 있는 테스트 어설션을 보고합니다.\n            이를 통해 더 나은 오류 메시지를 제공하고 어설션의 가독성을 높일 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "import org.junit.Test;\nimport static org.junit.Assert.*;\n\nclass SomeTestClass {\n    Object a,b;\n    @Test\n    void testMethod() {\n        assertTrue(a.equals(b)); // could be assertEquals(a, b);\n        assertTrue(!a.equals(b)); // could be assertNotEquals(a, b);\n\n        assertTrue(!something); // could be assertFalse(something);\n        assertFalse(!something); // could be assertTrue(something);\n\n        assertTrue(a == b); // could be assertSame(a, b);\n        assertTrue(a != b); // could be assertNotSame(a, b);\n\n        assertTrue(a == null); // could be assertNull(a);\n        assertTrue(a != null); // could be assertNotNull(a);\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnitTestAssertionsShouldIncludeMessage",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "1.04",
+    "message": "단위 테스트 어설션에는 메시지가 포함되어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnitTestAssertionsShouldIncludeMessageRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unittestassertionsshouldincludemessage",
+    "description": "단위 어설션에는 설명 메시지가 포함되어야 합니다. 즉, `assertEquals()`의 인수가 2개인 버전이 아닌\n인수가 3개인 버전을 사용하십시오.\n\n이 규칙은 JUnit(3, 4 및 5)과 TestNG를 사용하는 테스트를 지원합니다.\n\n참고: 이 규칙은 PMD 7.7.0 이전에는 JUnitAssertionsShouldIncludeMessage였습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    @Test\n    public void testSomething() {\n        assertEquals(\"foo\", \"bar\");\n        // Use the form:\n        // assertEquals(\"Foo does not equals bar\", \"foo\", \"bar\");\n        // instead\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnitTestContainsTooManyAsserts",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "5.0",
+    "message": "단위 테스트에는 ${maximumAsserts}개 이상의 assert가 포함되어서는 안 됩니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnitTestContainsTooManyAssertsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unittestcontainstoomanyasserts",
+    "description": "단위 테스트에는 너무 많은 어설션이 포함되어서는 안 됩니다. 많은 어설션은 복잡한 테스트를 나타내며,\n            정확성을 검증하기 더 어렵습니다. 테스트 시나리오를 여러 개의 더 짧은 테스트 시나리오로\n            분리하는 것을 고려하십시오. 이 규칙에서 사용되는 최대 어설션 수를 필요에 맞게 사용자 정의하십시오.\n\n            이 규칙은 JUnit(3, 4 및 5)과 TestNG 테스트를 검사합니다.\n\n            참고: 이 규칙은 PMD 7.7.0 이전에는 JUnitTestContainsTooManyAsserts였습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyTestCase {\n    // Ok\n    @Test\n    public void testMyCaseWithOneAssert() {\n        boolean myVar = false;\n        assertFalse(\"should be false\", myVar);\n    }\n\n    // Bad, too many asserts (assuming max=1)\n    @Test\n    public void testMyCaseWithMoreAsserts() {\n        boolean myVar = false;\n        assertFalse(\"myVar should be false\", myVar);\n        assertEquals(\"should equals false\", false, myVar);\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnitTestShouldIncludeAssert",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "2.0",
+    "message": "이 단위 테스트에는 assert() 또는 fail()이 포함되어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnitTestShouldIncludeAssertRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unittestshouldincludeassert",
+    "description": "단위 테스트에는 최소 하나의 어설션이 포함되어야 합니다. 이는 테스트를 더 견고하게 만들며,\n            메시지와 함께 assert를 사용하면 개발자에게 테스트가 무엇을 하는지 더 명확한 아이디어를 제공합니다.\n\n            이 규칙은 JUnit(3, 4 및 5)과 TestNG 테스트를 검사합니다.\n\n            참고: 이 규칙은 PMD 7.7.0 이전에는 JUnitTestsShouldIncludeAssert였습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n   @Test\n   public void testSomething() {\n      Bar b = findBar();\n      // This is better than having a NullPointerException\n      // assertNotNull(\"bar not found\", b);\n      b.work();\n   }\n}"
+    ]
+  },
+  {
+    "name": "UnitTestShouldUseAfterAnnotation",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.0",
+    "message": "이 메서드가 테스트 정리에 사용되는 경우 올바른 어노테이션을 적용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unittestshoulduseafterannotation",
+    "description": "이 규칙은 정리 메서드로 적절하게 어노테이션이 지정되지 않은 `tearDown()`이라는 메서드를 감지합니다.\n이는 주로 JUnit 3에서 업그레이드를 지원하기 위한 것으로, 정리 메서드의 이름이 `tearDown()`이어야 했습니다.\n이 명명 규칙을 따르는 한, 더 새로운 JUnit 버전이나 TestNG에서도 누락을 감지하는 데 도움이 될 수 있습니다.\n\n* JUnit 4는 각 테스트 실행 후 `@After`로 어노테이션된 메서드만 실행합니다.\n* JUnit 5는 각 테스트 후 또는 클래스의 모든 테스트 후에 메서드를 실행하기 위해\n  `@AfterEach`와 `@AfterAll` 어노테이션을 도입했습니다.\n* TestNG는 각 테스트 후 또는 클래스의 테스트 후에 메서드를 실행하기 위해\n  `@AfterMethod`와 `@AfterClass` 어노테이션을 제공합니다.\n\n참고: 이 규칙은 PMD 7.7.0 이전에는 JUnit4TestShouldUseAfterAnnotation이었습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyTest {\n    public void tearDown() {\n        bad();\n    }\n}\npublic class MyTest2 {\n    @After public void tearDown() {\n        good();\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnitTestShouldUseBeforeAnnotation",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.0",
+    "message": "이 메서드가 테스트 설정에 사용되는 경우 올바른 어노테이션을 적용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unittestshouldusebeforeannotation",
+    "description": "이 규칙은 설정 메서드로 적절하게 어노테이션이 지정되지 않은 `setUp()`이라는 메서드를 감지합니다.\n이는 주로 JUnit 3에서 업그레이드를 지원하기 위한 것으로, 설정 메서드의 이름이 `setUp()`이어야 했습니다.\n이 명명 규칙을 따르는 한, 더 새로운 JUnit 버전이나 TestNG에서도 누락을 감지하는 데 도움이 될 수 있습니다.\n\n* JUnit 4는 모든 테스트 전에 `@Before`로 어노테이션된 메서드만 실행합니다.\n* JUnit 5는 각 테스트 전 또는 클래스의 모든 테스트 전에 메서드를 실행하기 위해\n  `@BeforeEach`와 `@BeforeAll` 어노테이션을 도입했습니다.\n* TestNG는 각 테스트 전 또는 클래스의 테스트 전에 메서드를 실행하기 위해\n  `@BeforeMethod`와 `@BeforeClass` 어노테이션을 제공합니다.\n\n참고: 이 규칙은 PMD 7.7.0 이전에는 JUnit4TestShouldUseBeforeAnnotation이었습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyTest {\n    public void setUp() {\n        bad();\n    }\n}\npublic class MyTest2 {\n    @Before public void setUp() {\n        good();\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnitTestShouldUseTestAnnotation",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "4.0",
+    "message": "단위 테스트는 @Test 어노테이션을 사용해야 하며 그렇지 않으면 실행되지 않습니다. JUnit 5의 경우 테스트 메서드는 @RepeatedTest, @TestFactory, @TestTemplate 또는 @ParameterizedTest 어노테이션을 대신 사용할 수 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unittestshouldusetestannotation",
+    "description": "이 규칙은 적절하게 어노테이션이 지정되지 않아 실행되지 않을 \"test\"로 시작하는 모든 테스트 메서드를 감지합니다.\n\n            JUnit 4에서는 `@Test` 어노테이션이 있는 메서드만 실행됩니다.\n            JUnit 5에서는 테스트에 다음 어노테이션 중 하나를 사용해야 합니다: `@Test`, `@RepeatedTest`, `@TestFactory`, `@TestTemplate` 또는 `@ParameterizedTest`.\n            TestNG에서는 `@Test` 어노테이션이 있는 메서드만 실행됩니다.\n\n            참고: 이 규칙은 PMD 7.7.0 이전에는 JUnit4TestShouldUseTestAnnotation이었습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyTest {\n    public void testBad() {\n        doSomething();\n    }\n\n    @Test\n    public void testGood() {\n        doSomething();\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "testClassPattern",
+        "defaultValue": "Test",
+        "description": "테스트 클래스를 식별하는 데 사용되는 정규식 패턴"
+      }
+    ]
+  },
+  {
+    "name": "UnnecessaryVarargsArrayCreation",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.1.0",
+    "message": "가변 인수 메서드 호출에 대한 불필요한 명시적 배열 생성",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnnecessaryVarargsArrayCreationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unnecessaryvarargsarraycreation",
+    "description": "가변 인수가 예상되는 곳에서 명시적 배열 생성을 보고합니다.\n            예를 들어:\n            ```java\n            Arrays.asList(new String[] { \"foo\", \"bar\", });\n            ```\n            다음으로 대체할 수 있습니다:\n            ```java\n            Arrays.asList(\"foo\", \"bar\");\n            ```",
+    "priority": 3,
+    "examples": [
+      "import java.util.Arrays;\n\nclass C {\n    static {\n        Arrays.asList(new String[]{\"foo\", \"bar\",});\n        // should be\n        Arrays.asList(\"foo\", \"bar\");\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryWarningSuppression",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.14.0",
+    "message": "사용되지 않는 억제 {0}.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.impl.UnnecessaryPmdSuppressionRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unnecessarywarningsuppression",
+    "description": "이 규칙은 PMD 위반을 억제하지 않은 억제 주석과 어노테이션을 보고합니다.\n            이 규칙의 위반은 억제할 수 없습니다.\n\n            참고:\n            - 이 규칙은 _현재 실행_ 중에 위반을 억제하지 않은 억제 주석/어노테이션을 보고합니다.\n            즉, 이 규칙을 다른 규칙과 별도로 실행할 수 없으며, 경고를 생성할 수 있는 모든 규칙과\n            함께 항상 실행해야 합니다. 일반 규칙셋에 이 규칙을 포함하면 대부분 문제가 되지 않습니다.\n            - 현재 이 규칙은 PMD에 특정한 어노테이션만 보고합니다(예: `@SuppressWarnings(\"PMD\")`).\n            예를 들어 `@SuppressWarnings(\"all\")`은 다른 도구가 억제해야 할 경고를 생성하는지\n            알 수 없으므로 보고되지 않습니다. 향후 `@SuppressWarnings(\"unchecked\")`나\n            `\"fallthrough\"` 등 다른 일반적인 경우를 검사할 수 있을 것입니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n                // Unless some rule triggered on the following line, this rule will report the comment:\n                private void foo() {} // NOPMD\n            }"
+    ]
+  },
+  {
+    "name": "UnusedAssignment",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.26.0",
+    "message": "이 변수에 할당된 값이 사용되지 않거나 항상 덮어쓰여집니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnusedAssignmentRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unusedassignment",
+    "description": "변수가 덮어쓰여지거나 범위를 벗어나기 전에 사용되지 않는 할당을 보고합니다.\n            사용되지 않는 할당은 다음과 같은 경우입니다:\n            1. 할당 후 변수가 읽히지 않는 경우, 또는\n            2. 할당된 값이 다음 변수 읽기 전에 다른 할당에 의해 항상 덮어쓰여지는 경우.\n\n            이 규칙은 `this`의 필드와 현재 클래스의 정적 필드에 대한 할당을 추적합니다.\n            이는 타이밍에 민감한 동시성 코드에서 일부 오탐을 유발할 수 있으며, 이 규칙은 이를 감지할 수 없습니다.\n\n            이 규칙은 표준 `@SuppressWarnings(\"unused\")` 태그로 억제할 수 있습니다.\n\n            이 규칙은 {% rule \"UnusedLocalVariable\" %}과 {% rule \"UnusedFormalParameter\" %}를 포함합니다.\n            해당 위반은 이미 해당 규칙을 활성화한 경우를 대비하여 기본적으로 필터링되지만,\n            `reportUnusedVariables` 속성으로 활성화할 수 있습니다. 이름이 `ignored` 또는 `unused`로\n            시작하는 변수는 예외에 대한 표준 관행으로 필터링됩니다.\n\n            제한사항:\n            * 현재 이 규칙은 어떤 메서드 호출이 예외를 던지는지 또는 어떤 예외를 던지는지 알 수 없습니다.\n            try 블록 본문에서 모든 메서드나 생성자 호출은 던지는 것으로 간주됩니다. 이는 미탐지를 유발할 수 있습니다.\n            던지는 것으로 간주되는 유일한 다른 언어 구조는 `throw` 문이며, 특히\n            `assert` 문이나 역참조 시 NullPointerException 등은 무시됩니다.\n            * 이 규칙은 특수 `this(...)` 구문으로 호출되는 생성자 간의 할당을 해결할 수 없습니다.\n            이는 미탐지를 유발할 수 있습니다.\n\n            이 두 가지 제한사항은 PMD 7에서 부분적으로 완화될 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "class A {\n                // this field initializer is redundant,\n                // it is always overwritten in the constructor\n                int f = 1;\n\n                A(int f) {\n                    this.f = f;\n                }\n            }",
+      "class B {\n\n    int method(int i, int j) {\n        // this initializer is redundant,\n        // it is overwritten in all branches of the `if`\n        int k = 0;\n\n        // Both the assignments to k are unused, because k is\n        // not read after the if/else\n        // This may hide a bug: the programmer probably wanted to return k\n        if (i < j)\n            k = i;\n        else\n            k = j;\n\n        return j;\n    }\n\n}",
+      "class C {\n\n    int method() {\n        int i = 0;\n\n        checkSomething(++i);\n        checkSomething(++i);\n        checkSomething(++i);\n        checkSomething(++i);\n\n        // That last increment is not reported unless\n        // the property `checkUnusedPrefixIncrement` is\n        // set to `true`\n        // Technically it could be written (i+1), but it\n        // is not very important\n    }\n\n}",
+      "class C {\n\n    // variables that are truly unused (at most assigned to, but never accessed)\n    // are only reported if property `reportUnusedVariables` is true\n\n    void method(int param) { } // for example this method parameter\n\n    // even then, you can suppress the violation with an annotation:\n\n    void method(@SuppressWarning(\"unused\") int param) { } // no violation, even if `reportUnusedVariables` is true\n\n    // For catch parameters, or for resources which don't need to be used explicitly,\n    // you can give a name that starts with \"ignored\" to ignore such warnings\n\n    {\n        try (Something ignored = Something.create()) {\n            // even if ignored is unused, it won't be flagged\n            // its purpose might be to side-effect in the create/close routines\n\n        } catch (Exception e) { // this is unused and will cause a warning if `reportUnusedVariables` is true\n            // you should choose a name that starts with \"ignored\"\n            return;\n        }\n    }\n\n}"
+    ]
+  },
+  {
+    "name": "UnusedFormalParameter",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "0.8",
+    "message": "''{1}''과(와) 같은 사용되지 않는 {0} 매개변수를 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnusedFormalParameterRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unusedformalparameter",
+    "description": "메서드 본문에서 참조되지 않는 메서드와 생성자의 매개변수를 보고합니다.\n이름이 `ignored` 또는 `unused`로 시작하는 매개변수는 필터링됩니다.\n\n공개 메서드에서 사용되지 않는 형식 매개변수를 제거하면 코드베이스 전체에 파급 효과를 줄 수 있습니다.\n따라서 기본적으로 이 규칙은 private 메서드만 고려합니다. 비-private 메서드를 포함하려면\n`checkAll` 속성을 `true`로 설정하십시오. public 생성자에도 동일하게 적용됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private void bar(String howdy) {\n        // howdy is not used\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnusedLabel",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.18.0",
+    "message": "''{0}''과(와) 같은 사용되지 않는 레이블을 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unusedlabel",
+    "description": "사용되지 않는 레이블은 불필요하며 이 레이블이 무엇에 사용되는지 혼란을 줄 수 있습니다.\n가독성을 향상시키려면 사용되지 않는 레이블을 단순히 제거해야 합니다.\n\n이 규칙은 SonarSource 규칙 [S1065](https://sonarsource.github.io/rspec/#/rspec/S1065)를 구현합니다.",
+    "priority": 3,
+    "examples": [
+      "class Example {\n    void main() {\n        lbl1: {                     // violation: Label \"lbl1\" is not nused\n            int x = 1;\n            System.out.println(x);\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnusedLocalVariable",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "0.1",
+    "message": "''{0}''과(와) 같은 사용되지 않는 지역 변수를 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnusedLocalVariableRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+    "description": "지역 변수가 선언 및/또는 할당되었지만 사용되지 않는 경우를 감지합니다.\n이름이 `ignored` 또는 `unused`로 시작하는 변수는 필터링됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public void doSomething() {\n        int i = 5; // Unused\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnusedPrivateField",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "0.1",
+    "message": "''{0}''과(와) 같은 사용되지 않는 private 필드를 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnusedPrivateFieldRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unusedprivatefield",
+    "description": "private 필드가 선언 및/또는 값이 할당되었지만 사용되지 않는 경우를 감지합니다.\n\nPMD 6.50.0부터 필드에 어노테이션이 있거나 둘러싸는 클래스에 어노테이션이 있는 경우 private 필드가 무시됩니다.\n어노테이션은 종종 리플렉션이나 다른 수단으로 필드를 사용하는 프레임워크(의존성 주입, 모킹 또는\n예를 들어 Lombok)를 활성화합니다. 이러한 사용은 정적 코드 분석으로 감지할 수 없습니다.\n이전에는 이러한 프레임워크가 \"ignoredAnnotations\" 속성에 어노테이션을 나열하여 명시적으로 허용되었지만,\n명시적으로 고려되지 않은 프레임워크에 대해 오탐이 발생하기 쉬웠습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n    private static int FOO = 2; // Unused\n    private int i = 5; // Unused\n    private int j = 6;\n    public int addOne() {\n        return j++;\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnusedPrivateMethod",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "0.7",
+    "message": "''{0}''과(와) 같은 사용되지 않는 private 메서드를 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UnusedPrivateMethodRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#unusedprivatemethod",
+    "description": "private 메서드가 선언되었지만 사용되지 않는 경우를 감지합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n    private void foo() {} // unused\n}"
+    ]
+  },
+  {
+    "name": "UseCollectionIsEmpty",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "3.9",
+    "message": "size() == 0 (또는 size() != 0, size() &gt; 0, size() &lt; 1) 호출을 isEmpty() 호출로 대체하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UseCollectionIsEmptyRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#usecollectionisempty",
+    "description": "java.util.Collection의 isEmpty() 메서드는 컬렉션에 요소가 있는지 확인하기 위해 제공됩니다.\nsize()의 값을 0과 비교하는 것은 isEmpty() 메서드만큼 의도를 잘 전달하지 못합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void good() {\n        List foo = getList();\n        if (foo.isEmpty()) {\n            // blah\n        }\n    }\n\n    void bad() {\n        List foo = getList();\n        if (foo.size() == 0) {\n            // blah\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseEnumCollections",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "7.3.0",
+    "message": "이 컬렉션은 {0}이(가) 될 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UseEnumCollectionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#useenumcollections",
+    "description": "가능한 경우 키가 열거형 타입일 때 `HashSet`과 `HashMap` 대신 `EnumSet` 또는 `EnumMap`을\n            사용하십시오. 특화된 열거형 컬렉션은 공간 및 시간 효율성이 더 높습니다.\n            이 규칙은 키 타입이 열거형 타입인 해시 세트 또는 맵의 생성자 표현식을 보고합니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.EnumMap;\n            import java.util.HashSet;\n\n            enum Example {\n                A, B, C;\n\n                public static Set<Example> newSet() {\n                    return new HashSet<>(); // Could be EnumSet.noneOf(Example.class)\n                }\n\n                public static <V> Map<Example, V> newMap() {\n                    return new HashMap<>(); // Could be new EnumMap<>(Example.class)\n                }\n            }"
+    ]
+  },
+  {
+    "name": "UseStandardCharsets",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.34.0",
+    "message": "StandardCharsets 상수를 사용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#usestandardcharsets",
+    "description": "Java 7부터 StandardCharsets는 UTF-8과 같은 일반적인 Charset 객체에 대한 상수를 제공합니다.\n상수를 사용하면 오류 발생 가능성이 적으며, 내부 `Charset` 캐시를 스캔할 필요가 없으므로\n`Charset.forName(...)`에 비해 약간의 성능 이점을 제공할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class UseStandardCharsets {\n    public void run() {\n\n        // looking up the charset dynamically\n        try (OutputStreamWriter osw = new OutputStreamWriter(out, Charset.forName(\"UTF-8\"))) {\n            osw.write(\"test\");\n        }\n\n        // best to use StandardCharsets\n        try (OutputStreamWriter osw = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {\n            osw.write(\"test\");\n        }\n    }\n}"
+    ],
+    "minLanguageVersion": "1.7"
+  },
+  {
+    "name": "UseTryWithResources",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.12.0",
+    "message": "리소스를 명시적으로 닫는 대신 try-with-resources 문 사용을 고려하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.bestpractices.UseTryWithResourcesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#usetrywithresources",
+    "description": "Java 7에서 try-with-resources 문이 도입되었습니다. 이 문은 각 리소스가 문의 끝에서 닫히도록 보장합니다.\nfinally 블록에서 리소스를 명시적으로 닫을 필요가 없습니다. 또한 예외가 더 잘 처리됩니다:\n`try` 블록과 `finally` 블록 모두에서 예외가 발생한 경우, try 블록의 예외가 억제되었습니다.\n`try`-with-resources 문을 사용하면 try 블록에서 던져진 예외가 보존됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class TryWithResources {\n    public void run() {\n        InputStream in = null;\n        try {\n            in = openInputStream();\n            int i = in.read();\n        } catch (IOException e) {\n            e.printStackTrace();\n        } finally {\n            try {\n                if (in != null) in.close();\n            } catch (IOException ignored) {\n                // ignored\n            }\n        }\n\n        // better use try-with-resources\n        try (InputStream in2 = openInputStream()) {\n            int i = in2.read();\n        }\n    }\n}"
+    ],
+    "minLanguageVersion": "1.7"
+  },
+  {
+    "name": "WhileLoopWithLiteralBoolean",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "6.13.0",
+    "message": "루프를 단순화할 수 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#whileloopwithliteralboolean",
+    "description": "`do {} while (true);`는 영원히 반복된다는 것을 알기 위해 문의 끝을 읽어야 하지만,\n`while (true) {}`는 이해하기 더 쉽습니다.\n\n`do {} while (false);`는 중복이며, 내부 변수 범위가 필요한 경우 블록 `{}`이면 충분합니다.\n\n`while (false) {}`는 블록을 절대 실행하지 않으며 전체를 제거할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Example {\n  {\n    while (true) { } // allowed\n    while (false) { } // disallowed\n    do { } while (true); // disallowed\n    do { } while (false); // disallowed\n    do { } while (false | false); // disallowed\n    do { } while (false || false); // disallowed\n  }\n}"
+    ]
+  },
+  {
+    "name": "OneDeclarationPerLine",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "5.0",
+    "message": "각 선언에 한 줄을 사용하면 코드 가독성이 향상됩니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#onedeclarationperline",
+    "description": "Java에서는 같은 타입의 여러 변수 선언을 한 줄에 할 수 있습니다.\n그러나 이는 상당히 지저분한 코드를 초래할 수 있습니다. 이 규칙은 같은 줄에 여러 선언이 있는지 검사합니다.",
+    "priority": 4,
+    "examples": [
+      "String name;            // separate declarations\nString lastname;\n\nString name, lastname;  // combined declaration, a violation\n\nString name,\n       lastname;        // combined declaration on multiple lines, no violation by default.\n                        // Set property strictMode to true to mark this as violation."
+    ],
+    "properties": [
+      {
+        "name": "strictMode",
+        "defaultValue": "false",
+        "description": "true이면 선언이 별도의 줄에 있더라도 결합된 선언을 표시합니다."
+      }
+    ]
+  },
+  {
+    "name": "UseVarargs",
+    "category": "bestpractices",
+    "categoryName": "모범 사례",
+    "since": "5.0",
+    "message": "마지막 매개변수로 배열을 받는 메서드나 생성자에 가변 인수 사용을 고려하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_bestpractices.html#usevarargs",
+    "description": "Java 5에서 메서드와 생성자에 대한 가변 인수 매개변수 선언이 도입되었습니다. 이 문법적 편의는\n이러한 메서드와 생성자의 사용자에게 유연성을 제공하여 배열 생성을 처리할 필요가 없게 합니다.\n\n모든 메서드의 바이트 배열과 `public static void main(String[])` 메서드의 문자열 배열은 무시됩니다.",
+    "priority": 4,
+    "examples": [
+      "public class Foo {\n    public void foo(String s, Object[] args) {\n        // Do something here...\n    }\n\n    public void bar(String s, Object... args) {\n        // Ahh, varargs tastes much better...\n    }\n}"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "ClassNamingConventions",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.2",
+    "message": "The {0} name ''{1}'' doesn''t match ''{2}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.ClassNamingConventionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#classnamingconventions",
+    "description": "타입 선언에 대한 설정 가능한 명명 규칙입니다. 이 규칙은 해당 종류(예: enum 또는\n            interface)에 적용되는 정규식과 일치하지 않는 타입 선언을 보고합니다.\n            각 정규식은 속성을 통해 설정할 수 있습니다.\n\n            기본적으로 이 규칙은 표준 Java 명명 규칙(Pascal case)을 사용합니다.\n\n            이 규칙은 유틸리티 클래스를 감지하고 해당 클래스에 다른 명명 규칙을 적용할 수 있습니다.\n            예를 들어, `utilityClassPattern` 속성을 `[A-Z][a-zA-Z0-9]+(Utils?|Helper|Constants)`로\n            설정하면 \"Util(s)\", \"Helper\" 또는 \"Constants\"로 끝나지 않는 유틸리티 클래스를 보고합니다.\n\n            이 규칙에서 유틸리티 클래스는 다음과 같이 정의됩니다: 상위 클래스를 상속하거나\n            인터페이스를 구현하지 않으며, 정적 필드 또는 메서드만 있는 구체적인 클래스입니다.\n\n            이 규칙은 다음 규칙을 사용하여 테스트 클래스를 감지합니다: 테스트 클래스는 최상위 클래스로,\n            JUnit 3 TestCase를 상속하거나 JUnit4/5 또는 TestNG의 Test 어노테이션이 달린 메서드가\n            하나 이상 있는 클래스입니다.",
+    "priority": 1,
+    "examples": [
+      "// This is Pascal case, the recommended naming convention in Java\n// Note that the default values of this rule don't allow underscores\n// or accented characters in type names\npublic class FooBar {}\n\n// You may want abstract classes to be named 'AbstractXXX',\n// in which case you can customize the regex for abstract\n// classes to 'Abstract[A-Z]\\w+'\npublic abstract class Thing {}\n\n// This class doesn't respect the convention, and will be flagged\npublic class Éléphant {}"
+    ]
+  },
+  {
+    "name": "EmptyMethodInAbstractClassShouldBeAbstract",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.1",
+    "message": "추상 클래스의 빈 메서드는 대신 abstract로 선언해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#emptymethodinabstractclassshouldbeabstract",
+    "description": "추상 클래스의 빈 메서드 또는 자동 생성된 메서드는 abstract로 태그해야 합니다. 이는 구체적인\n하위 클래스에서 자체 버전을 구현해야 하는 개발자의 부적절한 사용을 제거하는 데 도움이 됩니다.",
+    "priority": 1,
+    "examples": [
+      "public abstract class ShouldBeAbstract {\n    public Object couldBeAbstract() {\n        // Should be abstract method ?\n        return null;\n    }\n\n    public void couldBeAbstract() {\n    }\n}"
+    ]
+  },
+  {
+    "name": "FieldNamingConventions",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.7.0",
+    "message": "The {0} name ''{1}'' doesn''t match ''{2}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.FieldNamingConventionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#fieldnamingconventions",
+    "description": "필드 선언에 대한 설정 가능한 명명 규칙입니다. 이 규칙은 해당 종류(예: 상수(static final),\n            enum 상수, final 필드)에 적용되는 정규식과 일치하지 않는 변수 선언을 보고합니다.\n            각 정규식은 속성을 통해 설정할 수 있습니다.\n\n            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용하며, 상수와 enum 상수에는\n            ALL_UPPER 규칙을 사용합니다.",
+    "priority": 1,
+    "examples": [
+      "class Foo {\n                int myField = 1; // This is in camel case, so it's ok\n                int my_Field = 1; // This contains an underscore, it's not ok by default\n                                  // but you may allow it, or even require the \"my_\" prefix\n\n                final int FinalField = 1; // you may configure a different convention for final fields,\n                                          // e.g. here PascalCase: [A-Z][a-zA-Z0-9]*\n\n                interface Interface {\n                    double PI = 3.14; // interface \"fields\" use the constantPattern property\n                }\n\n                enum AnEnum {\n                    ORG, NET, COM; // These use a separate property but are set to ALL_UPPER by default\n                }\n            }"
+    ]
+  },
+  {
+    "name": "FinalParameterInAbstractMethod",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.42.0",
+    "message": "추상 메서드의 final 매개변수",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#finalparameterinabstractmethod",
+    "description": "인터페이스 메서드의 매개변수를 final로 선언하는 것은 무의미합니다. 구현체에서 이를 준수하지 않을 수 있기 때문입니다.",
+    "priority": 1,
+    "examples": [
+      "public interface MyInterface {\n  void process(final Object arg); // Avoid using final here\n}"
+    ]
+  },
+  {
+    "name": "FormalParameterNamingConventions",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.6.0",
+    "message": "The {0} name ''{1}'' doesn''t match ''{2}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.FormalParameterNamingConventionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#formalparameternamingconventions",
+    "description": "메서드 및 람다의 형식 매개변수에 대한 설정 가능한 명명 규칙입니다.\n            이 규칙은 해당 종류(예: 람다 매개변수 또는 final 형식 매개변수)에 적용되는 정규식과\n            일치하지 않는 형식 매개변수를 보고합니다. 각 정규식은 속성을 통해 설정할 수 있습니다.\n\n            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용합니다.",
+    "priority": 1,
+    "examples": [
+      "class Foo {\n\n                abstract void bar(int myInt); // This is Camel case, so it's ok\n\n                void bar(int my_i) { // this will be reported\n\n                }\n\n                void lambdas() {\n\n                    // lambdas parameters can be configured separately\n                    Consumer<String> lambda1 = s_str -> { };\n\n                    // lambda parameters with an explicit type can be configured separately\n                    Consumer<String> lambda1 = (String str) -> { };\n\n                }\n\n            }"
+    ]
+  },
+  {
+    "name": "LocalVariableNamingConventions",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.6.0",
+    "message": "The {0} name ''{1}'' doesn''t match ''{2}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.LocalVariableNamingConventionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#localvariablenamingconventions",
+    "description": "지역 변수 선언 및 기타 로컬 범위 변수에 대한 설정 가능한 명명 규칙입니다. 이 규칙은\n            해당 종류(예: final 변수 또는 catch절 매개변수)에 적용되는 정규식과 일치하지 않는\n            변수 선언을 보고합니다. 각 정규식은 속성을 통해 설정할 수 있습니다.\n\n            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용합니다.",
+    "priority": 1,
+    "examples": [
+      "class Foo {\n                void bar() {\n                    int localVariable = 1; // This is in camel case, so it's ok\n                    int local_variable = 1; // This will be reported unless you change the regex\n\n                    final int i_var = 1; // final local variables can be configured separately\n\n                    try {\n                        foo();\n                    } catch (IllegalArgumentException e_illegal) {\n                        // exception block parameters can be configured separately\n                    }\n\n                }\n            }"
+    ]
+  },
+  {
+    "name": "MethodNamingConventions",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.2",
+    "message": "The {0} name ''{1}'' doesn''t match ''{2}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.MethodNamingConventionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#methodnamingconventions",
+    "description": "메서드 선언에 대한 설정 가능한 명명 규칙입니다. 이 규칙은 해당 종류(예: JUnit 테스트 또는\n            네이티브 메서드)에 적용되는 정규식과 일치하지 않는 메서드 선언을 보고합니다.\n            각 정규식은 속성을 통해 설정할 수 있습니다.\n\n            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용합니다.",
+    "priority": 1,
+    "examples": [
+      "public class Foo {\n    public void fooStuff() {\n    }\n}"
+    ]
+  },
+  {
+    "name": "ModifierOrder",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "7.17.0",
+    "message": "수정자 순서가 잘못되었습니다 (실제 메시지는 규칙이 작성합니다)",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.ModifierOrderRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#modifierorder",
+    "description": "JLS에서 권장하는 수정자 순서를 강제합니다. 수정자 정렬 외에도 이 규칙은 모든 어노테이션이\n            모든 수정자 키워드 앞에 나타나도록 강제합니다.\n            `typeAnnotations` 속성을 설정하면 타입 어노테이션이 수정자 키워드의 오른쪽, 적용되는\n            타입 옆에 나타나도록 강제할 수도 있습니다.\n            이 속성은 세 가지 값을 가질 수 있습니다:\n            - `onType`: 타입 어노테이션은 적용되는 타입 옆에 배치되어야 합니다\n            - `onDecl`: 타입 어노테이션은 다른 어노테이션과 함께 수정자 앞에 배치되어야 합니다.\n            타입 어노테이션이 구문적으로 타입 내에 나타나는 경우(예:\n            `public Map.@Nullable Entry&lt;K,V&gt; method()` 또는 `public &lt;T&gt; @NonNull T method()`)에는\n            강제되지 않습니다.\n            - `anywhere` (기본값): 어느 위치든 허용됩니다. 그러나 키워드 수정자 사이에 산재할 수는\n            없습니다. 타입 어노테이션이 아닌 어노테이션은 여전히 키워드 수정자 앞에 있어야 합니다.",
+    "priority": 1,
+    "examples": [
+      "abstract public class Foo { // Warn: `public` should appear before `abstract`\n\n    // This order is not recommended, annotations should appear before keyword modifiers,\n    // and may appear after if they are type annotations.\n    public\n    @Override\n    static fooStuff() {\n    }\n\n    // This order is ok if property typeAnnotations is \"anywhere\", and enforced if it is \"on decl\":\n    @Nullable\n    public Object fooStuff() {}\n\n    // This order is ok if property typeAnnotations is \"anywhere\", and enforced if it is \"on type\":\n    public @Nullable Object fooStuff() {}\n\n\n}"
+    ]
+  },
+  {
+    "name": "AvoidUsingNativeCode",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.1",
+    "message": "네이티브 코드 사용은 권장되지 않습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#avoidusingnativecode",
+    "description": "Java Native Interface(JNI) 호출에 대한 불필요한 의존은 애플리케이션의 이식성을 직접적으로 낮추고\n유지보수 부담을 증가시킵니다.",
+    "priority": 2,
+    "examples": [
+      "public class SomeJNIClass {\n\n     public SomeJNIClass() {\n         System.loadLibrary(\"nativelib\");\n     }\n\n     static {\n         System.loadLibrary(\"nativelib\");\n     }\n\n     public void invalidCallsInMethod() throws SecurityException, NoSuchMethodException {\n         System.loadLibrary(\"nativelib\");\n     }\n}"
+    ]
+  },
+  {
+    "name": "AtLeastOneConstructor",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.04",
+    "message": "각 클래스는 최소 하나의 생성자를 선언해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.AtLeastOneConstructorRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#atleastoneconstructor",
+    "description": "비정적(non-static) 클래스는 최소 하나의 생성자를 선언해야 합니다.\n정적 멤버만 있는 클래스는 무시되며, 이러한 클래스를 탐지하려면 [UseUtilityClassRule](pmd_rules_java_design.html#useutilityclass)을 참조하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n   // missing constructor\n  public void doSomething() { ... }\n  public void doOtherThing { ... }\n}"
+    ]
+  },
+  {
+    "name": "AvoidDollarSigns",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.5",
+    "message": "변수/메서드/클래스/인터페이스 이름에 달러 기호($) 사용을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#avoiddollarsigns",
+    "description": "변수/메서드/클래스/인터페이스 이름에 달러 기호($) 사용을 피하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Fo$o {  // not a recommended name\n}"
+    ]
+  },
+  {
+    "name": "AvoidProtectedFieldInFinalClass",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "2.1",
+    "message": "final 클래스에서 protected 필드 사용을 피하세요. private 또는 패키지 접근 제어자로 변경하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#avoidprotectedfieldinfinalclass",
+    "description": "final 클래스는 하위 클래스를 만들 수 없으므로 protected 필드를 사용하지 마세요.\nprivate 또는 패키지 접근 제어자를 사용하여 의도를 명확히 하세요.",
+    "priority": 3,
+    "examples": [
+      "public final class Bar {\n  private int x;\n  protected int y;  // bar cannot be subclassed, so is y really private or package visible?\n  Bar() {}\n}"
+    ]
+  },
+  {
+    "name": "AvoidProtectedMethodInFinalClassNotExtending",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.1",
+    "message": "다른 클래스를 상속하지 않는 final 클래스에서 protected 메서드 사용을 피하세요. private 또는 패키지 접근 제어자로 변경하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#avoidprotectedmethodinfinalclassnotextending",
+    "description": "대부분의 final 클래스는 하위 클래스를 만들 수 없으므로 protected 메서드를 사용하지 마세요. 이는\nprotected 메서드가 있는 다른 클래스를 상속한 final 클래스(가시성을 줄일 수 없는 경우)에서만\n허용되어야 합니다. private 또는 패키지 접근 제어자를 사용하여 의도를 명확히 하세요.",
+    "priority": 3,
+    "examples": [
+      "public final class Foo {\n  private int bar() {}\n  protected int baz() {} // Foo cannot be subclassed, and doesn't extend anything, so is baz() really private or package visible?\n}"
+    ]
+  },
+  {
+    "name": "CallSuperInConstructor",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "3.0",
+    "message": "생성자에서 super()를 호출하는 것이 좋은 습관입니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#callsuperinconstructor",
+    "description": "생성자에서 super()를 호출하는 것이 좋은 습관입니다. super()가 호출되지 않았지만\n다른 생성자(예: 오버로드된 생성자)가 호출된 경우, 이 규칙은 보고하지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo extends Bar{\n  public Foo() {\n   // call the constructor of Bar\n   super();\n  }\n public Foo(int code) {\n  // do something with code\n   this();\n   // no problem with this\n  }\n}"
+    ]
+  },
+  {
+    "name": "CommentDefaultAccessModifier",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.4.0",
+    "message": "{0} ''{1}''에 기본 접근 제어자 주석이 누락되었습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.CommentDefaultAccessModifierRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#commentdefaultaccessmodifier",
+    "description": "어노테이션, 클래스, Enum, 메서드, 생성자 또는 필드가 기본 접근 제어자를 가지도록 의도한 실수를 방지하려면\n선언 시작 부분에 주석을 추가해야 합니다.\n기본적으로 주석은 `/* default */` 또는 `/* package */`여야 하며, 다른 형식을 원하면 정규식을 제공해야 합니다.\n\n이 규칙은 기본적으로 `@VisibleForTesting` 어노테이션 또는 JUnit5/TestNG 어노테이션이 있는 모든 경우를 무시합니다.\n인식할 어노테이션을 사용자 정의하려면 \"ignoredAnnotations\" 속성을 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    final String stringValue = \"some string\";\n    String getString() {\n       return stringValue;\n    }\n\n    class NestedFoo {\n    }\n}\n\n// should be\npublic class Foo {\n    /* default */ final String stringValue = \"some string\";\n    /* default */ String getString() {\n       return stringValue;\n    }\n\n    /* default */ class NestedFoo {\n    }\n}"
+    ]
+  },
+  {
+    "name": "ConfusingTernary",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.9",
+    "message": "if (x != y) ..; else ..; 사용을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.ConfusingTernaryRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#confusingternary",
+    "description": "\"else\" 절이 있는 \"if\" 표현식에서 부정문 사용을 피하세요. 예를 들어, 다음을:\n`if (x != y) diff(); else same();`를 다음과 같이 바꾸세요: `if (x == y) same(); else diff();`.\n\n\"else\"가 없는 대부분의 \"if (x != y)\" 경우는 주로 반환 케이스이므로, 이 규칙을 일관되게\n사용하면 코드 가독성이 향상됩니다. 또한 \"오류 케이스가 먼저인가?\" 또는 \"일반적인 케이스가\n먼저인가?\"와 같은 사소한 순서 문제를 해결합니다.\n\nnull 검사는 일반적으로 긍정 조건으로 간주되므로, 기본적으로 이 규칙에서 무시됩니다.\n즉, `a == null`과 `a != null` 모두 허용됩니다. 특정 스타일을 강제하고 다른 스타일을\n금지하려면 `nullCheckBranch` 속성을 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "boolean bar(int x, int y) {\n    return (x != y) ? diff : same;\n}"
+    ]
+  },
+  {
+    "name": "ControlStatementBraces",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.2.0",
+    "message": "이 구문에는 중괄호가 있어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#controlstatementbraces",
+    "description": "제어문에 대한 중괄호 정책을 강제합니다. 'if ... else' 문과 반복문에는 선택 사항이더라도\n            중괄호를 사용하는 것이 권장됩니다. 이는 일반적으로 코드를 더 명확하게 하고, 나중에 다른 문을\n            추가해야 할 때를 대비합니다. 이 규칙은 속성을 통해 어떤 문에 중괄호가 필요한지 제어할 수\n            있습니다.\n\n            6.2.0부터 이 규칙은 WhileLoopMustUseBraces, ForLoopMustUseBraces, IfStmtMustUseBraces,\n            IfElseStmtMustUseBraces를 대체합니다.",
+    "priority": 3,
+    "examples": [
+      "while (true)    // not recommended\n  x++;\n\nwhile (true) {  // preferred approach\n  x++;\n}"
+    ],
+    "properties": [
+      {
+        "name": "checkIfElseStmt",
+        "defaultValue": "true",
+        "description": "'if ... else' 문에 중괄호를 요구"
+      }
+    ]
+  },
+  {
+    "name": "EmptyControlStatement",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.46.0",
+    "message": "이 제어문에 빈 분기가 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.EmptyControlStatementRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#emptycontrolstatement",
+    "description": "본문이 비어 있는 제어문과 빈 초기화 블록을 보고합니다.\n\n            검사되는 코드 구조는 다음과 같습니다:\n            - `try` 문의 본문\n            - `try` 문의 `finally` 절\n            - `switch` 문\n            - `synchronized` 문\n            - `if` 문\n            - 반복문: `while`, `for`, `do .. while`\n            - 초기화 블록\n            - 문으로 사용된 블록 (스코핑용)\n\n            이 규칙은 EmptyFinallyBlock, EmptyIfStmt, EmptyInitializer, EmptyStatementBlock,\n            EmptySwitchStatements, EmptySynchronizedBlock, EmptyTryBlock, EmptyWhileStmt 규칙을 대체합니다.\n\n            {% rule java/errorprone/EmptyCatchBlock %}은 여전히 독립적인 규칙입니다.\n\n            EmptyStatementNotInLoop은 {% rule java/codestyle/UnnecessarySemicolon %}으로 대체되었습니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n    {\n        if (true); // empty if statement\n        if (true) { // empty as well\n        }\n    }\n\n    {} // empty initializer\n}"
+    ]
+  },
+  {
+    "name": "FieldDeclarationsShouldBeAtStartOfClass",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.0",
+    "message": "필드는 메서드 선언, 생성자, 초기화 블록 또는 내부 클래스보다 앞서 클래스의 최상단에 선언해야 합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.FieldDeclarationsShouldBeAtStartOfClassRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#fielddeclarationsshouldbeatstartofclass",
+    "description": "필드는 메서드 선언, 생성자, 초기화 블록 또는 내부 클래스보다 앞서 클래스의 최상단에 선언해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class HelloWorldBean {\n\n  // Field declared before methods / inner classes - OK\n  private String _thing;\n\n  public String getMessage() {\n    return \"Hello World!\";\n  }\n\n  // Field declared after methods / inner classes - avoid this\n  private String _fieldInWrongLocation;\n}"
+    ]
+  },
+  {
+    "name": "ForLoopShouldBeWhileLoop",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.02",
+    "message": "이 for 반복문은 while 반복문으로 단순화할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#forloopshouldbewhileloop",
+    "description": "일부 for 반복문은 while 반복문으로 단순화할 수 있으며, 이렇게 하면 더 간결해집니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void bar() {\n        for (;true;) true; // No Init or Update part, may as well be: while (true)\n    }\n}"
+    ]
+  },
+  {
+    "name": "IdenticalCatchBranches",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.4.0",
+    "message": "''{0}'' 분기와 동일한 ''catch'' 분기",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.IdenticalCatchBranchesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#identicalcatchbranches",
+    "description": "동일한 `catch` 분기는 세로 공간을 차지하고 기능을 추가하지 않으면서 코드의 복잡성을\n            증가시킵니다. 동일한 분기를 단일 멀티캐치 분기로 합치는 것이 더 좋은 스타일입니다.",
+    "priority": 3,
+    "examples": [
+      "try {\n    // do something\n} catch (IllegalArgumentException e) {\n    throw e;\n} catch (IllegalStateException e) { // Can be collapsed into the previous block\n    throw e;\n}\n\ntry {\n    // do something\n} catch (IllegalArgumentException | IllegalStateException e) { // This is better\n    throw e;\n}"
+    ],
+    "minLanguageVersion": "1.7"
+  },
+  {
+    "name": "LambdaCanBeMethodReference",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "7.1.0",
+    "message": "람다 표현식을 메서드 참조로 작성할 수 있습니다: `{0}`",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.LambdaCanBeMethodReferenceRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#lambdacanbemethodreference",
+    "description": "이 규칙은 메서드 참조로 더 간결하게 작성할 수 있는 람다 표현식을 보고합니다. 이는 람다가 하나의 메서드만 호출하고, 전체 람다 매개변수 목록을 순서대로 해당 메서드에 전달하는 표현식 람다인 경우입니다. 예:\n            ```java\n                x -> Foo.call(x) // Foo::call이 될 수 있음\n                x -> call(x)     // this::call이 될 수 있음 (call이 인스턴스 메서드인 경우)\n                (x, y, z) -> call(x, y, z) // this::call이 될 수 있음\n                () -> foo.get() // foo::get이 될 수 있음\n                x -> x.foo()    // XType::foo가 될 수 있음 (XType은 x의 타입)\n            ```\n\n            경우에 따라 람다를 메서드 참조로 다시 작성하면 코드의 의미가 변경될 수 있습니다. 예를 들어 `(x) -> someVar.call(x)`에서 람다 호출 시 `someVar`가 null이면 NullPointerException(NPE)이 발생할 수 있습니다. 메서드 참조 `someVar::call`도 `someVar`가 null이면 NPE를 발생시키지만, 메서드 참조가 생성되는 시점에서 발생하는 반면 람다는 오류 없이 생성되고 람다가 호출될 때만 NPE가 발생합니다(절대 호출되지 않을 수도 있음). 코드는 이러한 미묘한 의미론적 차이에 의존해서는 안 되므로, 이러한 잠재적으로 문제가 있는 람다도 기본적으로 보고됩니다. 이 동작은 `ignoreIfMayNPE` 속성을 `true`로 설정하여 비활성화할 수 있습니다.\n\n            `ignoreIfMayNPE` 속성은 기본적으로 true입니다. 기본적으로 수신자가 메서드 호출 자체인 호출은 부작용을 일으킬 수 있으므로 무시됩니다. 이는 `ignoreIfReceiverIsMethod` 속성을 `false`로 설정하여 변경할 수 있습니다.\n\n            범위 제한:\n            - 이 규칙은 `x -> new CtorCall().something(x)` 형태의 람다를 보고하지 않습니다. 메서드 참조의 의미론은 단일 새 객체를 생성하는 것이지만 람다는 호출마다 하나의 객체를 생성하기 때문입니다.\n            - 이 규칙은 메서드 호출의 한정자가 부작용을 수행하는지 알 수 없습니다. 즉, `(x) -> sideEffectingMethod().foo(x)`가 보고됩니다. 이 경우 경고를 억제하세요.",
+    "priority": 3,
+    "examples": [
+      "import java.util.stream.Stream;\n\n            public class LambdaCanBeMethodReference {\n                static {\n                    Stream.of(\"abc\", \"d\")\n                            .mapToInt(s -> s.length()) // could be String::length\n                            .reduce((x, y) -> Integer.sum(x, y)) // could be Integer::sum\n                            .getAsInt();\n                }\n            }"
+    ]
+  },
+  {
+    "name": "LinguisticNaming",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.7.0",
+    "message": "언어적 안티패턴 - 메서드 이름과 반환 타입이 언어적으로 일치하지 않습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.LinguisticNamingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#linguisticnaming",
+    "description": "이 규칙은 언어적 명명 안티패턴을 찾습니다. boolean이어야 할 것처럼 이름이 지어졌지만\n            다른 타입인 필드를 검사합니다. 또한 이름에 따르면 boolean을 반환해야 하지만 그렇지 않은\n            메서드도 검사합니다. 추가로, getter는 무언가를 반환하고 setter는 반환하지 않는지 검사합니다.\n            마지막으로, \"to\"로 시작하는 메서드(변환 메서드)가 이름에 따라 하나의 객체를 다른 객체로\n            변환해야 하므로 실제로 무언가를 반환하는지 검사합니다. 추가적으로 이름에 \"To\"를 포함하는\n            메서드(역시 변환 메서드)를 검사하는 옵션이 있습니다. 그러나 이 감지는 오탐이 발생하기 쉬우므로\n            기본적으로 비활성화되어 있습니다.\n\n            자세한 내용은 [Linguistic Antipatterns - What They Are and How\nDevelopers Perceive Them](https://doi.org/10.1007/s10664-014-9350-8)을 참조하세요.",
+    "priority": 3,
+    "examples": [
+      "public class LinguisticNaming {\n    int isValid;    // the field name indicates a boolean, but it is an int.\n    boolean isTrue; // correct type of the field\n\n    void myMethod() {\n        int hasMoneyLocal;      // the local variable name indicates a boolean, but it is an int.\n        boolean hasSalaryLocal; // correct naming and type\n    }\n\n    // the name of the method indicates, it is a boolean, but the method returns an int.\n    int isValid() {\n        return 1;\n    }\n    // correct naming and return type\n    boolean isSmall() {\n        return true;\n    }\n\n    // the name indicates, this is a setter, but it returns something\n    int setName() {\n        return 1;\n    }\n\n    // the name indicates, this is a getter, but it doesn't return anything\n    void getName() {\n        // nothing to return?\n    }\n\n    // the name indicates, it transforms an object and should return the result\n    void toDataType() {\n        // nothing to return?\n    }\n    // the name indicates, it transforms an object and should return the result\n    void grapeToWine() {\n        // nothing to return?\n    }\n}"
+    ]
+  },
+  {
+    "name": "LocalVariableCouldBeFinal",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "2.2",
+    "message": "지역 변수 ''{0}''을(를) final로 선언할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.LocalVariableCouldBeFinalRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#localvariablecouldbefinal",
+    "description": "한 번만 할당된 지역 변수는 final로 선언할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Bar {\n    public void foo () {\n    String txtA = \"a\";          // if txtA will not be assigned again it is better to do this:\n    final String txtB = \"b\";\n    }\n}"
+    ]
+  },
+  {
+    "name": "LongVariable",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "0.3",
+    "message": "{0}과(와) 같이 지나치게 긴 변수 이름을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#longvariable",
+    "description": "필드, 형식 인자 또는 지역 변수 이름이 너무 길면 코드를 따라가기 어려울 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n    int reallyLongIntName = -3;             // VIOLATION - Field\n    public static void main( String argumentsList[] ) { // VIOLATION - Formal\n        int otherReallyLongName = -5;       // VIOLATION - Local\n        for (int interestingIntIndex = 0;   // VIOLATION - For\n             interestingIntIndex < 10;\n             interestingIntIndex ++ ) {\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "minimum",
+        "defaultValue": "17",
+        "description": "변수 길이 보고 임계값"
+      }
+    ]
+  },
+  {
+    "name": "MethodArgumentCouldBeFinal",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "2.2",
+    "message": "매개변수 ''{0}''이(가) 할당되지 않으므로 final로 선언할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.MethodArgumentCouldBeFinalRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#methodargumentcouldbefinal",
+    "description": "메서드 본문 내에서 재할당되지 않아 final로 만들 수 있는 메서드 및 생성자 매개변수를 보고합니다.\n\n            이 규칙은 {% rule java/bestpractices/UnusedFormalParameter %} 규칙과 중복되지 않도록\n            사용되지 않는 매개변수를 무시합니다.\n            또한 추상 메서드의 매개변수도 무시합니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n    // reported, parameter can be declared final\n    public String foo1(String param) {\n        return param;\n    }\n    // not reported, parameter is declared final\n    public String foo2(final String param) {\n        return param.trim();\n    }\n    // not reported because param is unused\n    public String unusedParam(String param) {\n        return \"abc\";\n    }\n}"
+    ]
+  },
+  {
+    "name": "NoPackage",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "3.3",
+    "message": "모든 클래스, 인터페이스, enum 및 어노테이션은 이름이 있는 패키지에 속해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#nopackage",
+    "description": "클래스, 인터페이스, enum 또는 어노테이션에 패키지 정의가 없는 경우를 감지합니다.",
+    "priority": 3,
+    "examples": [
+      "// no package declaration\npublic class ClassInDefaultPackage {\n}"
+    ]
+  },
+  {
+    "name": "OnlyOneReturn",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.0",
+    "message": "메서드에는 하나의 종료 지점만 있어야 하며, 이는 메서드의 마지막 문이어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.OnlyOneReturnRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#onlyonereturn",
+    "description": "메서드에는 하나의 종료 지점만 있어야 하며, 이는 메서드의 마지막 문이어야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class OneReturnOnly1 {\n  public String foo(int x) {\n    if (x > 0) {\n      return \"hey\";   // first exit\n    }\n    return \"hi\";    // second exit\n  }\n}"
+    ]
+  },
+  {
+    "name": "PackageCase",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "3.3",
+    "message": "패키지 이름에 대문자가 포함되어 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#packagecase",
+    "description": "패키지 정의에 대문자가 포함된 경우를 감지합니다.",
+    "priority": 3,
+    "examples": [
+      "package com.MyCompany;  // should be lowercase name\n\npublic class SomeClass {\n}"
+    ]
+  },
+  {
+    "name": "PrematureDeclaration",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.0",
+    "message": "''{0}''의 선언을 사용 위치에 더 가깝게 이동할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.PrematureDeclarationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#prematuredeclaration",
+    "description": "사용되기 전에 정의된 변수를 검사합니다. 변수가 선언된 시점과 처음 읽히는 시점 사이에\n반환하거나 예외를 던질 수 있는 문이 있는 경우 선언이 조기로 간주됩니다.\n\n일부 변수는 처음 사용되기 전에 발생하는 부작용 때문에 첫 번째 사용 위치 가까이에 선언할 수\n없습니다. 대부분의 메서드 및 생성자 호출을 순수하지 않은 것으로 간주하여 이러한 경우의\n보고를 피하려고 합니다. 두 번째 예제를 참조하세요.\n\n이 규칙은 코드 가독성을 향상시키기 위한 것이지 최적화가 아닙니다. 스마트한 JIT는 변수가\n조기 선언되었는지 여부에 관계없이 코드를 재정렬할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public int getLength(String[] strings) {\n\n    int length = 0; // could be moved closer to the loop\n\n    if (strings == null || strings.length == 0) return 0;\n\n    for (String str : strings) {\n        length += str.length();\n    }\n\n    return length;\n}",
+      "public int getLength(String[] strings) {\n\n    int startTime = System.nanoTime(); // cannot be moved because initializer is impure\n\n    if (strings == null || strings.length == 0) {\n        // some error logic\n        throw new SomeException(...);\n    }\n\n    for (String str : strings) {\n        length += str.length();\n    }\n\n    return System.nanoTime() - startTime;\n}"
+    ]
+  },
+  {
+    "name": "ShortMethodName",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "0.3",
+    "message": "짧은 메서드 이름 사용을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#shortmethodname",
+    "description": "매우 짧은 메서드 이름은 읽는 사람에게 도움이 되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "public class ShortMethod {\n    public void a( int i ) { // Violation\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "minimum",
+        "defaultValue": "3",
+        "description": "메서드 이름에 필요한 최소 문자 수."
+      }
+    ]
+  },
+  {
+    "name": "ShortVariable",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "0.3",
+    "message": "{0}과(와) 같은 짧은 이름의 변수를 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#shortvariable",
+    "description": "필드, 지역 변수, enum 상수 이름 또는 매개변수 이름이 매우 짧으면 읽는 사람에게 도움이 되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n    private int q = 15;                         // field - too short\n    public static void main( String as[] ) {    // formal arg - too short\n        int r = 20 + q;                         // local var - too short\n        for (int i = 0; i < 10; i++) {          // not a violation (inside 'for' loop)\n            r += q;\n        }\n        for (Integer i : numbers) {             // not a violation (inside 'for-each' loop)\n            r += q;\n        }\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "minimum",
+        "defaultValue": "3",
+        "description": "변수 이름에 필요한 최소 문자 수."
+      }
+    ]
+  },
+  {
+    "name": "TooManyStaticImports",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.1",
+    "message": "정적 import가 너무 많으면 코드가 지저분해질 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#toomanystaticimports",
+    "description": "정적 import 기능을 남용하면 프로그램을 읽거나 유지보수하기 어렵게 만들어 네임스페이스를\nimport한 모든 정적 멤버로 오염시킬 수 있습니다. 코드를 읽는 사람(몇 달 후의 본인 포함)은\n정적 멤버가 어느 클래스에서 왔는지 알 수 없습니다 (Sun 1.5 Language Guide).",
+    "priority": 3,
+    "examples": [
+      "import static Lennon;\nimport static Ringo;\nimport static George;\nimport static Paul;\nimport static Yoko; // Too much !"
+    ],
+    "properties": [
+      {
+        "name": "maximumStaticImports",
+        "defaultValue": "4",
+        "description": "0으로 설정하면 모든 정적 import를 금지할 수 있습니다"
+      }
+    ]
+  },
+  {
+    "name": "UnnecessaryAnnotationValueElement",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.2.0",
+    "message": "유일한 요소일 때 어노테이션에서 value 사용을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessaryannotationvalueelement",
+    "description": "유일한 요소일 때 어노테이션에서 value 사용을 피하세요.",
+    "priority": 3,
+    "examples": [
+      "@TestClassAnnotation(value = \"TEST\")\npublic class Foo {\n\n    @TestMemberAnnotation(value = \"TEST\")\n    private String y;\n\n    @TestMethodAnnotation(value = \"TEST\")\n    public void bar() {\n        int x = 42;\n        return;\n    }\n}\n\n// should be\n\n@TestClassAnnotation(\"TEST\")\npublic class Foo {\n\n    @TestMemberAnnotation(\"TEST\")\n    private String y;\n\n    @TestMethodAnnotation(\"TEST\")\n    public void bar() {\n        int x = 42;\n        return;\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "java7Compatibility",
+        "defaultValue": "false",
+        "description": "비활성화하면 java8+ 이상에만 적용되는 위반 사항도 표시합니다"
+      }
+    ]
+  },
+  {
+    "name": "UnnecessaryBoxing",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "7.0.0",
+    "message": "불필요한 {0}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryBoxingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessaryboxing",
+    "description": "안전하게 제거할 수 있는 명시적 박싱 및 언박싱 변환을 보고합니다.\n            컴파일러가 자동으로 삽입하거나, 의미론적으로 무의미한 경우(예: 값을 언박싱한 후\n            즉시 다시 박싱하는 경우)입니다.\n\n            이는 `valueOf` 또는 `intValue`, `byteValue` 등의 메서드 호출을 통해 발생하는\n            박싱 및 언박싱 변환만 처리합니다. 변환을 지시하는 캐스트는\n            {% rule UnnecessaryCast %}에서 대신 보고합니다.",
+    "priority": 3,
+    "examples": [
+      "{\n        // Instead of\n        Integer integer = Integer.valueOf(2);\n        // you may just write\n        Integer integer = 2;\n\n        int i = integer.intValue(); // similarly for unboxing\n\n        // Instead of\n        int x = Integer.valueOf(\"42\");\n        // you may just write\n        int x = Integer.parseInt(\"42\");\n}"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "UnnecessaryCast",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.24.0",
+    "message": "불필요한 캐스트 ({0})",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryCastRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessarycast",
+    "description": "캐스트의 피연산자가 이미 컨텍스트 타입에 적합하여 제거할 수 있는 캐스트를 감지합니다.\n예를 들어, 다음에서:\n```\nObject context = (Comparable) \"o\";\n```\n캐스트는 불필요합니다. `String`이 이미 `Comparable`과 `Object` 모두의 하위 타입이기 때문입니다.\n\n이는 Java 5의 오토박싱 기능으로 인해 피할 수 있는 캐스트도 표시합니다.\n```\nInteger integer = (Integer) 1;\n```\n리터럴은 어차피 `Integer`로 오토박싱됩니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.function.Function;\nclass SomeClass {\n   static {\n      Object o; long l; int i; Integer boxedInt;\n\n      // reference conversions\n\n      o = (Object) new SomeClass();      // unnecessary\n      o = (SomeClass) o;                 // necessary (narrowing cast)\n      o = (Comparable<String>) \"string\"; // unnecessary\n\n      // primitive conversions\n\n      l = (long) 2;   // unnecessary\n      l = (long) 2.0; // necessary (narrowing cast)\n      l = (byte) i;   // necessary (narrowing cast)\n\n      // boxing/unboxing casts (since java 5)\n\n      o = (Integer) 3;    // unnecessary (autoboxing would apply)\n      o = (long) 3;       // necessary (would be boxed to Long)\n      l = (int) boxedInt; // necessary (cannot cast Integer to long)\n\n      // casts that give a target type to a lambda/ method ref are necessary\n\n      o = (Function<Integer, String>) Integer::toString; // necessary (no target type)\n   }\n}",
+      "import java.util.*;\nclass SomeClass {\n   static {\n       /* Casts involving access to collections were common before Java 5, because collections\n        * were not generic. This rule may hence be useful when converting from using a raw\n        * type like `List` to a parameterized type like `List<String>`.\n        */\n       List<String> stringList = Arrays.asList(\"a\", \"b\");\n       String element = (String) stringList.get(0); // this cast is unnecessary\n   }\n}"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "UnnecessaryConstructor",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.0",
+    "message": "불필요한 생성자를 피하세요 - 컴파일러가 자동으로 생성합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryConstructorRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessaryconstructor",
+    "description": "이 규칙은 생성자가 필요하지 않은 경우를 감지합니다. 즉, 생성자가 하나뿐이고 해당 생성자가\n기본 생성자와 동일한 경우입니다. 기본 생성자는 선언하는 클래스와 동일한 접근 제어자를 가져야 합니다.\nenum 타입에서 기본 생성자는 암시적으로 private입니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  public Foo() {}\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryLocalBeforeReturn",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "3.3",
+    "message": "지역 변수 ''{0}''에 저장하지 말고 값을 직접 반환하는 것을 고려하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryLocalBeforeReturnRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessarylocalbeforereturn",
+    "description": "불필요한 지역 변수 생성을 피하세요.\n\n이 규칙은 7.17.0부터 더 이상 사용되지 않습니다. throw 문도 추가로 다루는 새 규칙\n{%rule VariableCanBeInlined %}을 대신 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n   public int foo() {\n     int x = doSomething();\n     return x;  // instead, just 'return doSomething();'\n   }\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryModifier",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.02",
+    "message": "{1} ''{2}''에 불필요한 수정자{0}{3}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryModifierRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessarymodifier",
+    "description": "인터페이스와 어노테이션의 필드는 자동으로 `public static final`이며, 메서드는 `public abstract`입니다.\n인터페이스 또는 어노테이션 내에 중첩된 클래스, 인터페이스 또는 어노테이션은 자동으로 `public static`입니다\n(모든 중첩된 인터페이스와 어노테이션은 자동으로 static입니다).\n중첩된 enum은 자동으로 `static`입니다.\n역사적인 이유로 컨텍스트에 의해 암시되는 수정자는 컴파일러에 의해 허용되지만 불필요합니다.",
+    "priority": 3,
+    "examples": [
+      "public @interface Annotation {\n    public abstract void bar();     // both abstract and public are ignored by the compiler\n    public static final int X = 0;  // public, static, and final all ignored\n    public static class Bar {}      // public, static ignored\n    public static interface Baz {}  // ditto\n}\npublic interface Foo {\n    public abstract void bar();     // both abstract and public are ignored by the compiler\n    public static final int X = 0;  // public, static, and final all ignored\n    public static class Bar {}      // public, static ignored\n    public static interface Baz {}  // ditto\n}\npublic class Bar {\n    public static interface Baz {}  // static ignored\n    public static enum FooBar {    // static ignored\n        FOO;\n    }\n}\npublic class FooClass {\n    static record BarRecord() {}     // static ignored\n}\npublic interface FooInterface {\n    static record BarRecord() {}     // static ignored\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryReturn",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "1.3",
+    "message": "불필요한 return 문",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryReturnRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessaryreturn",
+    "description": "불필요한 return 문 사용을 피하세요. 어차피 뒤에 실행할 명령이 없을 때 return은\n불필요합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public void bar() {\n        int x = 42;\n        return;\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnnecessarySemicolon",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.46.0",
+    "message": "불필요한 세미콜론",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessarysemicolon",
+    "description": "불필요한 세미콜론(\"빈 문\" 및 \"빈 선언\"이라고도 함)을 보고합니다.\n            프로그램을 변경하지 않고 제거할 수 있습니다. Java 문법은 역사적인 이유로\n            이를 허용하지만 사용을 피해야 합니다.\n\n            이 규칙은 구문적으로 필요한 빈 문(예: 제어문의 본문인 경우)은\n            보고하지 않습니다.\n\n            이 규칙은 EmptyStatementNotInLoop을 대체합니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n    {\n        toString();; // one of these semicolons is unnecessary\n        if (true); // this semicolon is not unnecessary, but it could be an empty block instead (not reported)\n    }\n}; // this semicolon is unnecessary"
+    ]
+  },
+  {
+    "name": "UseDiamondOperator",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.11.0",
+    "message": "명시적 타입 인수를 다이아몬드로 대체할 수 있습니다: `{0}`",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UseDiamondOperatorRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#usediamondoperator",
+    "description": "경우에 따라 제네릭 타입의 생성자 호출에서 명시적 타입 인수를 다이아몬드 타입 인수(`<>`)로\n대체하여 컴파일러가 추론하도록 할 수 있습니다. 이 규칙은 타입 인수의 중복을 피하고 코드를\n더 간결하고 읽기 쉽게 만들기 위해 가능한 모든 곳에서 다이아몬드 타입 인수를 사용하도록 권장합니다.\n\n이 규칙은 코드베이스를 Java 1.7, Java 1.8 또는 Java 9로 업그레이드할 때 유용합니다.\n다이아몬드 구문은 Java 1.7에서 처음 도입되었습니다. Java 8에서는 Java의 타입 추론이\n개선되어 더 많은 타입 인수가 불필요해졌습니다. Java 9에서는 익명 클래스 생성자에 대해\n타입 인수 추론이 가능해졌습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.*;\n            class Foo {\n                static {\n                    List<String> strings;\n                    strings = new ArrayList<String>(); // unnecessary duplication of type parameters\n                    strings = new ArrayList<>();       // using diamond type arguments is more concise\n\n                    strings = new ArrayList(); // accidental use of a raw type, you can use ArrayList<> instead\n\n                    strings = new ArrayList<>() {\n                        // for anonymous classes, this is possible since Java 9 only\n                    };\n                }\n            }"
+    ],
+    "minLanguageVersion": "1.7"
+  },
+  {
+    "name": "UseExplicitTypes",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "7.0.0",
+    "message": "명시적 타입을 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#useexplicittypes",
+    "description": "Java 10에서 `var` 키워드가 도입되었습니다. 이는 변수 선언의 초기화식에서 타입을 추론할 수 있으므로\n작성해야 하는 코드의 양을 줄여줍니다.\n\n이것은 본질적으로 트레이드오프입니다: 한편으로는 중복 정보를 제거하여 코드를 더 읽기 쉽게 만들 수\n있습니다. 다른 한편으로는 유용한 정보를 생략하여 코드를 더 읽기 어렵게 만들 수 있습니다.\n`var`를 사용해야 할 때와 사용하지 말아야 할 때에 대한 일률적인 규칙은 없습니다.\n\n문을 읽을 때 타입이 본질적으로 명확한 경우(즉, 리터럴 값이나 생성자 호출에 대한 할당)\n`var`를 사용하는 것이 합리적일 수 있습니다. 이러한 사용 사례는 속성을 통해 활성화할 수 있습니다.\n\n람다 매개변수는 기본적으로 이미 추론되므로 허용됩니다(`var` 키워드는 완전히 선택 사항입니다).\n\n[Local Variable Type Inference Style Guidelines](https://openjdk.org/projects/amber/guides/lvti-style-guide)도 참조하세요.",
+    "priority": 3,
+    "examples": [],
+    "properties": [
+      {
+        "name": "allowLiterals",
+        "defaultValue": "false",
+        "description": "변수가 리터럴로 직접 초기화될 때 허용"
+      }
+    ],
+    "minLanguageVersion": "10"
+  },
+  {
+    "name": "UselessQualifiedThis",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.4.0",
+    "message": "같은 클래스에서의 불필요한 한정된 this 사용.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#uselessqualifiedthis",
+    "description": "같은 클래스에서의 한정된 this 사용을 보고합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    final Foo otherFoo = Foo.this;  // use \"this\" directly\n\n    public void doSomething() {\n         final Foo anotherFoo = Foo.this;  // use \"this\" directly\n    }\n\n    private ActionListener returnListener() {\n        return new ActionListener() {\n            @Override\n            public void actionPerformed(ActionEvent e) {\n                doSomethingWithQualifiedThis(Foo.this);  // This is fine\n            }\n        };\n    }\n\n    private class Foo3 {\n        final Foo myFoo = Foo.this;  // This is fine\n    }\n\n    private class Foo2 {\n        final Foo2 myFoo2 = Foo2.this;  // Use \"this\" directly\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseShortArrayInitializer",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.15.0",
+    "message": "배열 초기화를 더 짧게 작성할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#useshortarrayinitializer",
+    "description": "배열 필드 또는 변수를 선언하고 초기화할 때, `new`를 사용하여 명시적으로 새 배열을 생성할 필요가 없습니다.\n대신 중괄호로 배열의 초기 내용을 표현식으로 간단히 정의할 수 있습니다.\n\n예: `int[] x = new int[] { 1, 2, 3 };`은 `int[] x = { 1, 2, 3 };`으로 작성할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "Foo[] x = new Foo[] { ... }; // Overly verbose\nFoo[] x = { ... }; //Equivalent to above line"
+    ]
+  },
+  {
+    "name": "UseUnderscoresInNumericLiterals",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.10.0",
+    "message": "숫자 {0}은(는) 세 자리마다 밑줄로 구분해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#useunderscoresinnumericliterals",
+    "description": "Java 1.7부터 숫자 리터럴은 밑줄을 사용하여 자릿수를 구분할 수 있습니다. 이 규칙은\n            특정 길이 이상의 숫자 리터럴에 가독성을 높이기 위해 밑줄을 사용하도록 강제합니다.\n\n            이 규칙은 현재 10진수(base 10) 리터럴만 지원합니다. 밑줄이 필요하지 않은\n            허용 가능한 길이는 속성을 통해 설정할 수 있습니다. 해당 길이 미만이더라도\n            잘못 배치된(3자리 그룹을 만들지 않는) 밑줄은 보고됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private int num = 1000000; // should be 1_000_000\n}"
+    ],
+    "properties": [
+      {
+        "name": "acceptableDecimalLength",
+        "defaultValue": "4",
+        "description": "10진수 리터럴에 밑줄이 필요하지 않은 길이"
+      }
+    ],
+    "minLanguageVersion": "1.7"
+  },
+  {
+    "name": "VariableCanBeInlined",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "7.17.0",
+    "message": "지역 변수 ''{0}''에 저장하지 말고 값을 직접 사용하는 것을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.VariableCanBeInlinedRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#variablecanbeinlined",
+    "description": "지역 변수를 선언한 후 즉시 반환하거나 던지지 않아야 합니다. 이러한 변수 선언은\n            불필요한 복잡성을 추가하고 코드를 읽기 어렵게 만듭니다. 값을 직접 반환하거나\n            던지는 것이 더 간결하고 깔끔한 경우가 많습니다.\n\n            이 규칙은 SonarSource 규칙 [S1488](https://sonarsource.github.io/rspec/#/rspec/S1488)을 구현합니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n                    Object foo() {\n                        var foo = \"foo\";\n                        return foo;  // instead, just 'return \"foo\";'\n                    }\n\n                    Object bar() {\n                        var ex = getIllegalArgumentException();\n                        throw ex; // instead, just 'throw getIllegalArgumentException();'\n                    }\n\n                    Object baz() {\n                        var baz = switch (foo()) {\n                            case \"foo\" -> {\n                                var foo = foo();\n                                yield foo;  // Can be simplified to 'yield foo();'\n                            }\n                            case \"bar\" -> {\n                                var bar = bar();\n                                yield bar;  // Can be simplified to 'yield bar();'\n                            }\n                            default -> bar(\"baz\");\n                        };\n                        return baz; // instead, just 'return switch (foo()) {...'\n                    }\n                }"
+    ]
+  },
+  {
+    "name": "BooleanGetMethodName",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.0",
+    "message": "boolean 또는 Boolean을 반환하는 'getX()' 메서드는 'isX()'로 이름을 지어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#booleangetmethodname",
+    "description": "boolean 또는 Boolean 결과를 반환하는 메서드는 이를 나타내는 술어문 형태로 이름을 지어야 합니다.\n            예: 'isReady()', 'hasValues()', 'canCommit()', 'willFail()' 등. 이러한 메서드에 'get' 접두사 사용을 피하세요.",
+    "priority": 4,
+    "examples": [
+      "public boolean getFoo();            // bad\npublic Boolean getFoo();            // bad\npublic boolean isFoo();             // ok\npublic Boolean isFoo();             // ok\npublic boolean getFoo(boolean bar); // ok, unless checkParameterizedMethods=true"
+    ],
+    "properties": [
+      {
+        "name": "checkParameterizedMethods",
+        "defaultValue": "false",
+        "description": "매개변수가 있는 메서드도 검사"
+      }
+    ]
+  },
+  {
+    "name": "ExtendsObject",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.0",
+    "message": "명시적으로 Object를 상속할 필요가 없습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#extendsobject",
+    "description": "명시적으로 Object를 상속할 필요가 없습니다.",
+    "priority": 4,
+    "examples": [
+      "public class Foo extends Object {     // not required\n}"
+    ]
+  },
+  {
+    "name": "GenericsNaming",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.2.6",
+    "message": "제네릭 이름은 한 글자의 대문자여야 합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#genericsnaming",
+    "description": "제네릭 값에 대한 참조 이름은 단일 대문자로 제한되어야 합니다.\n\n**더 이상 사용되지 않음:** 이 규칙은 PMD 7.17.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거될 예정입니다. 이 규칙은 타입 매개변수에 대해 더 포괄적이고 설정 가능한 명명 규칙을 제공하는 {% rule TypeParameterNamingConventions %}로 대체되었습니다.",
+    "priority": 4,
+    "examples": [
+      "public interface GenericDao<E extends BaseModel, K extends Serializable> extends BaseDao {\n    // This is ok...\n}\n\npublic interface GenericDao<E extends BaseModel, K extends Serializable> {\n    // Also this\n}\n\npublic interface GenericDao<e extends BaseModel, K extends Serializable> {\n    // 'e' should be an 'E'\n}\n\npublic interface GenericDao<EF extends BaseModel, K extends Serializable> {\n   // 'EF' is not ok.\n}"
+    ]
+  },
+  {
+    "name": "LocalHomeNamingConvention",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.0",
+    "message": "Session EJB의 Local Home 인터페이스는 'LocalHome'으로 끝나야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#localhomenamingconvention",
+    "description": "Session EJB의 Local Home 인터페이스는 'LocalHome'으로 끝나야 합니다.",
+    "priority": 4,
+    "examples": [
+      "public interface MyBeautifulLocalHome extends javax.ejb.EJBLocalHome {} // proper name\n\npublic interface MissingProperSuffix extends javax.ejb.EJBLocalHome {}  // non-standard name"
+    ]
+  },
+  {
+    "name": "LocalInterfaceSessionNamingConvention",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.0",
+    "message": "Session EJB의 Local 인터페이스는 'Local'로 끝나야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#localinterfacesessionnamingconvention",
+    "description": "Session EJB의 Local 인터페이스는 'Local'로 끝나야 합니다.",
+    "priority": 4,
+    "examples": [
+      "public interface MyLocal extends javax.ejb.EJBLocalObject {}                // proper name\n\npublic interface MissingProperSuffix extends javax.ejb.EJBLocalObject {}    // non-standard name"
+    ]
+  },
+  {
+    "name": "MDBAndSessionBeanNamingConvention",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.0",
+    "message": "SessionBean 또는 MessageBean은 Bean으로 끝나야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#mdbandsessionbeannamingconvention",
+    "description": "EJB 명세에 따르면 모든 MessageDrivenBean 또는 SessionBean은 'Bean'으로 끝나야 합니다.",
+    "priority": 4,
+    "examples": [
+      "public class SomeBean implements SessionBean{}                  // proper name\n\npublic class MissingTheProperSuffix implements SessionBean {}   // non-standard name"
+    ]
+  },
+  {
+    "name": "RemoteInterfaceNamingConvention",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.0",
+    "message": "Session EJB의 Remote 인터페이스에는 접미사를 붙이지 않아야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#remoteinterfacenamingconvention",
+    "description": "Session EJB의 Remote 인터페이스에는 접미사가 없어야 합니다.",
+    "priority": 4,
+    "examples": [
+      "/* Poor Session suffix */\npublic interface BadSuffixSession extends javax.ejb.EJBObject {}\n\n/* Poor EJB suffix */\npublic interface BadSuffixEJB extends javax.ejb.EJBObject {}\n\n/* Poor Bean suffix */\npublic interface BadSuffixBean extends javax.ejb.EJBObject {}"
+    ]
+  },
+  {
+    "name": "RemoteSessionInterfaceNamingConvention",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "4.0",
+    "message": "Session EJB의 Remote Home 인터페이스는 'Home'으로 끝나야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#remotesessioninterfacenamingconvention",
+    "description": "Session EJB의 Remote Home 인터페이스 타입은 'Home'으로 끝나야 합니다.",
+    "priority": 4,
+    "examples": [
+      "public interface MyBeautifulHome extends javax.ejb.EJBHome {}       // proper name\n\npublic interface MissingProperSuffix extends javax.ejb.EJBHome {}   // non-standard name"
+    ]
+  },
+  {
+    "name": "ShortClassName",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.0",
+    "message": "{0}과(와) 같은 짧은 클래스 이름을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#shortclassname",
+    "description": "예를 들어 5자 미만의 짧은 클래스 이름은 권장되지 않습니다.",
+    "priority": 4,
+    "examples": [
+      "public class Foo {\n}"
+    ],
+    "properties": [
+      {
+        "name": "minimum",
+        "defaultValue": "5",
+        "description": "클래스 이름에 필요한 최소 문자 수."
+      }
+    ]
+  },
+  {
+    "name": "TypeParameterNamingConventions",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "7.17.0",
+    "message": "The {0} name ''{1}'' doesn''t match ''{2}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.TypeParameterNamingConventionsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#typeparameternamingconventions",
+    "description": "제네릭 타입 및 메서드의 타입 매개변수에 대한 설정 가능한 명명 규칙입니다.\n            이 규칙은 설정된 정규식과 일치하지 않는 타입 매개변수 선언을 보고합니다.\n            타입 매개변수는 클래스, 인터페이스, enum, 레코드 및 메서드에 나타날 수 있습니다.\n\n            기본적으로 이 규칙은 표준 Java 명명 규칙(단일 대문자)을 사용합니다.",
+    "priority": 4,
+    "examples": [
+      "// Generic types - valid\npublic interface Repository<T> { }\npublic class Cache<K, V> { }\n\n// Generic types - invalid\npublic interface Repository<type> { }      // lowercase\npublic class Cache<KEY, VALUE> { }         // multiple letters\n\n// Generic methods - valid\npublic class Util {\n    public static <T> T identity(T value) { return value; }\n    public <T, R> R transform(T input, Function<T, R> mapper) { }\n}\n\n// Generic methods - invalid\npublic class Util {\n    public static <element> element get(element value) { }  // lowercase\n    public <INPUT, OUTPUT> OUTPUT convert(INPUT in) { }     // multiple letters\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryFullyQualifiedName",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.0",
+    "message": "불필요한 한정자 ''{0}'': ''{1}''이(가) 이미 범위에 있습니다{2}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryFullyQualifiedNameRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessaryfullyqualifiedname",
+    "description": "import 문을 사용하면 완전 한정 이름을 사용하지 않아도 됩니다. import 문으로 처리되는\n완전 한정 이름의 사용은 불필요합니다. 완전 한정되지 않은 이름 사용을 고려하세요.",
+    "priority": 4,
+    "examples": [
+      "import java.util.List;\n\npublic class Foo {\n    private java.util.List list1;   // Unnecessary FQN\n    private List list2;             // More appropriate given import of 'java.util.List'\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryImport",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "6.34.0",
+    "message": "불필요한 import ''{0}''",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryImportRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#unnecessaryimport",
+    "description": "제거할 수 있는 import 문을 보고합니다. 사용되지 않거나, 중복되었거나,\n            import하는 멤버가 java.lang 또는 현재 패키지에 있어 이미 암시적으로 범위에\n            있는 경우입니다.\n\n            일부 import가 해결되지 않는 경우(예: 불완전한 보조 클래스패스로 PMD를\n            실행하는 경우), 오탐을 방지하기 위해 실제로 사용되지 않더라도 일부 import가\n            보수적으로 사용된 것으로 표시될 수 있습니다.",
+    "priority": 4,
+    "examples": [
+      "import java.io.File;            // not used, can be removed\n            import java.util.Collections;   // used below\n            import java.util.*;             // so this one is not used\n\n            import java.lang.Object;        // imports from java.lang, unnecessary\n            import java.lang.Object;        // duplicate, unnecessary\n\n            public class Foo {\n                static Object emptyList() {\n                    return Collections.emptyList();\n                }\n            }"
+    ]
+  },
+  {
+    "name": "UselessParentheses",
+    "category": "codestyle",
+    "categoryName": "코드 스타일",
+    "since": "5.0",
+    "message": "불필요한 괄호.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.codestyle.UselessParenthesesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_codestyle.html#uselessparentheses",
+    "description": "괄호 표현식은 기본 연산자 우선순위 규칙을 재정의하는 데 사용됩니다. 제거해도\n            연산자의 상대적 중첩이 변경되지 않는 괄호는 불필요합니다. 둘러싸는 표현식의\n            의미를 변경하지 않기 때문입니다.\n\n            엄밀히 말해 불필요하지만 가독성을 위해 유용하다고 여겨질 수 있는 괄호도 있습니다.\n            이 규칙은 두 가지 종류의 불필요한 괄호에 대한 위반을 무시할 수 있습니다:\n            - 다른 우선순위의 연산자를 구분하는 \"명확화\" 괄호. 불필요하지만 우선순위 규칙을\n            명시적으로 만들어 잘 사용되지 않는 연산자에 유용할 수 있습니다. 예:\n            ```java\n                (a + b) &amp; c // `a + b &amp; c`와 동일하지만 아마 더 명확함\n            ```\n            보고하려면 `ignoreClarifying` 속성을 해제하세요.\n\n            - 등호 연산자 주위의 다른 괄호 쌍과 시각적으로 균형을 맞추는 불필요한 \"균형\" 괄호.\n            예를 들어, 이 두 표현식은 동일합니다:\n            ```java\n                (a == null) != (b == null)\n                a == null != (b == null)\n            ```\n            오른쪽 괄호는 필수이고 왼쪽 괄호는 단지 시각적으로 더 보기 좋습니다.\n            보고하려면 `ignoreBalancing` 속성을 해제하세요.",
+    "priority": 4,
+    "examples": [
+      "public class Foo {\n    {\n        int n = 0;\n        n = (n);         // here\n        n = (n * 2) * 3; // and here\n        n = n * (2 * 3); // and here\n    }\n}"
+    ]
+  },
+  {
+    "name": "AbstractClassWithoutAnyMethod",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "4.2",
+    "message": "추상 메서드가 없으므로 abstract 키워드가 인스턴스화를 방지하기 위해 사용된 것으로 보입니다. 대신 private 또는 protected 생성자를 사용하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#abstractclasswithoutanymethod",
+    "description": "추상 클래스가 어떤 메서드도 제공하지 않는 경우, 인스턴스화를 의도하지 않은 단순한 데이터 컨테이너\n역할을 할 수 있습니다. 이 경우 클래스를 오해의 소지가 있는 abstract로 만드는 것보다\n인스턴스화를 방지하기 위해 private 또는 protected 생성자를 사용하는 것이 더 좋습니다.",
+    "priority": 1,
+    "examples": [
+      "public abstract class Example {\n    String field;\n    int otherField;\n}"
+    ]
+  },
+  {
+    "name": "AvoidThrowingNullPointerException",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.8",
+    "message": "NullPointerException을 직접 던지는 것을 피하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.AvoidThrowingNullPointerExceptionRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#avoidthrowingnullpointerexception",
+    "description": "NullPointerException을 수동으로 던지는 것을 피하세요. 대부분의 사람들은 가상 머신이 이 예외를 던진\n것으로 생각하기 때문에 혼란을 줍니다. 메서드가 null 매개변수로 호출되는 것을 방지하려면\nIllegalArgumentException을 대신 사용하여 프로그래머가 의도적으로 발생시킨 예외임을 명확히\n할 수 있습니다. 그러나 이를 처리하는 더 좋은 방법이 있습니다:\n\n>*Effective Java, 3판, 항목 72: 표준 예외를 사용하라*\n>\n>모든 잘못된 메서드 호출은 결국 잘못된 인수나 상태로 귀결되지만,\n특정 종류의 잘못된 인수와 상태에 대해 표준적으로 사용되는 다른 예외가 있습니다.\nnull 값이 금지된 매개변수에 호출자가 null을 전달하는 경우, 관례상\nIllegalArgumentException이 아닌 NullPointerException을 던져야 합니다.\n\n이를 구현하려면 `java.util.Objects.requireNonNull()`을 사용하는 것이 좋습니다\n(Java 1.7에서 도입). 이 메서드는 주로 여러 매개변수가 있는 메서드와 생성자에서\n매개변수 유효성 검사를 수행하기 위해 설계되었습니다.\n\n매개변수 유효성 검사는 다음과 같이 할 수 있습니다:\n```\npublic class Foo {\n    private String exampleValue;\n\n    void setExampleValue(String exampleValue) {\n      // check, throw and assignment in a single standard call\n      this.exampleValue = Objects.requireNonNull(exampleValue, \"exampleValue must not be null!\");\n    }\n  }\n```",
+    "priority": 1,
+    "examples": [
+      "public class Foo {\n    void bar() {\n        throw new NullPointerException();\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidThrowingRawExceptionTypes",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.8",
+    "message": "원시 예외 타입 {0}을(를) 던지는 것을 피하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#avoidthrowingrawexceptiontypes",
+    "description": "특정 예외 타입을 던지는 것을 피하세요. 원시 RuntimeException, Throwable,\nException 또는 Error를 던지는 대신, 하위 클래스 예외나 에러를 사용하세요.",
+    "priority": 1,
+    "examples": [
+      "public class Foo {\n    public void bar() throws Exception {\n        throw new Exception();\n    }\n}"
+    ]
+  },
+  {
+    "name": "ClassWithOnlyPrivateConstructorsShouldBeFinal",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "4.1",
+    "message": "이 클래스는 private 생성자만 가지고 있으므로 final로 선언할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.ClassWithOnlyPrivateConstructorsShouldBeFinalRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#classwithonlyprivateconstructorsshouldbefinal",
+    "description": "컴파일 단위 외부에서 확장할 수 없는 클래스를 final로 만들 수 있다고 보고합니다.\n모든 생성자가 private이므로 하위 클래스에서 상위 생성자를 호출할 수 없기 때문입니다.",
+    "priority": 1,
+    "examples": [
+      "public class Foo {  //Should be final\n    private Foo() { }\n}"
+    ]
+  },
+  {
+    "name": "AvoidRethrowingException",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.8",
+    "message": "예외를 잡아서 다시 던지기만 하는 catch 문은 피해야 합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.AvoidRethrowingExceptionRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#avoidrethrowingexception",
+    "description": "잡은 예외를 단순히 다시 던지기만 하는 catch 블록은 코드 크기와 런타임 복잡성만 증가시킵니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n    try {\n        // do something\n    }  catch (SomeException se) {\n       throw se;\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidThrowingNewInstanceOfSameException",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "4.2.5",
+    "message": "예외를 잡아서 같은 타입의 새 인스턴스로 감싸 던지는 catch 문은 피해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#avoidthrowingnewinstanceofsameexception",
+    "description": "잡은 예외를 같은 타입의 새 인스턴스로 감싸서 다시 던지기만 하는 catch 블록은\n코드 크기와 런타임 복잡성만 증가시킵니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n    try {\n        // do something\n    } catch (SomeException se) {\n        // harmless comment\n        throw new SomeException(se);\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidUncheckedExceptionsInSignatures",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "6.13.0",
+    "message": "메서드 또는 생성자는 ''throws'' 절에 비검사 예외 {0}을(를) 명시적으로 선언하지 않아야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#avoiduncheckedexceptionsinsignatures",
+    "description": "메서드 또는 생성자의 `throws` 절에 있는 비검사 예외를 보고합니다.\nJava는 호출자에게 비검사 예외를 처리하도록 강제하지 않으므로,\n문서화 목적 외에는 불필요합니다. 더 나은 방법은\n`@throws` Javadoc 태그로 예외 상황을 문서화하는 것으로, 더 설명적일 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public void foo() throws RuntimeException {\n}"
+    ]
+  },
+  {
+    "name": "CognitiveComplexity",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "6.35.0",
+    "message": "The {0} ''{1}'' has a cognitive complexity of {2}, current threshold is {3}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.CognitiveComplexityRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#cognitivecomplexity",
+    "description": "매우 복잡한 메서드는 읽기 어렵고 유지보수 비용이 더 높습니다. 단일 메서드에 너무 많은 결정 로직을\n            포함하면 동작을 이해하기 어렵고 수정하기 더 어려워집니다.\n\n            인지적 복잡도는 사람이 메서드를 읽고 이해하는 것이 얼마나 어려운지를 측정하는 지표입니다.\n            제어 흐름에 중단이 포함된 코드는 더 복잡하며, 언어 축약 표현의 사용은 복잡도 수준을 증가시키지\n            않습니다. 중첩된 제어 흐름은 메서드를 이해하기 더 어렵게 만들 수 있으며, 제어 흐름의 추가\n            중첩마다 인지적 복잡도가 증가합니다.\n\n            인지적 복잡도에 대한 정보는 다음 원본 논문에서 확인할 수 있습니다:\n            <https://www.sonarsource.com/docs/CognitiveComplexity.pdf>\n\n            기본적으로 이 규칙은 복잡도가 15 이상인 메서드를 보고합니다. 보고된 메서드는 덜 복잡한\n            구성 요소로 분해해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  // Has a cognitive complexity of 0\n  public void createAccount() {\n    Account account = new Account(\"PMD\");\n    // save account\n  }\n\n  // Has a cognitive complexity of 1\n  public Boolean setPhoneNumberIfNotExisting(Account a, String phone) {\n    if (a.phone == null) {                          // +1\n      a.phone = phone;\n      return true;\n    }\n\n    return false;\n  }\n\n  // Has a cognitive complexity of 4\n  public void updateContacts(List<Contact> contacts) {\n    List<Contact> contactsToUpdate = new ArrayList<Contact>();\n\n    for (Contact contact : contacts) {                           // +1\n      if (contact.department.equals(\"Finance\")) {                // +2 (nesting = 1)\n        contact.title = \"Finance Specialist\";\n        contactsToUpdate.add(contact);\n      } else if (contact.department.equals(\"Sales\")) {           // +1\n        contact.title = \"Sales Specialist\";\n        contactsToUpdate.add(contact);\n      }\n    }\n    // save contacts\n  }\n}"
+    ]
+  },
+  {
+    "name": "CollapsibleIfStatements",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.1",
+    "message": "이 if 문은 상위 if 문과 결합할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#collapsibleifstatements",
+    "description": "조건을 불리언 `&&` 연산자로 결합하여 병합할 수 있는 중첩된 'if' 문을 보고합니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n\n    void bar() {\n        if (x) {            // original implementation\n            if (y) {\n                // do stuff\n            }\n        }\n    }\n\n    void bar() {\n        if (x && y) {        // clearer implementation\n            // do stuff\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "CouplingBetweenObjects",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.04",
+    "message": "값 {0}은(는) 클래스 내의 높은 결합도를 나타낼 수 있습니다 (임계값: {1})",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.CouplingBetweenObjectsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#couplingbetweenobjects",
+    "description": "이 규칙은 객체 내의 고유한 속성, 지역 변수 및 반환 타입의 수를 계산합니다.\n지정된 임계값보다 높은 수치는 높은 결합도를 나타낼 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "import com.Blah;\nimport org.Bar;\nimport org.Bardo;\n\npublic class Foo {\n    private Blah var1;\n    private Bar var2;\n\n    //followed by many imports of unique objects\n    ObjectC doWork() {\n        Bardo var55;\n        ObjectA var44;\n        ObjectZ var93;\n        return something();\n    }\n}"
+    ]
+  },
+  {
+    "name": "CyclomaticComplexity",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.03",
+    "message": "The {0} ''{1}'' has a{2} cyclomatic complexity of {3}.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.CyclomaticComplexityRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#cyclomaticcomplexity",
+    "description": "메서드의 복잡성은 유지보수 비용과 가독성에 직접적으로 영향을 미칩니다. 단일 메서드에 너무 많은 결정 로직을\n집중시키면 동작을 읽고 변경하기 어려워집니다.\n\n순환 복잡도는 메서드의 결정 지점 수에 메서드 진입점 1을 더하여 메서드의 복잡성을 평가합니다.\n결정 지점은 제어 흐름이 프로그램의 다른 위치로 이동하는 곳입니다. 따라서 `if`, `while`, `for`,\n`case`와 같은 모든 제어 흐름 문을 포함합니다. 계산에 대한 자세한 내용은\n{% jdoc java::lang.java.metrics.JavaMetrics#CYCLO %} 문서를 참조하세요.\n\n일반적으로 1-4는 낮은 복잡도, 5-7은 보통 복잡도, 8-10은 높은 복잡도,\n11 이상은 매우 높은 복잡도를 나타냅니다. 기본적으로 이 규칙은 복잡도가 10 이상인 메서드를 보고합니다.\n또한 보통 복잡도의 메서드가 많은 클래스는 개별 메서드가 직접 보고되지 않더라도\n메서드 복잡도의 합이 80에 도달하면 보고됩니다.\n\n보고된 메서드는 여러 개의 작은 메서드로 분해해야 합니다. 보고된 클래스는\n하위 구성 요소로 분해하는 것이 좋습니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n  void baseCyclo() {                // Cyclo = 1\n    highCyclo();\n  }\n\n  void highCyclo() {                // Cyclo = 10: reported!\n    int x = 0, y = 2;\n    boolean a = false, b = true;\n\n    if (a && (y == 1 ? b : true)) { // +3\n      if (y == x) {                 // +1\n        while (true) {              // +1\n          if (x++ < 20) {           // +1\n            break;                  // +1\n          }\n        }\n      } else if (y == t && !d) {    // +2\n        x = a ? y : x;              // +1\n      } else {\n        x = 2;\n      }\n    }\n  }\n}"
+    ]
+  },
+  {
+    "name": "DataClass",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "6.0.0",
+    "message": "클래스 ''{0}''은(는) 데이터 클래스로 의심됩니다 (WOC={1}, NOPA={2}, NOAM={3}, WMC={4})",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.DataClassRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#dataclass",
+    "description": "데이터 클래스는 대부분의 상태를 노출하면서 복잡한 기능이 없는 단순한 데이터 홀더입니다.\n기능의 부재는 해당 동작이 다른 곳에 정의되어 있음을 나타낼 수 있으며, 이는 데이터-동작\n근접성이 낮다는 신호입니다. 내부를 직접 노출함으로써 데이터 클래스는 캡슐화를 깨뜨리고,\n따라서 시스템의 유지보수성과 이해도를 저하시킵니다. 또한 클래스는 데이터 표현에 강하게\n의존하는 경향이 있어 취약한 설계로 이어집니다.\n\n데이터 클래스를 리팩토링할 때는 좋은 데이터-동작 근접성을 회복하는 데 초점을 맞춰야 합니다.\n대부분의 경우 데이터에 대해 정의된 연산을 클래스 내부로 이동하는 것을 의미합니다.\n일부 다른 경우에는 클래스를 완전히 제거하고 데이터를 이전 클라이언트 클래스로 이동하는 것이\n합리적일 수 있습니다.\n\n이 규칙은 메트릭을 사용하여 탐지 전략을 구현합니다. 위반 메시지는\n이러한 메트릭의 값에 대한 정보를 제공합니다:\n* WMC: 클래스 복잡도 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHED_METHOD_COUNT %} 참조\n* WOC: 클래스의 '비사소성' 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHT_OF_CLASS %} 참조\n* NOPA: 공개 속성 수, {% jdoc java::lang.java.metrics.JavaMetrics#NUMBER_OF_PUBLIC_FIELDS %} 참조\n* NOAM: 공개 접근자 메서드 수, {% jdoc java::lang.java.metrics.JavaMetrics#NUMBER_OF_ACCESSORS %} 참조\n\n이 규칙은 다음 속성을 모두 가진 클래스를 찾아 갓 클래스를 식별합니다:\n* 높은 NOPA + NOAM\n* 낮은 WOC\n* 낮은 WMC",
+    "priority": 3,
+    "examples": [
+      "public class DataClass {\n\n  // class exposes public attributes\n  public String name = \"\";\n  public int bar = 0;\n  public int na = 0;\n\n  private int bee = 0;\n\n  // and private ones through getters\n  public void setBee(int n) {\n    bee = n;\n  }\n}"
+    ]
+  },
+  {
+    "name": "DoNotExtendJavaLangError",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "4.0",
+    "message": "예외는 java.lang.Error를 확장해서는 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#donotextendjavalangerror",
+    "description": "Error는 시스템 예외입니다. 이를 확장하지 마세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo extends Error { }"
+    ]
+  },
+  {
+    "name": "ExceptionAsFlowControl",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.8",
+    "message": "{0}번째 줄에서 던져진 예외가 이 블록에서 잡힙니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.ExceptionAsFlowControlRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#exceptionasflowcontrol",
+    "description": "이 규칙은 감싸는 try 문에서 던져지고 잡히는 예외를 보고합니다.\n예외를 `goto` 문의 한 형태로 사용하는 것은 권장되지 않습니다. 이는 실제 예외를\n숨기고, 특히 디버깅 시 제어 흐름을 불명확하게 만들 수 있습니다.\n위반을 수정하려면 필요한 유효성 검사를 추가하거나 대체 제어 구조를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n    try {\n        try {\n        } catch (Exception e) {\n            throw new WrapperException(e);\n            // this is essentially a GOTO to the WrapperException catch block\n        }\n    } catch (WrapperException e) {\n        // do some more stuff\n    }\n}"
+    ]
+  },
+  {
+    "name": "ExcessiveImports",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.04",
+    "message": "많은 수의 임포트({0})는 객체 내의 높은 결합도를 나타낼 수 있습니다; 현재 임계값은 {1}입니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.ExcessiveImportsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#excessiveimports",
+    "description": "많은 수의 임포트는 객체 내의 높은 결합도를 나타낼 수 있습니다. 이 규칙은\n고유한 임포트의 수를 계산하고 사용자 지정 임계값을 초과하면 위반을 보고합니다.",
+    "priority": 3,
+    "examples": [
+      "import blah.blah.Baz;\nimport blah.blah.Bif;\n// 28 others from the same package elided\npublic class Foo {\n    public void doWork() {}\n}"
+    ]
+  },
+  {
+    "name": "ExcessiveParameterList",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "0.9",
+    "message": "긴 매개변수 목록을 피하세요 ({0}개의 매개변수 - 임계값은 {1}입니다).",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.ExcessiveParameterListRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#excessiveparameterlist",
+    "description": "매개변수가 많은 메서드는 유지보수가 어렵습니다. 특히 대부분의 매개변수가 같은 데이터 타입을\n공유하는 경우 더욱 그렇습니다. 이러한 상황은 일반적으로 많은 매개변수를 감싸는 새로운 객체가\n필요함을 나타냅니다.",
+    "priority": 3,
+    "examples": [
+      "public void addPerson(      // too many arguments liable to be mixed up\n    int birthYear, int birthMonth, int birthDate, int height, int weight, int ssn) {\n\n    . . . .\n}\n\npublic void addPerson(      // preferred approach\n    Date birthdate, BodyMeasurements measurements, int ssn) {\n\n    . . . .\n}"
+    ]
+  },
+  {
+    "name": "ExcessivePublicCount",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.04",
+    "message": "이 클래스에는 {0}개의 public 메서드와 속성이 있습니다; 현재 임계값은 {1}입니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.ExcessivePublicCountRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#excessivepubliccount",
+    "description": "많은 수의 public 메서드와 속성을 가진 클래스는 조합적 부작용이 빠르게 증가하고 위험이 커지므로\n불균형적인 테스트 노력을 필요로 합니다. 이러한 클래스를 더 작은 클래스로 리팩토링하면\n테스트 가능성과 신뢰성이 향상될 뿐만 아니라 새로운 변형을 쉽게 개발할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public String value;\n    public Bar something;\n    public Variable var;\n    // [... more more public attributes ...]\n\n    public void doWork() {}\n    public void doMoreWork() {}\n    public void doWorkAgain() {}\n    // [... more more public methods ...]\n}"
+    ]
+  },
+  {
+    "name": "FinalFieldCouldBeStatic",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.1",
+    "message": "final 필드 {0}은(는) static으로 만들 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.FinalFieldCouldBeStaticRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#finalfieldcouldbestatic",
+    "description": "final 필드가 컴파일 타임 상수에 할당된 경우, static으로 만들어 런타임에 각 객체에서\n오버헤드를 줄일 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  public final int BAR = 42; // this could be static and save some space\n}"
+    ]
+  },
+  {
+    "name": "GodClass",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "5.0",
+    "message": "갓 클래스 가능성 (WMC={0}, ATFD={2}, TCC={1})",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.GodClassRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#godclass",
+    "description": "갓 클래스 규칙은 메트릭을 사용하여 갓 클래스 설계 결함을 탐지합니다. 갓 클래스는 너무 많은 일을 하고,\n매우 크고 지나치게 복잡합니다. 더 객체 지향적이 되도록 분리해야 합니다.\n이 규칙은 \"Object-Oriented Metrics in Practice\"에 설명된 탐지 전략을 사용합니다.\n위반은 전체 클래스에 대해 보고됩니다.\n\n이 규칙은 메트릭을 사용하여 탐지 전략을 구현합니다. 위반 메시지는\n이러한 메트릭의 값에 대한 정보를 제공합니다:\n* WMC: 클래스 복잡도 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHED_METHOD_COUNT %} 참조\n* ATFD: 클래스가 외부 데이터를 얼마나 사용하는지 측정, {% jdoc java::lang.java.metrics.JavaMetrics#ACCESS_TO_FOREIGN_DATA %} 참조\n* TCC: 메서드들이 얼마나 밀접하게 관련되어 있는지 측정, {% jdoc java::lang.java.metrics.JavaMetrics#TIGHT_CLASS_COHESION %} 참조\n\n이 규칙은 다음 속성을 모두 가진 클래스를 찾아 갓 클래스를 식별합니다:\n* 높은 WMC\n* 높은 ATFD\n* 낮은 TCC\n\n참고 문헌:\n\nMichele Lanza and Radu Marinescu. *Object-Oriented Metrics in Practice:\nUsing Software Metrics to Characterize, Evaluate, and Improve the Design\nof Object-Oriented Systems.* Springer, Berlin, 1 edition, October 2006. Page 80.",
+    "priority": 3,
+    "examples": []
+  },
+  {
+    "name": "ImmutableField",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "2.0",
+    "message": "필드 ''{0}''은(는) final로 선언할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.ImmutableFieldRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#immutablefield",
+    "description": "객체 초기화가 끝난 후 값이 변경되지 않는 non-final 필드를 보고하며,\n따라서 final로 표시할 수 있습니다.\n\n이 규칙은 필드 값 자체가 깊게 불변인지는 강제하지 않습니다.\n모든 멤버 필드가 final로 선언되어 있더라도 객체는 여전히 변경 가능한 상태를 가질 수 있습니다.\n이를 얕은 불변성이라고 합니다. 변경 가능성에 대한 자세한 내용은\n*Effective Java, 3판, 항목 17: 변경 가능성을 최소화하라*를 참조하세요.\n\n제한 사항: 현재는 private 필드만 확인할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  private int x; // could be final\n  public Foo() {\n      x = 7;\n  }\n  public void foo() {\n     int a = x + 2;\n  }\n}"
+    ]
+  },
+  {
+    "name": "InvalidJavaBean",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "6.52.0",
+    "message": "빈 ''{0}''에 프로퍼티 ''{1}''에 대한 getter가 없습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.InvalidJavaBeanRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#invalidjavabean",
+    "description": "[JavaBeans API 명세](https://download.oracle.com/otndocs/jcp/7224-javabeans-1.01-fr-spec-oth-JSpec/)를 따르지 않는 빈을 식별합니다.\n\n각 non-static 필드는 getter와 setter 메서드를 모두 가져야 합니다. 필드가 내부적으로만 사용되고\n빈 프로퍼티가 아닌 경우, 해당 필드는 `transient`로 표시해야 합니다.\n\n이 규칙은 필드의 타입이 getter의 반환 타입과 동일한지 확인합니다. 그리고 이 타입이\nsetter에서 사용되는 타입과 일치하는지 확인합니다.\n\n이 규칙은 또한 인자가 없는 생성자 또는 기본 생성자가 사용 가능한지 확인합니다.\n\n선택적으로 이 규칙은 빈이 `java.io.Serializable`을 구현하는지도 확인합니다. 이는 원래\nJavaBeans 명세의 요구 사항이지만, 요즘 프레임워크들은 이를 엄격하게 요구하지 않습니다.\n\n빈이 아닌 클래스에서 많은 거짓 양성을 피하기 위해, 이 규칙은 `packages` 프로퍼티를\n구성하여 명시적으로 활성화해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "package org.example.beans;\npublic class MyBean {        // <-- bean is not serializable, missing \"implements Serializable\"\n    private String label;    // <-- missing setter for property \"label\"\n\n    public String getLabel() {\n        return label;\n    }\n}"
+    ]
+  },
+  {
+    "name": "LawOfDemeter",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "5.0",
+    "message": "디미터 법칙의 잠재적 위반 ({0})",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.LawOfDemeterRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#lawofdemeter",
+    "description": "디미터 법칙은 \"친구하고만 대화하라\"라는 간단한 규칙입니다. 이 법칙은\n서로 다른 추상화 수준의 클래스나 객체 간의 결합도를 줄이기 위해\n특정 거리 정의에 따라 \"너무 먼 곳\"에서 데이터를 가져오는 것을 금지합니다.\n\n이 규칙은 객체가 얼마나 \"먼지\"를 정량화하는 \"차수(degree)\" 개념을 사용합니다.\n차수가 너무 높은 표현식은 특정 방식으로만 사용할 수 있습니다. 표현식의 차수는\n귀납적으로 정의됩니다:\n- `this`의 차수는 0\n- 메서드 매개변수의 차수는 1\n- 메서드에서 새로 생성된 객체의 차수는 1\n- 정적 변수의 차수는 1\n- `expr.field`와 같은 필드 접근 표현식의 차수는 `expr`의 차수에 1을 더한 값\n- `expr.getFoo()`와 같은 \"getter 표현식\"의 차수는 `expr`의 차수에 1을 더한 값\n- `expr.withFoo(\"\")`와 같은 \"변환 표현식\"의 차수는 `expr`의 차수와 동일\n- 변수의 차수는 해당 변수에 도달하는 모든 할당의 최대 차수\n\n직관적으로 getter를 더 많이 호출할수록 차수가 증가합니다. 결국\n차수가 보고 임계값(속성 `trustRadius`)에 도달하면 해당 표현식이 보고됩니다.\n계산의 세부 사항은 컬렉션 사용(리스트나 배열에 있는 객체는 컨테이너와 같은 차수를 가짐),\n빌더 패턴, 추상화 경계를 깨지 않는 것으로 보이는 getter 등의 일반적인 패턴을\n허용하도록 더 복잡하게 구성되어 있습니다.\n\n이 규칙은 많은 거짓 양성과 낮은 우선순위 경고가 발생하기 쉽습니다.\n`trustRadius` 속성을 증가시키면 이를 크게 줄일 수 있습니다. 기본\n`trustRadius` 1은 원래 디미터 법칙에 해당합니다 (신뢰할 수 없는 값에 대해\n하나의 getter 호출만 허용됩니다). 주어진 `trustRadius` 값에 대해:\n- `trustRadius` 이하의 차수를 가진 표현식은 보고되지 않습니다\n- 정확히 `trustRadius + 1` 차수의 표현식은 현재 메서드에서 반환되거나\n다른 메서드의 인수로 전달되는 경우를 제외하고 보고됩니다. 이 예외가 없으면\n예를 들어 메서드 매개변수에서 어떤 정보도 추출할 수 없습니다.\n- `trustRadius + 1`보다 엄격히 큰 차수의 값은 보고되지 않습니다.\n직관적으로 차수 `n > 1`의 값을 얻으려면 차수 `n - 1`의 표현식을 사용해야 하므로,\n`n > trustRadius + 1`인 경우, 보고될 차수 `trustRadius + 1`의 값을 사용하고 있는 것입니다.\n\n참고 문헌:\n\n*   Andrew Hunt, David Thomas, and Ward Cunningham. The Pragmatic Programmer. From Journeyman to Master. Addison-Wesley Longman, Amsterdam, October 1999.;\n*   K.J. Lieberherr and I.M. Holland. Assuring good style for object-oriented programs. Software, IEEE, 6(5):38–48, 1989.;\n*   &lt;http://www.ccs.neu.edu/home/lieber/LoD.html>\n*   &lt;http://en.wikipedia.org/wiki/Law_of_Demeter>",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    /**\n     * This example will result in one violation.\n     */\n    public void example(Bar b) { // b has degree 1\n        // `b.getC()` has degree 2, it's breaking a boundary of abstraction and so is reported.\n        b.getC().doIt();\n        // To respect the law of Demeter, Bar should encapsulate its\n        // C member more properly, eg by exposing a method like this:\n        b.callDoItOnC();\n\n        // a constructor call, not a method call.\n        D d = new D();\n        // this method call is ok, because we have create the new\n        // instance of D locally.\n        d.doSomethingElse();\n    }\n}"
+    ]
+  },
+  {
+    "name": "LogicInversion",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "5.0",
+    "message": "논리 보수 연산자 대신 반대 연산자를 사용하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#logicinversion",
+    "description": "논리 보수 연산자로 전체 표현식을 부정하는 대신 반대 연산자를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public boolean bar(int a, int b) {\n\n    if (!(a == b)) { // use !=\n         return false;\n     }\n\n    if (!(a < b)) { // use >=\n         return false;\n    }\n\n    return true;\n}"
+    ]
+  },
+  {
+    "name": "LoosePackageCoupling",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "5.0",
+    "message": "패키지 계층 ''{1}'' 외부에서 ''{0}''을(를) 사용하는 것은 권장되지 않습니다; 대신 권장 클래스를 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.LoosePackageCouplingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#loosepackagecoupling",
+    "description": "구성된 허용 클래스 중 하나를 사용하는 경우를 제외하고,\n구성된 패키지 계층 외부에서 해당 패키지 계층의 클래스를 사용하는 것을 피하세요.",
+    "priority": 3,
+    "examples": [
+      "package some.package;\n\nimport some.other.package.subpackage.subsubpackage.DontUseThisClass;\n\npublic class Bar {\n    DontUseThisClass boo = new DontUseThisClass();\n}"
+    ]
+  },
+  {
+    "name": "MutableStaticState",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "6.35.0",
+    "message": "non-final, non-private 정적 필드를 사용하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#mutablestaticstate",
+    "description": "non-private 정적 필드는 final로 선언하여 상수(또는 불변 참조)로 만들어야 합니다.\n\n            non-private non-final 정적 필드는 캡슐화를 깨뜨리고 찾기 어려운\n            버그를 유발할 수 있습니다. 이러한 필드는 프로그램 어디서든 수정할 수 있기 때문입니다.\n            호출자는 non-private non-final 정적 필드에 쉽게 접근하고 수정할 수 있습니다.\n            접근이나 수정을 방어할 수 없으며, 새로 설정된 값을 검증할 수도 없습니다.\n\n            이 규칙을 사용하는 경우,\n            {% rule java/errorprone/AssignmentToNonFinalStatic %} 규칙은 필요하지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Greeter { public static Foo foo = new Foo(); ... }       // avoid this\npublic class Greeter { public static final Foo FOO = new Foo(); ... } // use this instead"
+    ]
+  },
+  {
+    "name": "NcssCount",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "6.0.0",
+    "message": "The {0} ''{1}'' has a NCSS line count of {2}.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.NcssCountRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#ncsscount",
+    "description": "이 규칙은 NCSS(비주석 소스 문장) 메트릭을 사용하여 클래스, 메서드 또는 생성자의\n코드 줄 수를 결정합니다. NCSS는 주석과 빈 줄을 무시하고 실제 문장만 계산합니다.\n계산에 대한 자세한 내용은 {% jdoc java::lang.java.metrics.JavaMetrics#NCSS %} 문서를 참조하세요.",
+    "priority": 3,
+    "examples": [
+      "import java.util.Collections;       // +0\nimport java.io.IOException;         // +0\n\nclass Foo {                         // +1, total Ncss = 12\n\n  public void bigMethod()           // +1\n      throws IOException {\n    int x = 0, y = 2;               // +1\n    boolean a = false, b = true;    // +1\n\n    if (a || b) {                   // +1\n      try {                         // +1\n        do {                        // +1\n          x += 2;                   // +1\n        } while (x < 12);\n\n        System.exit(0);             // +1\n      } catch (IOException ioe) {   // +1\n        throw new PatheticFailException(ioe); // +1\n      }\n    } else {\n      assert false;                 // +1\n    }\n  }\n}"
+    ]
+  },
+  {
+    "name": "NPathComplexity",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.9",
+    "message": "The {0} ''{1}'' has an NPath complexity of {2}, current threshold is {3}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.NPathComplexityRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#npathcomplexity",
+    "description": "메서드의 NPath 복잡도는 해당 메서드를 통과하는 비순환 실행 경로의 수입니다.\n순환 복잡도가 메서드의 결정 지점 수를 세는 반면, NPath는 메서드 블록의\n처음부터 끝까지의 전체 경로 수를 셉니다. 이 메트릭은 같은 블록 내\n문장의 복잡도를 곱하기 때문에 기하급수적으로 증가합니다. 계산에 대한 자세한 내용은\n{% jdoc java::lang.java.metrics.JavaMetrics#NPATH %} 문서를 참조하세요.\n\n일반적으로 200의 임계값이 복잡도를 줄이고 가독성을 높이기 위한\n조치를 취해야 하는 시점으로 간주됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  public static void bar() { // Ncss = 252: reported!\n    boolean a, b = true;\n    try { // 2 * 2 + 2 = 6\n      if (true) { // 2\n        List buz = new ArrayList();\n      }\n\n      for(int i = 0; i < 19; i++) { // * 2\n        List buz = new ArrayList();\n      }\n    } catch(Exception e) {\n      if (true) { // 2\n        e.printStackTrace();\n      }\n    }\n\n    while (j++ < 20) { //  * 2\n      List buz = new ArrayList();\n    }\n\n    switch(j) { // * 7\n      case 1:\n      case 2: break;\n      case 3: j = 5; break;\n      case 4: if (b && a) { bar(); } break;\n      default: break;\n    }\n\n    do { // * 3\n        List buz = new ArrayList();\n    } while (a && j++ < 30);\n  }\n}"
+    ]
+  },
+  {
+    "name": "PublicMemberInNonPublicType",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "7.21.0",
+    "message": "non-public 타입에서 선언된 public 멤버 ''{0}''",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#publicmemberinnonpublictype",
+    "description": "non-public 타입은 자체 멤버를 public으로 선언해서는 안 됩니다. 가시성이 실질적으로\nprivate, package-private 또는 protected로 제한되므로 public 수정자의 사용이 오해를 불러일으킵니다.\nnon-public 타입 내에서 멤버를 public으로 선언하면 혼란을 야기하고, 나중에 해당 타입을\npublic으로 변경할 경우 모든 public 멤버가 노출되는 의도치 않은 결과를 초래할 수 있습니다.\n그러나 non-public 타입이 상위 클래스로부터 public 멤버를 상속받는 것은 상위 클래스의 설계에\n포함된 것이므로 허용됩니다.\n\n이러한 문제를 피하기 위해, 이 멤버들은 적절하게 protected, package-private 또는 private으로\n선언해야 합니다. 이러한 멤버의 가시성을 변경하면 public 하위 타입의 API에 의도치 않게\n영향을 미칠 수 있습니다. 구체적으로, package-private 상위 타입의 public 하위 타입은\n상위 타입의 모든 public 메서드를 상속합니다. 이 메서드들을 private으로 변환하면\n하위 타입에서도 제거되어 하위 타입의 public API가 의도치 않게 변경될 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "class Wrong {\n    public void method() {} // violation\n    public int field; // violation\n}\n\nclass Correct {\n    void method() {}\n    // or even\n    private void privateMethod() {}\n\n    int field;\n    // or even\n    private int privateField;\n}"
+    ]
+  },
+  {
+    "name": "SignatureDeclareThrowsException",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.2",
+    "message": "메서드/생성자는 java.lang.Exception을 명시적으로 던져서는 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.SignatureDeclareThrowsExceptionRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#signaturedeclarethrowsexception",
+    "description": "메서드/생성자는 일반적인 java.lang.Exception을 명시적으로 던져서는 안 됩니다. 메서드에서\n어떤 예외가 던져질 수 있는지 불분명하기 때문입니다. 이러한 모호한 인터페이스를\n문서화하고 이해하기 어려울 수 있습니다. RuntimeException에서 파생된 클래스나\n검사 예외를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public void foo() throws Exception {\n}"
+    ]
+  },
+  {
+    "name": "SimplifiedTernary",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "5.4.0",
+    "message": "이 조건 표현식은 || 또는 &amp;&amp;로 단순화할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#simplifiedternary",
+    "description": "`condition ? literalBoolean : foo` 또는 `condition ? foo : literalBoolean` 형태의\n삼항 표현식을 보고합니다.\n\n이러한 표현식은 다음과 같이 단순화할 수 있습니다:\n* `condition ? true : expr`은 `condition || expr`로 단순화\n* `condition ? false : expr`은 `!condition && expr`로 단순화\n* `condition ? expr : true`은 `!condition || expr`로 단순화\n* `condition ? expr : false`은 `condition && expr`로 단순화",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public boolean test() {\n        return condition ? true : something(); // can be as simple as return condition || something();\n    }\n\n    public void test2() {\n        final boolean value = condition ? false : something(); // can be as simple as value = !condition && something();\n    }\n\n    public boolean test3() {\n        return condition ? something() : true; // can be as simple as return !condition || something();\n    }\n\n    public void test4() {\n        final boolean otherValue = condition ? something() : false; // can be as simple as condition && something();\n    }\n\n    public boolean test5() {\n        return condition ? true : false; // can be as simple as return condition;\n    }\n}"
+    ]
+  },
+  {
+    "name": "SimplifyBooleanExpressions",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.05",
+    "message": "불리언 표현식에서 불필요한 비교를 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#simplifybooleanexpressions",
+    "description": "불리언 표현식에서 불필요한 비교를 피하세요. 이는 목적이 없고 가독성에 영향을 미칩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Bar {\n  // can be simplified to\n  // bar = isFoo();\n  private boolean bar = (isFoo() == true);\n\n  public isFoo() { return false;}\n}"
+    ]
+  },
+  {
+    "name": "SimplifyBooleanReturns",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "0.9",
+    "message": "이 if 문은 `{0}`으로 대체할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.SimplifyBooleanReturnsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#simplifybooleanreturns",
+    "description": "불리언을 반환할 때 불필요한 if-then-else 문을 피하세요. 조건 테스트의 결과를\n대신 반환할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public boolean isBarEqualTo(int x) {\n    if (bar == x) {      // this bit of code...\n        return true;\n    } else {\n        return false;\n    }\n}\n\npublic boolean isBarEqualTo(int x) {\n    return bar == x;    // can be replaced with this\n}"
+    ]
+  },
+  {
+    "name": "SimplifyConditional",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.1",
+    "message": "instanceof 앞에 null 검사를 할 필요가 없습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.SimplifyConditionalRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#simplifyconditional",
+    "description": "instanceof 앞에 null을 검사할 필요가 없습니다; instanceof 키워드는 null 인수가 주어지면 false를 반환합니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n  void bar(Object x) {\n    if (x != null && x instanceof Bar) {\n      // just drop the \"x != null\" check\n    }\n  }\n}"
+    ]
+  },
+  {
+    "name": "SingularField",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.1",
+    "message": "''{0}''은(는) 지역 변수로 대체할 수 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.SingularFieldRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#singularfield",
+    "description": "지역 변수로 변환할 수 있는 필드를 보고합니다. 이는 필드가 사용되는 모든 메서드에서\n처음 읽기 전에 할당되기 때문입니다. 따라서 메서드 호출 전에 필드가 가지고 있던\n값은 관찰되지 않을 수 있으므로, 포함 객체에 저장할 필요가 없을 수 있습니다.\n\n제한 사항:\n* 현재는 private 필드만 확인할 수 있습니다.\n* 이 규칙은 스레딩을 인식하지 않으므로 동시성 코드에서 거짓 양성이 발생할 수 있습니다.\n이러한 거짓 양성은 억제로 처리하는 것이 가장 좋습니다 (`ignoredAnnotations` 속성도 참조하세요).",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private int x; // this will be reported\n\n    public int foo(int y) {\n       x = y + 5; // assigned before any read\n       return x;\n    }\n\n    public int fooOk(int y) {\n       int z = y + 5; // might as well be a local like here\n       return z;\n    }\n}"
+    ]
+  },
+  {
+    "name": "SwitchDensity",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "1.02",
+    "message": "switch 문에서 레이블 대비 문장의 비율이 높습니다. 리팩토링을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.SwitchDensityRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#switchdensity",
+    "description": "switch 문에서 레이블 대비 문장의 비율이 높다는 것은 switch 문이 과부하되어 있음을\n의미합니다. 문장을 새로운 메서드로 이동하거나 switch 변수를 기반으로\n하위 클래스를 생성하는 것을 고려하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  public void bar(int x) {\n    switch (x) {\n      case 1: {\n        // lots of statements\n        break;\n      } case 2: {\n        // lots of statements\n        break;\n      }\n    }\n  }\n}"
+    ]
+  },
+  {
+    "name": "TooManyFields",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.0",
+    "message": "필드가 너무 많습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#toomanyfields",
+    "description": "필드가 너무 많은 클래스는 다루기 어려울 수 있으며, 관련 필드를 새로운 객체로 그룹화하여\n필드 수를 줄이도록 재설계해야 할 수 있습니다. 예를 들어, 개별 city/state/zip 필드를\n가진 클래스는 이를 단일 Address 필드로 통합할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Person {   // too many separate fields\n   int birthYear;\n   int birthMonth;\n   int birthDate;\n   float height;\n   float weight;\n}\n\npublic class Person {   // this is more manageable\n   Date birthDate;\n   BodyMeasurements measurements;\n}"
+    ],
+    "properties": [
+      {
+        "name": "maxfields",
+        "defaultValue": "15",
+        "description": "허용되는 최대 필드 수"
+      }
+    ]
+  },
+  {
+    "name": "TooManyMethods",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "4.2",
+    "message": "이 클래스에는 메서드가 너무 많습니다. 리팩토링을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#toomanymethods",
+    "description": "메서드가 너무 많은 클래스는 복잡도를 줄이고 더 세분화된 객체를 만들기 위해\n리팩토링하기에 좋은 후보입니다.",
+    "priority": 3,
+    "examples": [],
+    "properties": [
+      {
+        "name": "maxmethods",
+        "defaultValue": "10",
+        "description": "메서드 수 보고 임계값"
+      }
+    ]
+  },
+  {
+    "name": "UselessOverridingMethod",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "3.3",
+    "message": "오버라이딩 메서드가 단순히 super를 호출하기만 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.UselessOverridingMethodRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#uselessoverridingmethod",
+    "description": "오버라이딩 메서드가 단순히 상위 클래스에 정의된 동일한 메서드를 호출하기만 합니다.",
+    "priority": 3,
+    "examples": [
+      "public void foo(String bar) {\n    super.foo(bar);      // why bother overriding?\n}\n\npublic String foo() {\n    return super.foo();  // why bother overriding?\n}\n\n@Id\npublic Long getId() {\n    return super.getId();  // OK if 'ignoreAnnotations' is false, which is the default behavior\n}"
+    ]
+  },
+  {
+    "name": "UseObjectForClearerAPI",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "4.2.6",
+    "message": "많은 String 인수를 사용하는 대신, 해당 값들을 담는 컨테이너 객체 사용을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#useobjectforclearerapi",
+    "description": "public 메서드를 작성할 때는 API 관점에서 생각해야 합니다. 메서드가 public이면 다른 클래스가\n이를 사용하므로 포괄적이고 발전 가능한 API를 제공해야 합니다. 많은 정보를 단순한\nString의 나열로 전달하는 경우, 그 정보를 나타내는 객체를 사용하는 것을 고려하세요.\n더 간단한 API(예: doWork(Workload workload)와 같은)를 얻을 수 있고, 더 중요하게는\n추가 데이터를 전달해야 할 때 API를 수정하지 않고 Workload를 수정하거나 확장하기만\n하면 됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyClass {\n    public void connect(String username,\n        String pssd,\n        String databaseName,\n        String databaseAddress)\n        // Instead of those parameters object\n        // would ensure a cleaner API and permit\n        // to add extra data transparently (no code change):\n        // void connect(UserData data);\n    {\n\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseUtilityClass",
+    "category": "design",
+    "categoryName": "설계",
+    "since": "0.3",
+    "message": "모든 메서드가 static입니다. 인스턴스화를 방지하기 위해 private 기본 생성자를 추가하는 것을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.design.UseUtilityClassRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#useutilityclass",
+    "description": "정적 메서드만 있는 클래스의 경우 유틸리티 클래스로 만드는 것을 고려하세요.\n이는 추상 클래스에는 적용되지 않습니다. 하위 클래스에 비정적 메서드가 포함될 수\n있기 때문입니다. 또한 이 클래스를 유틸리티 클래스로 만들려면\n인스턴스화를 방지하기 위해 private 생성자를 추가하는 것을 잊지 마세요.\n(참고: 이 사용법은 PMD 5.1.0 이전에는 UseSingleton으로 알려져 있었습니다).",
+    "priority": 3,
+    "examples": [
+      "public class MaybeAUtility {\n  public static void foo() {}\n  public static void bar() {}\n}"
+    ]
+  },
+  {
+    "name": "CommentContent",
+    "category": "documentation",
+    "categoryName": "문서화",
+    "since": "5.0",
+    "message": "부적절한 단어 또는 표현이 발견되었습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.documentation.CommentContentRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_documentation.html#commentcontent",
+    "description": "정치적으로 올바른 표현을 위한 규칙입니다... 누구에게도 불쾌감을 주고 싶지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "//OMG, this is horrible, Bob is an idiot !!!"
+    ]
+  },
+  {
+    "name": "CommentRequired",
+    "category": "documentation",
+    "categoryName": "문서화",
+    "since": "5.1",
+    "message": "주석이 필요합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.documentation.CommentRequiredRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_documentation.html#commentrequired",
+    "description": "특정 언어 요소에 대해 Javadoc(공식) 주석이 필수인지(또는 불필요한지) 여부를 나타냅니다.",
+    "priority": 3,
+    "examples": [
+      "/**\n*\n*\n* @author Jon Doe\n*/"
+    ]
+  },
+  {
+    "name": "CommentSize",
+    "category": "documentation",
+    "categoryName": "문서화",
+    "since": "5.0",
+    "message": "주석이 너무 깁니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.documentation.CommentSizeRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_documentation.html#commentsize",
+    "description": "헤더가 아닌 주석의 크기가 지정된 제한 범위 내에 있는지 확인합니다.",
+    "priority": 3,
+    "examples": [
+      "/**\n*\n*   too many lines!\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*/"
+    ]
+  },
+  {
+    "name": "DanglingJavadoc",
+    "category": "documentation",
+    "categoryName": "문서화",
+    "since": "7.17.0",
+    "message": "Javadoc 주석이 어떤 클래스, 메서드 또는 필드에도 속하지 않습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.documentation.DanglingJavadocRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_documentation.html#danglingjavadoc",
+    "description": "클래스, 메서드 또는 필드에 속하지 않는 Javadoc 주석은 JavaDoc 도구에 의해 무시되며\n생성된 API 문서에 포함되지 않습니다. 이러한 주석은 잘못된 위치에 있거나\n(예: 어노테이션과 메서드 선언 사이) 블록 주석이어야 합니다.\n\n이 위반을 수정하려면 주석을 올바른 위치로 이동하거나,\n블록 주석으로 변환하거나, 완전히 제거해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  /**\n   * Public methods // wrong\n   */\n\n  /**\n   * A setter // OK\n   */\n   public void setFoo() {\n\n   }\n\n}"
+    ]
+  },
+  {
+    "name": "UncommentedEmptyConstructor",
+    "category": "documentation",
+    "categoryName": "문서화",
+    "since": "3.4",
+    "message": "빈 생성자에 주석을 작성하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_documentation.html#uncommentedemptyconstructor",
+    "description": "주석 없는 빈 생성자 규칙은 생성자에 구문이 없으면서 주석도 없는 경우를 찾습니다.\n빈 생성자에 명시적으로 주석을 작성하면 의도적인(주석이 있는) 빈 생성자와\n의도하지 않은 빈 생성자를 구분하기 쉬워집니다.",
+    "priority": 3,
+    "examples": [
+      "public Foo() {\n  // This constructor is intentionally empty. Nothing special is needed here.\n}"
+    ],
+    "properties": [
+      {
+        "name": "ignoreExplicitConstructorInvocation",
+        "defaultValue": "false",
+        "description": "빈 생성자 여부를 판단할 때 명시적 생성자 호출을 무시할지 설정합니다"
+      }
+    ]
+  },
+  {
+    "name": "UncommentedEmptyMethodBody",
+    "category": "documentation",
+    "categoryName": "문서화",
+    "since": "3.4",
+    "message": "빈 메서드 본문에 주석을 작성하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_documentation.html#uncommentedemptymethodbody",
+    "description": "주석 없는 빈 메서드 본문 규칙은 메서드 본문에 구문이 없으면서 주석도 없는 경우를 찾습니다.\n빈 메서드 본문에 명시적으로 주석을 작성하면 의도적인(주석이 있는) 빈 메서드와\n의도하지 않은 빈 메서드를 구분하기 쉬워집니다.",
+    "priority": 3,
+    "examples": [
+      "public void doSomething() {\n}"
+    ]
+  },
+  {
+    "name": "ConstructorCallsOverridableMethod",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.04",
+    "message": "객체 생성 중 오버라이드 가능한 {0}이(가) 호출되었습니다{1}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.ConstructorCallsOverridableMethodRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#constructorcallsoverridablemethod",
+    "description": "객체 초기화 중에 `this`에서 오버라이드 가능한 메서드 호출을 보고합니다. 이들은 불완전하게 생성된 객체에서 호출되며, 오버라이드된 경우 디버그하기 어려울 수 있습니다.\n이는 하위 클래스가 일반적으로 모든 메서드에서 상위 클래스가 완전히 초기화되었다고 가정하기 때문입니다. 그렇지 않은 경우 생성자에서 버그가 나타날 수 있습니다. 예를 들어, 아직 null인 일부 필드가 NullPointerException을 유발하거나 나중에 폭발하도록 다른 곳에 저장될 수 있습니다.\n\n이 문제를 피하려면 생성자에서 static, private 또는 final 메서드만 사용하세요.\n이러한 메서드도 안전하려면 전이적으로 오버라이드 가능한 메서드를 호출해서는 안 됩니다.",
+    "priority": 1,
+    "examples": [
+      "public class SeniorClass {\n  public SeniorClass(){\n      toString(); //may throw NullPointerException if overridden\n  }\n  public String toString(){\n    return \"IAmSeniorClass\";\n  }\n}\npublic class JuniorClass extends SeniorClass {\n  private String name;\n  public JuniorClass(){\n    super(); //Automatic call leads to NullPointerException\n    name = \"JuniorClass\";\n  }\n  public String toString(){\n    return name.toUpperCase();\n  }\n}"
+    ]
+  },
+  {
+    "name": "EqualsNull",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.9",
+    "message": "null과 비교하기 위해 equals()를 사용하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#equalsnull",
+    "description": "null 테스트에 equals() 메서드를 사용해서는 안 됩니다. 대신 '==' 연산자를 사용해야 합니다.",
+    "priority": 1,
+    "examples": [
+      "String x = \"foo\";\n\nif (x.equals(null)) {   // bad form\n    doSomething();\n}\n\nif (x == null) {        // preferred\n    doSomething();\n}"
+    ]
+  },
+  {
+    "name": "ReturnEmptyCollectionRatherThanNull",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "6.37.0",
+    "message": "'null' 대신 빈 컬렉션을 반환하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#returnemptycollectionratherthannull",
+    "description": "컬렉션(배열, Collection 또는 Map 등)을 반환하는 모든 메서드에서는 null 참조 대신 빈 컬렉션을 반환하는 것이 좋습니다.\n이렇게 하면 모든 결과에 대한 null 검사가 불필요해지고 의도치 않은 NullPointerException을 방지할 수 있습니다.\n\nEffective Java, 3판, 항목 54: null 대신 빈 컬렉션이나 배열을 반환하라 참조",
+    "priority": 1,
+    "examples": [
+      "public class Example {\n    // Not a good idea...\n    public int[] badBehavior() {\n        // ...\n        return null;\n    }\n\n    // Good behavior\n    public String[] bonnePratique() {\n        //...\n        return new String[0];\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidAssertAsIdentifier",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.4",
+    "message": "assert를 식별자로 사용하지 마세요. JDK 1.4에서 예약어가 되었습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidassertasidentifier",
+    "description": "`assert`라는 용어를 사용하면 예약어이므로 최신 버전의 Java와 충돌합니다.\n\nJava 1.4부터 `assert` 토큰은 예약어가 되었으며, 이를 식별자로 사용하면 Java 1.4 이후 버전에서 컴파일 오류가 발생합니다. 따라서 이 규칙은 Java 1.4 이전의 오래된 Java 코드에만 유용합니다. Java 업데이트 전에 문제가 되는 코드를 식별하는 데 사용할 수 있습니다.",
+    "priority": 2,
+    "examples": [
+      "public class A {\n    public class Foo {\n        String assert = \"foo\";\n    }\n}"
+    ],
+    "maxLanguageVersion": "1.3"
+  },
+  {
+    "name": "AvoidBranchingStatementAsLastInLoop",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.0",
+    "message": "루프의 마지막에 분기문을 사용하지 마세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.AvoidBranchingStatementAsLastInLoopRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidbranchingstatementaslastinloop",
+    "description": "루프의 마지막 부분에 분기문을 사용하는 것은 버그일 수 있으며 혼란스럽습니다.\n사용법이 버그가 아닌지 확인하거나 다른 접근 방식을 고려하세요.",
+    "priority": 2,
+    "examples": [
+      "// unusual use of branching statement in a loop\nfor (int i = 0; i < 10; i++) {\n    if (i*i <= 25) {\n        continue;\n    }\n    break;\n}\n\n// this makes more sense...\nfor (int i = 0; i < 10; i++) {\n    if (i*i > 25) {\n        break;\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidEnumAsIdentifier",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.4",
+    "message": "enum을 식별자로 사용하지 마세요. JDK 1.5에서 예약어가 되었습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidenumasidentifier",
+    "description": "`enum`이라는 용어를 사용하면 예약어이므로 최신 버전의 Java와 충돌합니다.\n\nJava 1.5부터 `enum` 토큰은 예약어가 되었으며, 이를 식별자로 사용하면 Java 1.5 이후 버전에서 컴파일 오류가 발생합니다. 따라서 이 규칙은 Java 1.5 이전의 오래된 Java 코드에만 유용합니다. Java 업데이트 전에 문제가 되는 코드를 식별하는 데 사용할 수 있습니다.",
+    "priority": 2,
+    "examples": [
+      "public class A {\n    public class Foo {\n        String enum = \"foo\";\n    }\n}"
+    ],
+    "maxLanguageVersion": "1.4"
+  },
+  {
+    "name": "AvoidLosingExceptionInformation",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2.6",
+    "message": "catch 블록에서 예외의 접근자를 호출하면서 정보를 사용하지 않는 문을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidlosingexceptioninformation",
+    "description": "catch 블록에서 예외의 접근자를 호출하면서 정보를 사용하지 않는 문은 코드 크기만 늘립니다. 호출을 제거하거나 반환 결과를 사용하세요.\n\n**더 이상 사용되지 않음:** 이 규칙은 PMD 7.17.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거될 예정입니다.\n이 규칙은 {% rule UselessPureMethodCall %}로 대체되었습니다.",
+    "priority": 2,
+    "examples": [
+      "public void bar() {\n    try {\n        // do something\n    } catch (SomeException se) {\n        se.getMessage();\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidMultipleUnaryOperators",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2",
+    "message": "여러 단항 연산자를 사용하는 것은 버그일 수 있으며 혼란스럽습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidmultipleunaryoperators",
+    "description": "여러 단항 연산자의 사용은 문제가 될 수 있으며 혼란스럽습니다.\n의도된 사용이 버그가 아닌지 확인하거나 표현식을 단순화하는 것을 고려하세요.",
+    "priority": 2,
+    "examples": [
+      "// These are typo bugs, or at best needlessly complex and confusing:\nint i = - -1;\nint j = + - +1;\nint z = ~~2;\nboolean b = !!true;\nboolean c = !!!true;\n\n// These are better:\nint i = 1;\nint j = -1;\nint z = 2;\nboolean b = true;\nboolean c = false;\n\n// And these just make your brain hurt:\nint i = ~-2;\nint j = -~7;"
+    ]
+  },
+  {
+    "name": "BrokenNullCheck",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.8",
+    "message": "이 표현식은 NullPointerException을 던질 것입니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.BrokenNullCheckRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#brokennullcheck",
+    "description": "null 검사가 깨져 있어 자체적으로 NullPointerException을 던질 것입니다.\n|| 대신 &amp;&amp;를 사용하거나 그 반대일 가능성이 높습니다.",
+    "priority": 2,
+    "examples": [
+      "public String bar(String string) {\n  // should be &&\n    if (string!=null || !string.equals(\"\"))\n        return string;\n  // should be ||\n    if (string==null && string.equals(\"\"))\n        return string;\n}"
+    ]
+  },
+  {
+    "name": "DoNotCallGarbageCollectionExplicitly",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2",
+    "message": "가비지 컬렉션을 명시적으로 트리거하지 마세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#donotcallgarbagecollectionexplicitly",
+    "description": "`System.gc()`, `Runtime.getRuntime().gc()`, `System.runFinalization()` 호출은 권장되지 않습니다.\n코드는 `-Xdisableexplicitgc` 옵션을 사용하여 가비지 컬렉션을 비활성화하든 그렇지 않든 동일한 동작을 해야 합니다.\n\n또한 \"현대적인\" JVM은 가비지 컬렉션을 매우 잘 처리합니다. 메모리 누수와 관련 없는 메모리 사용 문제가 애플리케이션 내에서 발생하면, 코드 자체가 아닌 JVM 옵션으로 처리해야 합니다.",
+    "priority": 2,
+    "examples": [
+      "public class GCCall {\n    public GCCall() {\n        // Explicit gc call !\n        System.gc();\n    }\n\n    public void doSomething() {\n        // Explicit gc call !\n        Runtime.getRuntime().gc();\n    }\n\n    public explicitGCcall() {\n        // Explicit gc call !\n        System.gc();\n    }\n\n    public void doSomething() {\n        // Explicit gc call !\n        Runtime.getRuntime().gc();\n    }\n}"
+    ]
+  },
+  {
+    "name": "MoreThanOneLogger",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.0",
+    "message": "클래스에 둘 이상의 로거가 포함되어 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#morethanonelogger",
+    "description": "일반적으로 각 클래스에서 하나의 로거만 사용됩니다. 이 규칙은 slf4j, log4j, Java Util Logging 및 log4j2(6.19.0부터)를 지원합니다.",
+    "priority": 2,
+    "examples": [
+      "public class Foo {\n    Logger log = Logger.getLogger(Foo.class.getName());\n    // It is very rare to see two loggers on a class, normally\n    // log information is multiplexed by levels\n    Logger log2= Logger.getLogger(Foo.class.getName());\n}"
+    ]
+  },
+  {
+    "name": "ProperCloneImplementation",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.4",
+    "message": "Object clone()은 super.clone()으로 구현해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.ProperCloneImplementationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#propercloneimplementation",
+    "description": "Object clone()은 super.clone()으로 구현해야 합니다.",
+    "priority": 2,
+    "examples": [
+      "class Foo{\n    public Object clone(){\n        return new Foo(); // This is bad\n    }\n}"
+    ]
+  },
+  {
+    "name": "SingleMethodSingleton",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.4",
+    "message": "클래스에 여러 개의 getInstance 메서드가 있습니다. 검토해 주세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.SingleMethodSingletonRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#singlemethodsingleton",
+    "description": "일부 클래스에는 오버로드된 getInstance가 포함되어 있습니다. 오버로드된 getInstance 메서드의 문제는\n오버로드된 메서드를 사용하여 생성된 인스턴스가 캐시되지 않아\n매 호출마다 새 객체가 생성된다는 것입니다.",
+    "priority": 2,
+    "examples": [
+      "public class Singleton {\n\n    private static Singleton singleton = new Singleton( );\n\n    private Singleton(){ }\n\n    public static Singleton getInstance( ) {\n        return singleton;\n    }\n\n    public static Singleton getInstance(Object obj){\n        Singleton singleton = (Singleton) obj;\n        return singleton;           //violation\n    }\n}"
+    ]
+  },
+  {
+    "name": "SingletonClassReturningNewInstance",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.4",
+    "message": "getInstance 메서드가 항상 새 객체를 생성하여 싱글턴 디자인 패턴 동작을 준수하지 않습니다. 검토해 주세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.SingletonClassReturningNewInstanceRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#singletonclassreturningnewinstance",
+    "description": "싱글턴 클래스는 하나의 인스턴스만 가져야 합니다. 인스턴스가 이미 생성되었는지\n확인하지 않으면 여러 인스턴스가 생성될 수 있습니다.",
+    "priority": 2,
+    "examples": [
+      "class Singleton {\n    private static Singleton instance = null;\n    public static Singleton getInstance() {\n        synchronized(Singleton.class) {\n            return new Singleton(); // this should be assigned to the field\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "SuspiciousEqualsMethodName",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.0",
+    "message": "메서드 이름과 매개변수 수가 equals(Object)와 의심스럽게 유사합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#suspiciousequalsmethodname",
+    "description": "메서드 이름과 매개변수 수가 `Object.equals`와 의심스럽게 유사하여 이를 재정의하려는 의도를 나타낼 수 있습니다.\n그러나 이 메서드는 `Object.equals`를 재정의하지 않고 오버로드합니다.\n`Object.equals` 메서드를 오버로드하는 것은 다른 프로그래머에게 혼란을 주고, 오류가 발생하기 쉬우며 유지보수가 어렵습니다.\n특히 상속을 사용할 때 하위 클래스에서 사용되는 `@Override` 어노테이션이 잘못된 안정감을 줄 수 있습니다.\n`Object.equals` 메서드에 대한 자세한 내용은 Effective Java, 3판, 항목 10: equals를 재정의할 때는\n일반 규약을 따르라를 참조하세요.",
+    "priority": 2,
+    "examples": [
+      "public class Foo {\n   public int equals(Object o) {\n     // oops, this probably was supposed to be boolean equals\n   }\n   public boolean equals(String s) {\n     // oops, this probably was supposed to be equals(Object)\n   }\n   public boolean equals(Object o1, Object o2) {\n     // oops, this probably was supposed to be equals(Object)\n   }\n}"
+    ]
+  },
+  {
+    "name": "AssignmentInOperand",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.03",
+    "message": "피연산자에서 {0}에 대한 할당을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.AssignmentInOperandRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#assignmentinoperand",
+    "description": "피연산자에서의 할당을 피하세요. 이는 코드를 더 복잡하고 읽기 어렵게 만들 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n    int x = 2;\n    if ((x = getX()) == 3) {\n      System.out.println(\"3!\");\n    }\n}"
+    ]
+  },
+  {
+    "name": "AssignmentToNonFinalStatic",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.2",
+    "message": "생성자에서 non-final static 필드 ''{0}''에 대한 안전하지 않은 할당 가능성이 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.AssignmentToNonFinalStaticRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#assignmenttononfinalstatic",
+    "description": "static 필드의 안전하지 않은 사용 가능성을 식별합니다.",
+    "priority": 3,
+    "examples": [
+      "public class StaticField {\n   static int x;\n   public FinalFields(int y) {\n    x = y; // unsafe\n   }\n}"
+    ]
+  },
+  {
+    "name": "AvoidAccessibilityAlteration",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.1",
+    "message": "setAccessible()를 사용하여 생성자, 메서드 또는 필드의 가시성을 변경하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidaccessibilityalteration",
+    "description": "`getDeclaredConstructors()`, `getDeclaredMethods()`, `getDeclaredFields()`와 같은 메서드는 private 생성자, 메서드, 필드도 반환합니다. 이들은 `setAccessible(true)`를 호출하여 접근 가능하게 만들 수 있습니다.\n이는 캡슐화 원칙을 위반하여 정상적으로 보호되는 데이터에 대한 접근을 허용합니다.\n\n이 규칙은 `setAccessible` 호출을 감지하고 접근성 변경 가능성을 찾습니다.\n`setAccessible` 호출이 `PrivilegedAction` 내에 래핑되어 있으면, 접근 변경이 의도적인 것으로 간주되어 보고되지 않습니다.\n\nJava 17에서는 `PrivilegedAction` 실행에 사용되는 보안 관리자가 더 이상 사용되지 않습니다: [JEP 411: Deprecate the Security Manager for Removal](https://openjdk.org/jeps/411).\n향후 호환성을 위해, 의도적인 접근 변경은 일반적인 억제 방법(예: `@SuppressWarnings` 어노테이션 사용)으로 억제해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "import java.lang.reflect.Constructor;\nimport java.lang.reflect.Field;\nimport java.lang.reflect.Method;\nimport java.security.AccessController;\nimport java.security.PrivilegedAction;\n\npublic class Violation {\n    private void invalidSetAccessCalls() throws NoSuchMethodException, SecurityException {\n        Constructor<?> constructor = this.getClass().getDeclaredConstructor(String.class);\n        // call to forbidden setAccessible\n        constructor.setAccessible(true);\n\n        Method privateMethod = this.getClass().getDeclaredMethod(\"aPrivateMethod\");\n        // call to forbidden setAccessible\n        privateMethod.setAccessible(true);\n\n        // deliberate accessibility alteration\n        String privateField = AccessController.doPrivileged(new PrivilegedAction<String>() {\n            @Override\n            public String run() {\n                try {\n                    Field field = Violation.class.getDeclaredField(\"aPrivateField\");\n                    field.setAccessible(true);\n                    return (String) field.get(null);\n                } catch (ReflectiveOperationException | SecurityException e) {\n                    throw new RuntimeException(e);\n                }\n            }\n        });\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidCallingFinalize",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "finalize()를 명시적으로 호출하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidcallingfinalize",
+    "description": "Object.finalize() 메서드는 가비지 컬렉터가 객체에 대한 참조가 더 이상 없다고 판단할 때 호출합니다. 애플리케이션 로직에서 직접 호출해서는 안 됩니다.\n\nOracle은 JDK 9부터 Object.finalize()를 더 이상 사용되지 않음(deprecated)으로 선언했습니다.",
+    "priority": 3,
+    "examples": [
+      "void foo() {\n    Bar b = new Bar();\n    b.finalize();\n}"
+    ]
+  },
+  {
+    "name": "AvoidCatchingGenericException",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2.6",
+    "message": "try-catch 블록에서 {0} 캐치를 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidcatchinggenericexception",
+    "description": "try-catch 블록에서 일반적인 예외를 캐치하지 마세요. 지나치게 광범위한 예외 타입을 캐치하면 코드에서 실제로 무엇이 잘못될 수 있는지 이해하기 어렵고 실제 문제를 숨길 수 있습니다.\n\n**이러한 예외를 캐치하지 말아야 하는 이유:**\n\n* **Exception**: 모든 체크 예외의 기본 클래스입니다. 이를 캐치하면 모든 가능한 체크 예외를 동일하게 처리하게 되는데, 이는 거의 적절하지 않으며 오류 처리를 덜 정밀하게 만듭니다.\n\n* **RuntimeException**: 프로그래밍 오류(논리 버그 등)를 나타냅니다. 일반적으로 캐치하여 처리하기보다는 코드에서 수정해야 합니다. 이를 캐치하면 개발 중에 해결해야 할 버그를 숨길 수 있습니다.\n\n* **NullPointerException**: 일반적으로 프로그래밍 오류(null 참조 접근)를 나타냅니다. 이를 캐치하기보다는 null 검사나 방어적 프로그래밍을 통해 null 포인터 역참조를 피하도록 코드를 작성해야 합니다.\n\n* **Throwable**: 모든 오류와 예외의 상위 클래스입니다. 이를 캐치하면 복구 가능한 예외와 심각한 오류(OutOfMemoryError 등)를 동일하게 처리하게 되어 위험합니다.\n\n* **Error**: 애플리케이션이 처리를 시도해서는 안 되는 심각한 문제(OutOfMemoryError, StackOverflowError 등)를 나타냅니다. Error를 캐치하면 복구 불가능한 상황에서 JVM이 적절하게 종료되는 것을 방해할 수 있습니다.\n\n**더 나은 접근 방식:**\n- 의미 있게 처리할 수 있는 특정 예외 타입을 캐치하세요\n- 다른 처리가 필요한 예외 타입에 대해 여러 catch 블록을 사용하세요\n- 예외를 캐치하기보다는 방어적 프로그래밍 기법을 사용하여 예외를 방지하는 것을 고려하세요",
+    "priority": 3,
+    "examples": [
+      "public class PrimitiveType {\n    public void downCastPrimitiveType(int i) {\n        try {\n            System.out.println(\" i [\" + i + \"]\");\n        } catch(NullPointerException e) {\n            e.printStackTrace();\n        } catch(RuntimeException e) {\n            e.printStackTrace();\n        } catch(Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "typesThatShouldNotBeCaught",
+        "defaultValue": "java.lang.NullPointerException,\n                    java.lang.Exception,\n                    java.lang.RuntimeException,\n                    java.lang.Throwable,\n                    java.lang.Error",
+        "description": "catch 절에서 사용될 경우 위반을 트리거하는 정규화된 타입 이름 목록입니다."
+      }
+    ]
+  },
+  {
+    "name": "AvoidCatchingNPE",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.8",
+    "message": "NullPointerException 캐치를 피하세요. NPE의 원인을 제거하는 것을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidcatchingnpe",
+    "description": "코드는 정상적인 상황에서 NullPointerException을 던져서는 안 됩니다. catch 블록이 원래 오류를 숨겨 나중에 더 미묘한 문제를 일으킬 수 있습니다.\n\n**더 이상 사용되지 않음:** 이 규칙은 PMD 7.18.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거될 예정입니다.\n이 규칙은 {% rule AvoidCatchingGenericException %}에 통합되었으며, 이제 어떤 예외가 위반을 유발하는지 설정할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void bar() {\n        try {\n            // do something\n        } catch (NullPointerException npe) {\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidCatchingThrowable",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.2",
+    "message": "catch 문은 오류를 포함하므로 throwable을 캐치해서는 안 됩니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidcatchingthrowable",
+    "description": "Throwable 오류를 캐치하는 것은 범위가 매우 넓기 때문에 권장되지 않습니다. OutOfMemoryError와 같은 런타임 문제를 포함하며, 이는 별도로 노출되고 관리되어야 합니다.\n\n**더 이상 사용되지 않음:** 이 규칙은 PMD 7.18.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거될 예정입니다.\n이 규칙은 {% rule AvoidCatchingGenericException %}에 통합되었으며, 이제 어떤 예외가 위반을 유발하는지 설정할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n    try {\n        // do something\n    } catch (Throwable th) {  // should not catch Throwable\n        th.printStackTrace();\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidDecimalLiteralsInBigDecimalConstructor",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.4",
+    "message": "소수(float/double) 리터럴로 BigDecimal을 생성하지 마세요. 문자열 리터럴을 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoiddecimalliteralsinbigdecimalconstructor",
+    "description": "\"new BigDecimal(0.1)\"의 결과가 정확히 0.1이라고 생각할 수 있지만, 실제로는 .1000000000000000055511151231257827021181583404541015625와 같습니다.\n이는 0.1이 double(또는 유한한 길이의 이진 분수)로 정확하게 표현될 수 없기 때문입니다. 따라서 생성자에 전달되는 long 값은 외관과 달리 정확히 0.1이 아닙니다.\n\n반면에 (String) 생성자는 완벽하게 예측 가능합니다: 'new BigDecimal(\"0.1\")'은 예상대로 정확히 0.1과 같습니다. 따라서 일반적으로 이 생성자보다 (String) 생성자를 사용하는 것이 권장됩니다.",
+    "priority": 3,
+    "examples": [
+      "BigDecimal bd = new BigDecimal(1.123);       // loss of precision, this would trigger the rule\n\nBigDecimal bd = new BigDecimal(\"1.123\");     // preferred approach\n\nBigDecimal bd = new BigDecimal(12);          // preferred approach, ok for integer values"
+    ]
+  },
+  {
+    "name": "AvoidDuplicateLiterals",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.0",
+    "message": "문자열 리터럴 {0}이(가) 이 파일에서 {1}번 나타납니다. 첫 번째 출현은 {2}번째 줄입니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.AvoidDuplicateLiteralsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidduplicateliterals",
+    "description": "중복된 문자열 리터럴을 포함하는 코드는 일반적으로 문자열을 상수 필드로 선언하여 개선할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "private void bar() {\n     buz(\"Howdy\");\n     buz(\"Howdy\");\n     buz(\"Howdy\");\n     buz(\"Howdy\");\n}\nprivate void buz(String x) {}"
+    ]
+  },
+  {
+    "name": "AvoidFieldNameMatchingMethodName",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "필드 {0}이(가) 메서드와 동일한 이름을 가지고 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidfieldnamematchingmethodname",
+    "description": "필드 이름이 메서드와 동일한 이름을 가지면 혼란스러울 수 있습니다. 이는 허용되지만, 정보(필드)와 동작(메서드)을 구분하는 명확한 네이밍이 아닙니다. Smalltalk에 익숙한 개발자들은 메서드가 접근자 메서드를 나타내므로 이 접근 방식을 선호하기도 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    Object bar;\n    // bar is data or an action or both?\n    void bar() {\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidFieldNameMatchingTypeName",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "필드 이름이 선언 클래스 이름과 일치하면 다소 혼란스럽습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidfieldnamematchingtypename",
+    "description": "필드 이름이 선언 타입 이름과 일치하면 다소 혼란스럽습니다.\n이는 타입 및/또는 필드 이름을 더 신중하게 선택해야 한다는 것을 의미할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo extends Bar {\n    int foo;    // There is probably a better name that can be used\n}\npublic interface Operation {\n    int OPERATION = 1; // There is probably a better name that can be used\n}"
+    ]
+  },
+  {
+    "name": "AvoidInstanceofChecksInCatchClause",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "캐치된 예외에 대해 instanceof 검사가 수행되고 있습니다. {0}에 대한 별도의 catch 절을 만드세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidinstanceofchecksincatchclause",
+    "description": "캐치된 각 예외 타입은 자체 catch 절에서 처리되어야 합니다.",
+    "priority": 3,
+    "examples": [
+      "try { // Avoid this\n    // do something\n} catch (Exception ee) {\n    if (ee instanceof IOException) {\n        cleanup();\n    }\n}\n\ntry {  // Prefer this:\n    // do something\n} catch (IOException ee) {\n    cleanup();\n}"
+    ]
+  },
+  {
+    "name": "AvoidLiteralsInIfCondition",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2.6",
+    "message": "if 문에서 {0}과 같은 리터럴 사용을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidliteralsinifcondition",
+    "description": "조건문에서 하드코딩된 리터럴 사용을 피하세요. 설명적인 이름을 가진 static 변수나 private 멤버로 선언하면 유지보수성이 향상됩니다. 기본적으로 리터럴 \"-1\"과 \"0\"은 무시됩니다.\n\"ignoreMagicNumbers\" 속성으로 더 많은 예외를 정의할 수 있습니다.\n\n이 규칙은 기본적으로 깊은 표현식을 고려하지 않지만, `ignoreExpressions` 속성을 통해 활성화할 수 있습니다.\n이 속성을 false로 설정하면 `i == 1 + 5`와 같은 if 조건도 보고됩니다. 이 경우 표현식에 여러 리터럴이 포함되어 있으면 ignoreMagicNumbers 속성은 고려되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "private static final int MAX_NUMBER_OF_REQUESTS = 10;\n\npublic void checkRequests() {\n\n    if (i == 10) {                        // magic number, buried in a method\n      doSomething();\n    }\n\n    if (i == MAX_NUMBER_OF_REQUESTS) {    // preferred approach\n      doSomething();\n    }\n\n    if (aString.indexOf('.') != -1) {}     // magic number -1, by default ignored\n    if (aString.indexOf('.') >= 0) { }     // alternative approach\n\n    if (aDouble > 0.0) {}                  // magic number 0.0\n    if (aDouble >= Double.MIN_VALUE) {}    // preferred approach\n\n    // with rule property \"ignoreExpressions\" set to \"false\"\n    if (i == pos + 5) {}  // violation: magic number 5 within an (additive) expression\n    if (i == pos + SUFFIX_LENGTH) {} // preferred approach\n    if (i == 5 && \"none\".equals(aString)) {} // 2 violations: magic number 5 and literal \"none\"\n}"
+    ],
+    "properties": [
+      {
+        "name": "ignoreMagicNumbers",
+        "defaultValue": "-1,0",
+        "description": "무시해야 할 매직 넘버의 쉼표로 구분된 목록"
+      }
+    ]
+  },
+  {
+    "name": "AvoidUsingOctalValues",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.9",
+    "message": "0으로 시작하는 정수 리터럴(8진수로 해석됨)을 피하세요. 10진수 리터럴을 얻으려면 앞의 0을 제거하세요(또는 명시적으로 0x, 0b 접두사를 사용하세요)",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.AvoidUsingOctalValuesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#avoidusingoctalvalues",
+    "description": "Java에서 0으로 시작하는 정수 리터럴은 8진수(기수 8) 값으로 해석되어 예기치 않은 동작과 버그를 유발할 수 있습니다. 대부분의 개발자는 10진수(기수 10) 해석을 기대하므로 8진수 리터럴은 일반적인 혼란과 오류의 원인이 됩니다. 예를 들어, 012는 예상되는 12가 아닌 10진수로 10과 같습니다.\n이 규칙은 10진수 값으로 오해될 수 있는 정수 리터럴을 플래그하여 이러한 실수를 방지하는 데 도움을 줍니다.\n앞에 0이 없는 10진수 리터럴을 사용하거나, 의도한 기수를 명확히 하기 위해 16진수의 경우 0x, 2진수의 경우 0b와 같은 명시적 접두사를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "// Bad: These look like decimal but are actually octal\nint timeout = 060;     // Actually 48 in decimal, not 60!\nint count = 012;       // Actually 10 in decimal, not 12!\n\n// Good: Use decimal literals\nint timeout = 60;      // Clear decimal value\nint count = 12;        // Clear decimal value\n\n// Good: Use explicit prefixes for other bases\nint hexValue = 0xFF;   // Clearly hexadecimal\nint binaryValue = 0b1010; // Clearly binary (Java 7+)"
+    ]
+  },
+  {
+    "name": "CallSuperFirst",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2.5",
+    "message": "super는 메서드의 시작 부분에서 호출되어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#callsuperfirst",
+    "description": "Super는 메서드의 시작 부분에서 호출되어야 합니다",
+    "priority": 3,
+    "examples": [
+      "import android.app.Activity;\nimport android.os.Bundle;\n\npublic class DummyActivity extends Activity {\n    public void onCreate(Bundle bundle) {\n        // missing call to super.onCreate(bundle)\n        foo();\n    }\n}"
+    ]
+  },
+  {
+    "name": "CallSuperLast",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2.5",
+    "message": "super는 메서드의 끝 부분에서 호출되어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#callsuperlast",
+    "description": "Super는 메서드의 끝 부분에서 호출되어야 합니다",
+    "priority": 3,
+    "examples": [
+      "import android.app.Activity;\n\npublic class DummyActivity extends Activity {\n    public void onPause() {\n        foo();\n        // missing call to super.onPause()\n    }\n}"
+    ]
+  },
+  {
+    "name": "CheckSkipResult",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.0",
+    "message": "요청한 바이트 수가 건너뛰어졌는지 확인하기 위해 InputStream의 skip() 메서드가 반환하는 값을 확인하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.CheckSkipResultRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#checkskipresult",
+    "description": "skip() 메서드는 요청한 것보다 적은 수의 바이트를 건너뛸 수 있습니다. 반환된 값을 확인하여 그러한 경우인지 아닌지 확인하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n\n   private FileInputStream _s = new FileInputStream(\"file\");\n\n   public void skip(int n) throws IOException {\n      _s.skip(n); // You are not sure that exactly n bytes are skipped\n   }\n\n   public void skipExactly(int n) throws IOException {\n      while (n != 0) {\n         long skipped = _s.skip(n);\n         if (skipped == 0)\n            throw new EOFException();\n         n -= skipped;\n      }\n   }"
+    ]
+  },
+  {
+    "name": "ClassCastExceptionWithToArray",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.4",
+    "message": "이 Collection.toArray() 메서드 사용은 ClassCastException을 던질 것입니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#classcastexceptionwithtoarray",
+    "description": "Collection에서 특정 클래스의 배열을 파생할 때, `toArray()` 메서드의 매개변수로 동일한 클래스의 배열을 제공해야 합니다. 그렇지 않으면 `ClassCastException`이 발생합니다.",
+    "priority": 3,
+    "examples": [
+      "Collection c = new ArrayList();\nInteger obj = new Integer(1);\nc.add(obj);\n\n    // this would trigger the rule (and throw a ClassCastException if executed)\nInteger[] a = (Integer [])c.toArray();\n\n   // this is fine and will not trigger the rule\nInteger[] b = (Integer [])c.toArray(new Integer[0]);"
+    ]
+  },
+  {
+    "name": "CloneMethodMustBePublic",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.4.0",
+    "message": "클래스가 Cloneable을 구현하면 clone() 메서드는 public이어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#clonemethodmustbepublic",
+    "description": "Java 매뉴얼에 따르면 \"관례상, 이 인터페이스를 구현하는 클래스는 Object.clone()(protected)을 public 메서드로 오버라이드해야 합니다.\"",
+    "priority": 3,
+    "examples": [
+      "public class Foo implements Cloneable {\n    @Override\n    protected Object clone() throws CloneNotSupportedException { // Violation, must be public\n    }\n}\n\npublic class Foo implements Cloneable {\n    @Override\n    protected Foo clone() { // Violation, must be public\n    }\n}\n\npublic class Foo implements Cloneable {\n    @Override\n    public Object clone() // Ok\n}"
+    ]
+  },
+  {
+    "name": "CloneMethodMustImplementCloneable",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.9",
+    "message": "clone() 메서드는 Cloneable 인터페이스를 구현하는 경우에만 구현해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.CloneMethodMustImplementCloneableRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#clonemethodmustimplementcloneable",
+    "description": "clone() 메서드는 클래스가 Cloneable 인터페이스를 구현하는 경우에만 구현해야 합니다. 단, CloneNotSupportedException만 던지는 final 메서드는 예외입니다.\n\n이 규칙은 클래스가 Cloneable 클래스를 구현하거나 확장하는지도 감지할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyClass {\n public Object clone() throws CloneNotSupportedException {\n  return foo;\n }\n}"
+    ]
+  },
+  {
+    "name": "CloneMethodReturnTypeMustMatchClassName",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.4.0",
+    "message": "Cloneable을 구현할 때 clone() 메서드의 반환 타입은 클래스 이름이어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#clonemethodreturntypemustmatchclassname",
+    "description": "클래스가 `Cloneable`을 구현하면 `clone()` 메서드의 반환 타입은 클래스 이름이어야 합니다. 이렇게 하면 clone 메서드의 호출자가 반환된 clone을 올바른 타입으로 캐스트할 필요가 없습니다.\n\n참고: 이러한 공변 반환 타입은 Java 1.5 이상에서만 가능합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo implements Cloneable {\n    @Override\n    protected Object clone() { // Violation, Object must be Foo\n    }\n}\n\npublic class Foo implements Cloneable {\n    @Override\n    public Foo clone() { //Ok\n    }\n}"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "CloseResource",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.2.2",
+    "message": "이 {0} 객체와 같은 리소스가 사용 후 닫히는지 확인하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.CloseResourceRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#closeresource",
+    "description": "리소스(`java.sql.Connection`, `java.sql.Statement`, `java.sql.ResultSet` 객체 및 `java.lang.AutoCloseable`의 모든 하위 타입)가 사용 후 항상 닫히는지 확인하세요.\n그렇지 않으면 리소스 누수가 발생할 수 있습니다.\n\n참고: 상위 타입(예: `java.lang.AutoCloseable`)을 설정하면 이 규칙이 모든 하위 타입(예: `java.io.FileInputStream`)에 대해 자동으로 트리거됩니다. 추가로 `java.sql.Connection`을 지정하면 타입 해석/auxclasspath가 올바르게 설정되지 않은 경우 타입 감지에 도움이 됩니다.\n\n참고: PMD 6.16.0부터 `types` 속성의 기본값에 `java.lang.AutoCloseable`이 포함되어 표준 `java.io.*Stream` 클래스가 관련된 경우도 감지합니다. 이전 동작을 복원하려면 types에서 \"AutoCloseable\"을 제거하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Bar {\n    public void withSQL() {\n        Connection c = pool.getConnection();\n        try {\n            // do stuff\n        } catch (SQLException ex) {\n           // handle exception\n        } finally {\n            // oops, should close the connection using 'close'!\n            // c.close();\n        }\n    }\n\n    public void withFile() {\n        InputStream file = new FileInputStream(new File(\"/tmp/foo\"));\n        try {\n            int c = file.in();\n        } catch (IOException e) {\n            // handle exception\n        } finally {\n            // TODO: close file\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "CollectionTypeMismatch",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.17.0",
+    "message": "''{0}'' 타입의 객체는 ''{1}''을 기대하는 컬렉션에 있을 수 없습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.CollectionTypeMismatchRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#collectiontypemismatch",
+    "description": "타입 불일치로 인해 전달된 객체가 컬렉션에 있을 수 없는 컬렉션 메서드 호출을 감지합니다. 이는 호환되지 않는 타입이 컬렉션 메서드(contains(), remove(), indexOf() 등)와 함께 사용되는 잠재적인 프로그래밍 오류를 잡는 데 도움이 됩니다.\n\n검사되는 메서드:\n- Collection: contains(), remove(), removeAll(), retainAll(), containsAll()\n- List: indexOf(), lastIndexOf()\n- Map: containsKey(), containsValue(), get(), getOrDefault(), remove()\n- Deque: removeFirstOccurrence(), removeLastOccurrence()\n- Hashtable: contains() (값을 검사하는 레거시 메서드)\n- ConcurrentHashMap: contains() (값을 검사하는 레거시 메서드)",
+    "priority": 3,
+    "examples": [
+      "List<Integer> numbers = Arrays.asList(1, 2, 3);\nnumbers.remove(\"string\"); // violation: String cannot be in Integer list\n\nMap<String, Integer> map = new HashMap<>();\nmap.get(42); // violation: Integer key cannot be in String-keyed map\n\nSet<String> names = new HashSet<>();\nnames.contains(123); // violation: Integer cannot be in String set"
+    ]
+  },
+  {
+    "name": "CompareObjectsWithEquals",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.2",
+    "message": "객체 참조를 비교하려면 equals()를 사용하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#compareobjectswithequals",
+    "description": "객체 참조를 비교하려면 `equals()`를 사용하세요. `==`으로 비교하는 것을 피하세요.\n\n명명된 상수와 객체를 비교하는 것이 유용한 경우가 있으므로(예: 센티널 값에 대한 상수를 정의할 때), 이 규칙은 모든 대문자 이름을 가진 필드와의 비교(예: `this == SENTINEL`)를 무시합니다. 이는 상수 필드에 대한 일반적인 네이밍 규칙입니다.\n\n`typesThatCompareByReference` 속성에 예외를 나열하여 일부 타입의 참조 비교를 허용할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "class Foo {\n  boolean bar(String a, String b) {\n    return a == b;\n  }\n}"
+    ],
+    "properties": [
+      {
+        "name": "typesThatCompareByReference",
+        "defaultValue": "java.lang.Enum,java.lang.Class",
+        "description": "참조 비교가 허용되는 정규화된 타입 이름 목록입니다."
+      }
+    ]
+  },
+  {
+    "name": "ComparisonWithNaN",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "6.36.0",
+    "message": "NaN과의 비교는 항상 false를 반환합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#comparisonwithnan",
+    "description": "double 및 float `NaN`(Not-a-Number) 값과의 비교를 보고합니다.\n            이들은 직관적이지 않은 동작을 하도록 [지정](https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.21.1)되어 있습니다: NaN은 자기 자신과 같지 않은 것으로 간주됩니다.\n            이는 `someDouble == Double.NaN`과 같은 검사가 `someDouble`이 실제로 NaN 값이더라도 항상 false를 반환한다는 것을 의미합니다. 값이 NaN 값인지 테스트하려면 대신 `Double.isNaN(someDouble)`(또는 `Float.isNaN`)을 사용해야 합니다. `!=` 연산자도 마찬가지로 처리해야 합니다.\n            마지막으로, `someDouble <= Double.NaN`과 같은 비교는 무의미하며 항상 false로 평가됩니다.\n\n            이 규칙은 PMD 6.36.0에서 \"BadComparison\"에서 이름이 변경되었습니다.",
+    "priority": 3,
+    "examples": [
+      "boolean x = (y == Double.NaN);"
+    ]
+  },
+  {
+    "name": "ConfusingArgumentToVarargsMethod",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.1.0",
+    "message": "가변인자 또는 비가변인자 호출인지 불분명합니다. 의도를 명확히 하려면 {0} 또는 {0}[]로 캐스트하거나, 가변인자 매개변수를 개별적으로 전달하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.ConfusingArgumentToVarargsMethodRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#confusingargumenttovarargsmethod",
+    "description": "가변인자 메서드에 전달된 혼란스러운 인수를 보고합니다.\n\n            이는 배열이 단일 가변인자 인수로 전달될 때, 배열 타입이 가변인자 메서드가 기대하는 배열 타입과 정확히 일치하지 않을 때 발생할 수 있습니다. 해당 배열이 기대하는 배열 타입의 컴포넌트 타입의 하위 타입이면, 호출된 가변인자 메서드가 어떤 값을 받을지 명확하지 않을 수 있습니다.\n            예를 들어 다음과 같은 경우:\n            ```java\n            void varargs(Object... parm);\n            ```\n            다음과 같이 호출하면:\n            ```java\n            varargs(new String[]{\"a\"});\n            ```\n            메서드가 `new Object[]{ new String[] {\"a\"} }` 값을 받을지 아니면 `new String[] {\"a\"}`만 받을지(후자가 발생) 명확하지 않습니다. 이 혼란은 `String[]`이 `Object[]`의 하위 타입이면서 동시에 `Object`의 하위 타입이기 때문에 발생합니다. 이 경우 의도를 명확히 하려면 캐스트를 사용하거나 개별 요소를 다음과 같이 전달하세요:\n            ```java\n            // varargs call\n            // parm will be `new Object[] { \"a\" }`\n            varargs(\"a\");\n\n            // non-varargs call\n            // parm will be `new String[] { \"a\" }`\n            varargs((Object[]) new String[]{\"a\"});\n\n            // varargs call\n            // parm will be `new Object[] { new String[] { \"a\" } }`\n            varargs((Object) new String[]{\"a\"});\n            ```\n\n            또 다른 혼란스러운 경우는 가변인자 인수로 `null`을 전달하는 것입니다. 여기서 단일 null 요소를 가진 배열을 전달하려는 것인지, null 배열을 전달하려는 것인지(후자가 발생) 명확하지 않습니다. 이것도 마찬가지로 캐스트로 명확히 할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.Arrays;\n\n            abstract class C {\n                abstract void varargs(Object... args);\n                static {\n                    varargs(new String[] { \"a\" });\n                    varargs(null);\n                }\n            }"
+    ]
+  },
+  {
+    "name": "DetachedTestCase",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "6.13.0",
+    "message": "분리된 JUnit 테스트 케이스일 가능성이 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.DetachedTestCaseRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#detachedtestcase",
+    "description": "이 메서드는 public 또는 default 가시성, 비정적 접근, 인수 없음, 반환 값 없음, 어노테이션 없음이지만, 하나 이상의 JUnit 테스트 케이스를 가진 클래스의 멤버이므로 테스트 케이스로 보입니다. 유틸리티 메서드라면 private 가시성을 가져야 합니다. 무시된 테스트라면 @Test와 @Ignore로 어노테이션되어야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyTest {\n    @Test\n    public void someTest() {\n    }\n\n    // violation: Not annotated\n    public void someOtherTest () {\n    }\n\n}"
+    ]
+  },
+  {
+    "name": "DoNotExtendJavaLangThrowable",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "6.0.0",
+    "message": "예외는 java.lang.Throwable을 확장해서는 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#donotextendjavalangthrowable",
+    "description": "Throwable 대신 Exception 또는 RuntimeException을 확장하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo extends Throwable { }"
+    ]
+  },
+  {
+    "name": "DoNotHardCodeSDCard",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2.6",
+    "message": "/sdcard를 하드코딩하지 마세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#donothardcodesdcard",
+    "description": "\"/sdcard\" 대신 Environment.getExternalStorageDirectory()를 사용하세요",
+    "priority": 3,
+    "examples": [
+      "public class MyActivity extends Activity {\n    protected void foo() {\n        String storageLocation = \"/sdcard/mypackage\";   // hard-coded, poor approach\n\n       storageLocation = Environment.getExternalStorageDirectory() + \"/mypackage\"; // preferred approach\n    }\n}"
+    ]
+  },
+  {
+    "name": "DoNotTerminateVM",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.1",
+    "message": "J2EE/JEE 앱에서 System.exit()를 사용하면 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#donotterminatevm",
+    "description": "웹 애플리케이션은 `System.exit()`를 호출해서는 안 됩니다. 웹 컨테이너나 애플리케이션 서버만이 JVM을 중지해야 합니다. 그렇지 않으면 웹 애플리케이션이 동일한 애플리케이션 서버에서 실행 중인 모든 다른 애플리케이션을 종료시킵니다.\n\n이 규칙은 동등한 호출인 `Runtime.getRuntime().exit()`와 `Runtime.getRuntime().halt()`도 검사합니다.\n\n이 규칙은 PMD 6.29.0에서 \"DoNotCallSystemExit\"에서 이름이 변경되었습니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n    System.exit(0);                 // never call this when running in an application server!\n}\npublic void foo() {\n    Runtime.getRuntime().exit(0);   // never stop the JVM manually, the container will do this.\n}"
+    ]
+  },
+  {
+    "name": "DontUseFloatTypeForLoopIndices",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.3",
+    "message": "루프 인덱스에 부동 소수점을 사용하지 마세요. 부동 소수점을 사용해야 한다면 double을 사용하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#dontusefloattypeforloopindices",
+    "description": "루프 인덱스에 부동 소수점을 사용하지 마세요. 부동 소수점을 사용해야 한다면, float가 충분한 정밀도를 제공한다고 확신하고 성능 요구(공간 또는 시간)가 있는 경우가 아니라면 double을 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Count {\n  public static void main(String[] args) {\n    final int START = 2000000000;\n    int count = 0;\n    for (float f = START; f < START + 50; f++)\n      count++;\n      //Prints 0 because (float) START == (float) (START + 50).\n      System.out.println(count);\n      //The termination test misbehaves due to floating point granularity.\n    }\n}"
+    ]
+  },
+  {
+    "name": "EmptyCatchBlock",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "0.1",
+    "message": "빈 catch 블록을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#emptycatchblock",
+    "description": "빈 Catch 블록은 예외가 캐치되었지만 아무 작업도 수행되지 않는 인스턴스를 찾습니다.\n대부분의 경우 이는 처리되거나 보고되어야 하는 예외를 삼키는 것입니다.",
+    "priority": 3,
+    "examples": [
+      "public void doSomething() {\n    try {\n        FileInputStream fis = new FileInputStream(\"/tmp/bugger\");\n    } catch (IOException ioe) {\n        // not good\n    }\n}"
+    ],
+    "properties": [
+      {
+        "name": "allowCommentedBlocks",
+        "defaultValue": "false",
+        "description": "주석을 포함하는 빈 블록을 건너뜁니다"
+      },
+      {
+        "name": "allowExceptionNameRegex",
+        "defaultValue": "^(ignored|expected)$",
+        "description": "이 정규식과 일치하는 이름의 예외를 캐치하는 빈 블록을 건너뜁니다"
+      }
+    ]
+  },
+  {
+    "name": "EmptyFinalizer",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "빈 finalize 메서드를 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#emptyfinalizer",
+    "description": "빈 finalize 메서드는 아무 목적이 없으며 제거해야 합니다. Oracle은 JDK 9부터 Object.finalize()를 더 이상 사용되지 않음(deprecated)으로 선언했습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n   protected void finalize() {}\n}"
+    ]
+  },
+  {
+    "name": "FinalizeDoesNotCallSuperFinalize",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "finalize 메서드의 마지막 문은 super.finalize() 호출이어야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#finalizedoesnotcallsuperfinalize",
+    "description": "finalize()가 구현된 경우, 마지막 동작은 super.finalize를 호출하는 것이어야 합니다. Oracle은 JDK 9부터 Object.finalize()를 더 이상 사용되지 않음(deprecated)으로 선언했습니다.",
+    "priority": 3,
+    "examples": [
+      "protected void finalize() {\n    something();\n    // neglected to call super.finalize()\n}"
+    ]
+  },
+  {
+    "name": "FinalizeOnlyCallsSuperFinalize",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "Finalize는 super.finalize()를 호출하는 것 외에 다른 작업도 수행해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#finalizeonlycallssuperfinalize",
+    "description": "finalize()가 구현된 경우, super.finalize()를 호출하는 것 외에 다른 작업도 수행해야 합니다. Oracle은 JDK 9부터 Object.finalize()를 더 이상 사용되지 않음(deprecated)으로 선언했습니다.",
+    "priority": 3,
+    "examples": [
+      "protected void finalize() {\n    super.finalize();\n}"
+    ]
+  },
+  {
+    "name": "FinalizeOverloaded",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "Finalize 메서드는 오버로드되어서는 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#finalizeoverloaded",
+    "description": "finalize()라는 이름의 메서드는 매개변수를 가져서는 안 됩니다. 이는 혼란스러우며 Object.finalize()를 오버로드하려는 시도일 가능성이 높습니다. VM에 의해 호출되지 않습니다.\n\nOracle은 JDK 9부터 Object.finalize()를 더 이상 사용되지 않음(deprecated)으로 선언했습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    // this is confusing and probably a bug\n    protected void finalize(int a) {\n    }\n}"
+    ]
+  },
+  {
+    "name": "FinalizeShouldBeProtected",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.1",
+    "message": "finalize()를 오버라이드하는 경우 protected로 만드세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#finalizeshouldbeprotected",
+    "description": "finalize()를 오버라이드할 때, 새 메서드는 protected로 설정해야 합니다. public으로 만들면 다른 클래스가 부적절한 시점에 호출할 수 있습니다.\n\nOracle은 JDK 9부터 Object.finalize()를 더 이상 사용되지 않음(deprecated)으로 선언했습니다.",
+    "priority": 3,
+    "examples": [
+      "public void finalize() {\n    // do something\n}"
+    ]
+  },
+  {
+    "name": "IdempotentOperations",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.0",
+    "message": "멱등 연산(변수를 자기 자신에게 할당하는 것과 같은)을 피하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.IdempotentOperationsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#idempotentoperations",
+    "description": "멱등 연산을 피하세요 - 아무 효과가 없습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n public void bar() {\n  int x = 2;\n  x = x;\n }\n}"
+    ]
+  },
+  {
+    "name": "IdenticalConditionalBranches",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.18.0",
+    "message": "조건문이 조건을 무시합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.IdenticalConditionalBranchesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#identicalconditionalbranches",
+    "description": "조건이 true일 때와 false일 때 동일한 작업을 수행하는 조건문은 잘못되었거나(분기 중 하나를 변경해야 함) 중복됩니다(분기 중 하나로 대체할 수 있음).",
+    "priority": 3,
+    "examples": [
+      "class Test {\n    int method1() {\n        if (Math.random() > 0.5) {\n            return 1;\n        } else {\n            return 1;\n        }\n    }\n    int method2() {\n        return Math.random() > 0.5 ? 1 : 1;\n    }\n}"
+    ]
+  },
+  {
+    "name": "ImplicitSwitchFallThrough",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "이 switch case는 이전 case에서의 fall-through로 도달할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.ImplicitSwitchFallThroughRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#implicitswitchfallthrough",
+    "description": "각 case 옵션에 break 또는 return 문이 없는 switch 문은 문제가 있는 동작을 나타낼 수 있습니다. 빈 case는 의도적인 fall-through를 나타내므로 무시됩니다.\n\nfall-through로 도달하는 case 레이블 앞에 `// fallthrough` 주석을 달거나, `@SuppressWarnings(\"fallthrough\")`를 사용하여 위반을 무시할 수 있습니다.\n\n이 규칙은 PMD 6.37.0에서 \"MissingBreakInSwitch\"에서 이름이 변경되었습니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar(int status) {\n    switch(status) {\n      case CANCELLED:\n        doCancelled();\n        // break; hm, should this be commented out?\n      case NEW:\n        doNew();\n        // is this really a fall-through?\n        // what happens if you add another case after this one?\n      case REMOVED:\n        doRemoved();\n        // fallthrough - this comment just clarifies that you want a fallthrough\n      case OTHER: // empty case - this is interpreted as an intentional fall-through\n      case ERROR:\n        doErrorHandling();\n        break;\n    }\n}"
+    ]
+  },
+  {
+    "name": "JumbledIncrementer",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.0",
+    "message": "내부 루프의 for 업데이트 표현식에서 외부 루프 증분자를 수정하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#jumbledincrementer",
+    "description": "뒤섞인 루프 증분자를 피하세요 - 이는 보통 실수이며, 의도적이더라도 혼란스럽습니다.",
+    "priority": 3,
+    "examples": [
+      "public class JumbledIncrementerRule1 {\n    public void foo() {\n        for (int i = 0; i < 10; i++) {          // only references 'i'\n            for (int k = 0; k < 20; i++) {      // references both 'i' and 'k'\n                System.out.println(\"Hello\");\n            }\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "JUnitSpelling",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.0",
+    "message": "JUnit 프레임워크 메서드(setUp 또는 tearDown)의 철자가 잘못되었을 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.JUnitSpellingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#junitspelling",
+    "description": "JUnit 3에서 setUp 메서드는 테스트 실행에 필요한 모든 데이터 엔티티를 설정하는 데 사용됩니다.\n            tearDown 메서드는 테스트 실행에 필요한 모든 데이터 엔티티를 정리하는 데 사용됩니다.\n            테스트가 모든 것을 올바르게 설정하고 정리하려면 메서드 이름의 철자를 틀려서는 안 됩니다.",
+    "priority": 3,
+    "examples": [
+      "import junit.framework.*;\n\npublic class Foo extends TestCase {\n    public void setup() {}    // oops, should be setUp\n    public void TearDown() {} // oops, should be tearDown\n}"
+    ]
+  },
+  {
+    "name": "JUnitStaticSuite",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.0",
+    "message": "public이면서 static이 아닌 suite() 메서드가 있으므로 JUnit이 TestSuite를 가져오기 위해 호출하지 않습니다. 의도한 것입니까?",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.JUnitStaticSuiteRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#junitstaticsuite",
+    "description": "JUnit 테스트의 suite() 메서드는 public이면서 static이어야 합니다.",
+    "priority": 3,
+    "examples": [
+      "import junit.framework.*;\n\npublic class Foo extends TestCase {\n    public void suite() {}         // oops, should be static\n}",
+      "import junit.framework.*;\n\npublic class Foo extends TestCase {\n    private static void suite() {} // oops, should be public\n}"
+    ]
+  },
+  {
+    "name": "MethodWithSameNameAsEnclosingClass",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "메서드는 포함 클래스와 동일한 이름을 가져서는 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#methodwithsamenameasenclosingclass",
+    "description": "메서드는 포함 클래스와 동일한 이름을 가져서는 안 됩니다.\n생성자처럼 보여 혼란스러울 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyClass {\n\n    public MyClass() {}         // this is OK because it is a constructor\n\n    public void MyClass() {}    // this is bad because it is a method\n}"
+    ]
+  },
+  {
+    "name": "MisplacedNullCheck",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.5",
+    "message": "여기서 null 검사가 잘못 배치되었습니다. 변수 ''{0}''이(가) null이면 NullPointerException이 발생합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#misplacednullcheck",
+    "description": "여기서 null 검사가 잘못 배치되었습니다. 변수가 null이면 `NullPointerException`이 발생합니다.\n검사가 쓸모없거나(변수가 절대 `null`이 아님) 잘못된 것입니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void bar() {\n        if (a.equals(baz) && a != null) {} // a could be null, misplaced null check\n\n        if (a != null && a.equals(baz)) {} // correct null check\n    }\n}",
+      "public class Foo {\n    void bar() {\n        if (a.equals(baz) || a == null) {} // a could be null, misplaced null check\n\n        if (a == null || a.equals(baz)) {} // correct null check\n    }\n}"
+    ]
+  },
+  {
+    "name": "MissingSerialVersionUID",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "Serializable을 구현하는 클래스는 serialVersionUID를 설정해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#missingserialversionuid",
+    "description": "Serializable 클래스는 serialVersionUID 필드를 제공해야 합니다.\nserialVersionUID 필드는 추상 기본 클래스에도 필요합니다. 상속 체인의 각 개별 클래스는 자체 serialVersionUID 필드가 필요합니다. [Should an abstract class have a serialVersionUID](https://stackoverflow.com/questions/893259/should-an-abstract-class-have-a-serialversionuid)도 참조하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo implements java.io.Serializable {\n    String name;\n    // Define serialization id to avoid serialization related bugs\n    // i.e., public static final long serialVersionUID = 4328743;\n}"
+    ]
+  },
+  {
+    "name": "MissingStaticMethodInNonInstantiatableClass",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "클래스를 인스턴스화할 수 없으며 static 메서드나 필드를 제공하지 않습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#missingstaticmethodinnoninstantiatableclass",
+    "description": "private 생성자를 가지고 static 메서드나 필드가 없는 클래스는 사용할 수 없습니다.\n\nprivate 생성자 중 하나가 어노테이션으로 표시된 경우, 클래스는 더 이상 인스턴스화 불가능한 것으로 간주되지 않으며 위반이 보고되지 않습니다.\n`annotations` 속성을 참조하세요.",
+    "priority": 3,
+    "examples": [
+      "// This class is unusable, since it cannot be\n// instantiated (private constructor),\n// and no static method can be called.\n\npublic class Foo {\n  private Foo() {}\n  void foo() {}\n}"
+    ],
+    "properties": [
+      {
+        "name": "annotations",
+        "defaultValue": "org.springframework.beans.factory.annotation.Autowired,javax.inject.Inject,com.google.inject.Inject,lombok.Builder",
+        "description": "생성자가 이 어노테이션 중 하나로 표시된 경우 클래스는 무시됩니다."
+      }
+    ]
+  },
+  {
+    "name": "NonSerializableClass",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.1",
+    "message": "직렬화 가능한 클래스 ''{1}''의 필드 ''{0}''이(가) 직렬화 불가능한 타입 ''{2}''입니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.NonSerializableClassRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#nonserializableclass",
+    "description": "클래스가 `Serializable`로 표시된 경우 모든 필드도 직렬화 가능해야 합니다. 필드를 제외하려면 transient로 표시할 수 있습니다. Static 필드는 고려되지 않습니다.\n\n이 규칙은 직렬화 불가능한 모든 필드를 보고합니다.\n\n클래스가 수동 직렬화를 수행하는 메서드(`writeObject`, `readObject`)를 구현하거나 대체 객체(`writeReplace`, `readResolve`)를 사용하면 이 클래스는 무시됩니다.\n\n참고: 이 규칙은 PMD 6.52.0에서 개편되었습니다. 이전에는 \"BeanMembersShouldSerialize\"라고 불렸습니다.\n`prefix` 속성은 더 이상 사용되지 않습니다. 직렬화 가능한 클래스에서는 이름에 관계없이 모든 필드가 직렬화 가능해야 하기 때문입니다.",
+    "priority": 3,
+    "examples": [
+      "class Buzz implements java.io.Serializable {\n    private static final long serialVersionUID = 1L;\n\n    private transient int someFoo;          // good, it's transient\n    private static int otherFoo;            // also OK, it's static\n    private java.io.FileInputStream stream; // bad - FileInputStream is not serializable\n\n    public void setStream(FileInputStream stream) {\n        this.stream = stream;\n    }\n\n    public int getSomeFoo() {\n          return this.someFoo;\n    }\n}"
+    ]
+  },
+  {
+    "name": "NonStaticInitializer",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "비정적 초기화 블록은 혼란스럽습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#nonstaticinitializer",
+    "description": "비정적 초기화 블록은 생성자가 호출될 때마다(생성자 호출 직전에) 호출됩니다. 이는 유효한 언어 구조이지만 거의 사용되지 않으며 혼란스럽습니다.",
+    "priority": 3,
+    "examples": [
+      "public class MyClass {\n  // this block gets run before any call to a constructor\n  {\n    System.out.println(\"I am about to construct myself\");\n  }\n}"
+    ]
+  },
+  {
+    "name": "NullAssignment",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.02",
+    "message": "객체에 null을 할당하는 것은 코드 냄새입니다. 리팩토링을 고려하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.NullAssignmentRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#nullassignment",
+    "description": "변수에(선언 외부에서) \"null\"을 할당하는 것은 일반적으로 좋지 않은 관행입니다. 때때로 이러한 유형의 할당은 프로그래머가 코드에서 무슨 일이 일어나고 있는지 완전히 이해하지 못하고 있다는 표시입니다.\n\n참고: 이 종류의 할당은 객체를 역참조하고 가비지 컬렉션을 유도하기 위해 일부 경우에 사용될 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar() {\n  Object x = null; // this is OK\n  x = new Object();\n     // big, complex piece of code here\n  x = null; // this is not required\n     // big, complex piece of code here\n}"
+    ]
+  },
+  {
+    "name": "OverrideBothEqualsAndHashcode",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "0.4",
+    "message": "equals()와 hashCode()를 모두 오버라이드하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.OverrideBothEqualsAndHashcodeRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#overridebothequalsandhashcode",
+    "description": "`public boolean Object.equals(Object other)`와 `public int Object.hashCode()`를 모두 오버라이드하거나 둘 다 오버라이드하지 마세요.\n부모 클래스에서 `hashCode()`를 상속받더라도 `hashCode()`를 구현하고 명시적으로 상위 클래스에 위임하는 것을 고려하세요.\n\n두 메서드를 모두 오버라이드하지 않으면 `equals()`와 `hashCode()` 사이의 계약을 위반할 수 있습니다. 가장 중요한 것은 두 인스턴스가 동일하면 동일한 해시 코드를 가져야 한다는 것입니다. `HashSet`이나 `HashMap`과 같은 해시 기반 컬렉션에서 이러한 유효하지 않은 인스턴스를 사용하면 중복되거나 누락된 항목이 발생할 수 있습니다.\n\n이 규칙은 `Comparable`을 구현하는 타입을 고려하지 않습니다. 이에 대한 별도의 규칙 {% rule OverrideBothEqualsAndHashCodeOnComparable %}이 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Bar {        // poor, missing a hashcode() method\n    public boolean equals(Object o) {\n      // do some comparison\n    }\n}\n\npublic class Baz {        // poor, missing an equals() method\n    public int hashCode() {\n      // return some hash value\n    }\n}\n\npublic class Foo {        // perfect, both methods provided\n    public boolean equals(Object other) {\n      // do some comparison\n    }\n    public int hashCode() {\n      // return some hash value\n    }\n}"
+    ]
+  },
+  {
+    "name": "OverrideBothEqualsAndHashCodeOnComparable",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.17.0",
+    "message": "Comparable을 구현할 때 equals()와 hashCode()를 모두 오버라이드해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.OverrideBothEqualsAndHashCodeOnComparableRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#overridebothequalsandhashcodeoncomparable",
+    "description": "`Comparable`을 구현하는 클래스는 인스턴스가 컬렉션에서 사용되는 경우 `equals()`와 `hashCode()`를 모두 오버라이드해야 합니다. 이는 클래스의 자연 순서가 `equals()`와 일관되도록 하기 위함입니다.\n            그렇지 않으면 `Set` 인터페이스를 준수하지 않는 집합에서 예기치 않은 동작이 발생할 수 있습니다. `Set` 인터페이스는 객체 동등성을 결정하기 위해 `equals()`에 의존하지만, `TreeSet`과 같은 정렬된 집합은 대신 `compareTo()`를 사용합니다. 이러한 객체가 정렬된 맵의 키로 사용될 때도 동일한 문제가 발생할 수 있습니다.\n\n            참고 1: 이 규칙은 {% rule OverrideBothEqualsAndHashcode %}와 관련이 있습니다. `Comparable`을 구현하는 클래스에 대해서만 누락된 `equals()` 및/또는 `hashCode()` 메서드를 보고합니다.\n\n            참고 2: 이 규칙은 `equals()` 또는 `hashCode()` 중 하나만 오버라이드되고 둘 다 오버라이드되지 않은 경우에만 레코드를 보고합니다. 레코드가 생성된 equals/hashCode 메서드를 사용하는 경우, `compareTo()` 구현은 모든 레코드 컴포넌트가 고려되는 경우에만 `equals()`와 일관됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Bar implements Comparable<Bar> {  // poor - missing equals() and hashCode()\n    public int compareTo(Bar other) {\n        // some comparison\n    }\n}\n\npublic class Baz implements Comparable<Baz> {  // poor - missing hashCode()\n    public int compareTo(Baz other) {\n        // some comparison\n    }\n    public boolean equals(Object o) {\n        if (o == null || getClass() != o.getClass()) {\n            return false;\n        }\n        return compareTo((Baz) o) == 0;\n    }\n}\n\npublic class Foo implements Comparable<Foo> {  // correct\n    public int compareTo(Foo other) {\n        // some comparison\n    }\n    public boolean equals(Object o) {\n        if (o == null || getClass() != o.getClass()) {\n            return false;\n        }\n        return compareTo((Foo) o) == 0;\n    }\n    public int hashCode() {\n        // return hash code\n    }\n}"
+    ]
+  },
+  {
+    "name": "ProperLogger",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.3",
+    "message": "로거는 private static final로 정의되어야 하며 올바른 클래스를 가져야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#properlogger",
+    "description": "로거는 일반적으로 private static final로 정의되어야 하며 올바른 클래스와 연결되어야 합니다.\n`private final Log log;`은 로거를 전달해야 하는 드문 경우에도 허용되며, 로거가 생성자에 전달되어야 한다는 제한이 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n\n    private static final Log LOG = LogFactory.getLog(Foo.class);    // proper way\n\n    protected Log LOG = LogFactory.getLog(Testclass.class);         // wrong approach\n}"
+    ],
+    "properties": [
+      {
+        "name": "staticLoggerName",
+        "defaultValue": "LOG",
+        "description": "static Logger 변수의 이름"
+      },
+      {
+        "name": "loggerName",
+        "defaultValue": "log",
+        "description": "Logger 인스턴스 변수의 이름"
+      },
+      {
+        "name": "loggerClass",
+        "defaultValue": "org.apache.commons.logging.Log",
+        "description": "로거의 클래스 이름"
+      }
+    ]
+  },
+  {
+    "name": "ReplaceJavaUtilCalendar",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.16.0",
+    "message": "java.util.Calendar 사용은 java.time의 클래스로 대체해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#replacejavautilcalendar",
+    "description": "레거시 `java.util.Calendar` API는 오류가 발생하기 쉽고, 가변적이며, 스레드 안전하지 않습니다. 혼란스러운 월 인덱싱(1월 = 0),\n일관성 없는 필드 의미론, 그리고 장황한 사용 패턴을 가지고 있습니다. 현대적인 `java.time API`(Java 8에서 도입)는\n불변이고 스레드 안전한 대안을 명확하고 직관적인 메서드로 제공합니다.\n\n`java.time` 패키지의 `LocalDate`(날짜 전용 연산), `LocalDateTime`(날짜와 시간),\n또는 `ZonedDateTime`(시간대가 중요한 경우)을 대신 사용하세요.\n\n참고: JPA 3.2(Jakarta Persistence) 이후로 `java.util.Date`와 `java.util.Calendar` 및 기타의 사용은\n`java.time` API를 선호하여 더 이상 권장되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.Calendar;\nimport java.util.GregorianCalendar;\nimport java.time.LocalDate;\nimport java.time.LocalDateTime;\nimport java.time.ZonedDateTime;\n\npublic class Foo {\n    void problematic() {\n        // Problematic - using legacy Calendar API\n        Calendar cal = Calendar.getInstance();\n        cal.set(2024, Calendar.JANUARY, 15); // Month indexing is confusing (0-based)\n        cal.add(Calendar.DAY_OF_MONTH, 7);\n\n        Calendar specific = new GregorianCalendar(2024, 0, 15); // Also problematic\n    }\n\n    void preferred() {\n        // Preferred - using modern java.time API\n        LocalDate date = LocalDate.of(2024, 1, 15); // Month indexing is intuitive (1-based)\n        LocalDate weekLater = date.plusDays(7);\n\n        LocalDateTime dateTime = LocalDateTime.now();\n        ZonedDateTime zonedDateTime = ZonedDateTime.now();\n    }\n}"
+    ],
+    "minLanguageVersion": "1.8"
+  },
+  {
+    "name": "ReplaceJavaUtilDate",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.16.0",
+    "message": "java.util.Date 사용은 java.time의 클래스로 대체해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#replacejavautildate",
+    "description": "레거시 `java.util.Date` 클래스는 가변적이고, 스레드 안전하지 않으며, 혼란스러운 API를 가지고 있습니다. 많은 메서드가\n더 이상 사용되지 않으며, 시간대를 제대로 처리하지 못하고, 하나만 필요할 때도 날짜와 시간을 모두 나타냅니다.\n생성자 매개변수는 특히 오류가 발생하기 쉽습니다: 연도는 \"1900 이후의 연도\"이고 월은 0부터 시작합니다(1월 = 0).\n현대적인 java.time API(Java 8에서 도입)는 더 나은 타입 안전성, 불변성, 그리고 명확한 의미론을 제공합니다.\n\n`java.time` 패키지의 `LocalDate`(날짜만), `LocalTime`(시간만), `LocalDateTime`(날짜와 시간),\n`Instant`(타임스탬프), 또는 `ZonedDateTime`(시간대가 있는 날짜-시간)을 대신 사용하세요.\n\n참고: 이것은 `java.sql.Date`, `java.sql.Time` 및 `java.sql.Timestamp`와 같은 하위 타입도 포함합니다.\nJPA 3.2(Jakarta Persistence) 이후로 `java.util.Date`와 `java.util.Calendar` 및 기타의 사용은\n`java.time` API를 선호하여 더 이상 권장되지 않습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.Date;\nimport java.time.Instant;\nimport java.time.LocalDate;\nimport java.time.LocalDateTime;\nimport java.time.ZonedDateTime;\n\npublic class Foo {\n    void problematic() {\n        // Problematic - using legacy Date API\n        Date now = new Date();\n        Date epoch = new Date(0L);\n        Date custom = new Date(124, 0, 15); // Deprecated constructor: year=1900+124=2024, month=0=January\n\n        // Mutable operations are error-prone\n        now.setTime(System.currentTimeMillis());\n    }\n\n    void preferred() {\n        // Preferred - using modern java.time API\n        Instant now = Instant.now(); // For timestamps\n        LocalDate today = LocalDate.now(); // For date only\n        LocalDateTime dateTime = LocalDateTime.now(); // For date and time\n        ZonedDateTime zonedDateTime = ZonedDateTime.now(); // With timezone\n\n        // Immutable operations are safer\n        LocalDate tomorrow = today.plusDays(1);\n        LocalDateTime nextHour = dateTime.plusHours(1);\n    }\n}"
+    ],
+    "minLanguageVersion": "1.8"
+  },
+  {
+    "name": "ReturnFromFinallyBlock",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.05",
+    "message": "finally 블록에서 반환하는 것을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#returnfromfinallyblock",
+    "description": "finally 블록에서 반환하는 것을 피하세요. 이는 예외를 무시할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Bar {\n    public String foo() {\n        try {\n            throw new Exception( \"My Exception\" );\n        } catch (Exception e) {\n            throw e;\n        } finally {\n            return \"A. O. K.\"; // return not recommended here\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "SimpleDateFormatNeedsLocale",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.0",
+    "message": "SimpleDateFormat 객체를 생성할 때 Locale을 지정하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#simpledateformatneedslocale",
+    "description": "SimpleDateFormat 인스턴스를 생성할 때 로캘에 적합한 형식이 사용되도록 Locale을 지정하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n  // Should specify Locale.US (or whatever)\n  private SimpleDateFormat sdf = new SimpleDateFormat(\"pattern\");\n}"
+    ]
+  },
+  {
+    "name": "StaticEJBFieldShouldBeFinal",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.1",
+    "message": "EJB는 non-final static 필드를 가져서는 안 됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#staticejbfieldshouldbefinal",
+    "description": "J2EE 사양에 따르면, EJB는 쓰기 접근이 가능한 static 필드를 가져서는 안 됩니다.\n그러나 static 읽기 전용 필드는 허용됩니다. 이는 컨테이너가 여러 JRE에\n인스턴스를 분산할 때 올바른 동작을 보장합니다.",
+    "priority": 3,
+    "examples": [
+      "public class SomeEJB extends EJBObject implements EJBLocalHome {\n\n    private static int CountA;          // poor, field can be edited\n\n    private static final int CountB;    // preferred, read-only access\n}"
+    ]
+  },
+  {
+    "name": "SuspiciousHashcodeMethodName",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "메서드 이름과 반환 타입이 hashCode()와 의심스럽게 유사합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#suspicioushashcodemethodname",
+    "description": "메서드 이름과 반환 타입이 hashCode()와 의심스럽게 유사하여 hashCode() 메서드를 재정의하려는 의도를 나타낼 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public int hashcode() { // oops, this probably was supposed to be 'hashCode'\n    }\n}"
+    ]
+  },
+  {
+    "name": "SuspiciousOctalEscape",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "문자열 리터럴에서 8진수 이스케이프 뒤에 의심스러운 십진수 문자가 있습니다: {0}",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.SuspiciousOctalEscapeRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#suspiciousoctalescape",
+    "description": "문자열 리터럴 내에서 의심스러운 8진수 이스케이프 시퀀스가 발견되었습니다.\nJava 언어 사양(섹션 3.10.6)에 따르면 리터럴 문자열 내의 8진수\n이스케이프 시퀀스는 백슬래시 뒤에 다음이 와야 합니다:\n\n    OctalDigit | OctalDigit OctalDigit | ZeroToThree OctalDigit OctalDigit\n\n8진수 이스케이프 시퀀스 뒤에 8진수가 아닌 숫자가 오면 혼란을 줄 수 있습니다.\n예를 들어 \"\\038\"은 8진수 이스케이프 시퀀스 \"\\03\" 뒤에 리터럴 문자 \"8\"이\n오는 것으로 해석됩니다.",
+    "priority": 3,
+    "examples": [
+      "public void foo() {\n  // interpreted as octal 12, followed by character '8'\n  System.out.println(\"suspicious: \\128\");\n}"
+    ]
+  },
+  {
+    "name": "TestClassWithoutTestCases",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "클래스 ''{0}''은(는) 테스트 클래스일 수 있지만 테스트 케이스가 없습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.TestClassWithoutTestCasesRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#testclasswithouttestcases",
+    "description": "테스트 클래스는 일반적으로 \"Test\", \"Tests\" 또는 \"TestCase\" 접두사나 접미사로 시작하거나 끝납니다. 해당 이름을 가진 비테스트 클래스는\n좋은 관행이 아닙니다. 대부분의 사람들이 테스트 케이스라고 가정하기 때문입니다. 테스트 클래스에는\n\"testXXX\"(JUnit3)라는 이름의 테스트 메서드가 있거나 어노테이션(예: `@Test`)을 사용합니다.\n\n매칭할 정규식은 testClassPattern 속성을 사용하여 구성할 수 있습니다. 이름에 의한\n테스트 클래스 감지를 비활성화하려면 이 속성을 빈 문자열로 설정하세요.",
+    "priority": 3,
+    "examples": [
+      "//Consider changing the name of the class if it is not a test\n//Consider adding test methods if it is a test\npublic class CarTest {\n   public static void main(String[] args) {\n    // do something\n   }\n   // code\n}"
+    ]
+  },
+  {
+    "name": "UnconditionalIfStatement",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "항상 true이거나 항상 false인 'if' 문을 사용하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#unconditionalifstatement",
+    "description": "조건이 항상 true이거나 항상 false인 \"if\" 문을 사용하지 마세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    public void close() {\n        if (true) {        // fixed conditional, not recommended\n            // ...\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryBooleanAssertion",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.0",
+    "message": "assertTrue(true) 또는 유사한 문은 불필요합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#unnecessarybooleanassertion",
+    "description": "boolean 리터럴을 사용한 JUnit 테스트 단언은 항상 같은 값으로 평가되므로 불필요합니다.\n흐름 제어를 사용하거나(`assertTrue(false)` 또는 유사한 경우) `assertTrue(true)` 및 `assertFalse(false)` 같은\n문을 단순히 제거하는 것을 고려하세요. 오류를 발견한 후 테스트를 중단하려면 `fail()` 메서드를\n사용하고 왜 중단되었는지에 대한 표시 메시지를 제공하세요.",
+    "priority": 3,
+    "examples": [
+      "public class SimpleTest extends TestCase {\n    public void testX() {\n        assertTrue(true);            // serves no real purpose - remove it\n    }\n}"
+    ]
+  },
+  {
+    "name": "UnnecessaryCaseChange",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.3",
+    "message": "toUpperCase/toLowerCase().equals() 대신 equalsIgnoreCase()를 사용하는 것이 더 깔끔합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.UnnecessaryCaseChangeRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#unnecessarycasechange",
+    "description": "toUpperCase/toLowerCase().equals()를 사용하는 것보다 equalsIgnoreCase()를 사용하는 것이 더 빠릅니다.",
+    "priority": 3,
+    "examples": [
+      "boolean answer1 = buz.toUpperCase().equals(\"BAZ\");              // should be buz.equalsIgnoreCase(\"BAZ\")\n\nboolean answer2 = buz.toUpperCase().equalsIgnoreCase(\"BAZ\");    // another unnecessary toUpperCase()"
+    ]
+  },
+  {
+    "name": "UnnecessaryConversionTemporary",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "0.1",
+    "message": "기본 타입을 문자열로 변환할 때 불필요한 임시 객체를 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#unnecessaryconversiontemporary",
+    "description": "기본 타입을 문자열로 변환할 때 임시 객체를 사용하지 마세요. 대신 래퍼 클래스의 정적 변환 메서드를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public String convert(int x) {\n    String foo = new Integer(x).toString(); // this wastes an object\n\n    return Integer.toString(x);             // preferred approach\n}"
+    ]
+  },
+  {
+    "name": "UnsupportedJdkApiUsage",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.21.0",
+    "message": "지원되지 않는 JDK API를 사용하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#unsupportedjdkapiusage",
+    "description": "`sun.*` 또는 `jdk.internal.*` 패키지의 클래스를 임포트하거나 API를 사용하는 것을 피하세요.\n`sun.misc.Unsafe` 또는 `jdk.internal.misc.Unsafe`를 포함합니다. 이 패키지들은 이식성이 없고 안정적이지 않으며\n향후 JDK 버전에서 변경되거나 제거될 수 있습니다. 이름에서 알 수 있듯이, `Unsafe` 클래스의 메서드는 특히 위험하며\nVarHandle API(JDK 9에서 도입)와 Foreign Function &amp; Memory API(JDK 22에서 도입) 같은\n더 안전한 대안으로 대체되었습니다. 예제가 포함된 더 안전한 대안은 [JEP 471](https://openjdk.org/jeps/471)을 참조하세요.\n\nSun API에 의존해야 하는 경우, 안정적인 래퍼 클래스 내부와 같이 최소한의 격리된 범위에 사용을 제한하세요.\n이러한 래퍼의 구현에서 이 규칙을 억제할 수 있지만, 가능한 한 공식 API로 마이그레이션하는 것이\n강력히 권장됩니다.\n\n이러한 지원되지 않는 API의 사용은 내부 용도로만 의도되었으므로 Java 컴파일러에 의해서도\n경고됩니다. 이 PMD 규칙은 독립적인 코드 검토를 용이하게 하고 컴파일러 경고가\n간과되었을 수 있는 인스턴스를 포착하기 위해 추가되었습니다.",
+    "priority": 3,
+    "examples": [
+      "public final class MemoryWiper {\n  public static void main(final String[] args) throws NoSuchFieldException, IllegalAccessException {\n    for (final String s : args) {\n      sun.misc.Unsafe.getUnsafe().putAddress(Long.parseLong(s), 0L); // bad\n    }\n  }\n}"
+    ]
+  },
+  {
+    "name": "UnusedNullCheckInEquals",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.5",
+    "message": "이미 null이 아님을 확인한 객체에 대해 equals()를 호출하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#unusednullcheckinequals",
+    "description": "객체 참조가 null인지 확인한 후에는, 그 객체를 다른 객체의 equals() 메서드에 전달하는 것이 아니라\n해당 객체에서 equals()를 호출해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Test {\n\n    public String method1() { return \"ok\";}\n    public String method2() { return null;}\n\n    public void method(String a) {\n        String b;\n        // I don't know it method1() can be \"null\"\n        // but I know \"a\" is not null..\n        // I'd better write a.equals(method1())\n\n        if (a!=null && method1().equals(a)) { // will trigger the rule\n            //whatever\n        }\n\n        if (method1().equals(a) && a != null) { // won't trigger the rule\n            //whatever\n        }\n\n        if (a!=null && method1().equals(b)) { // won't trigger the rule\n            //whatever\n        }\n\n        if (a!=null && \"LITERAL\".equals(a)) { // won't trigger the rule\n            //whatever\n        }\n\n        if (a!=null && !a.equals(\"go\")) { // won't trigger the rule\n            a=method2();\n            if (method1().equals(a)) {\n                //whatever\n            }\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseCorrectExceptionLogging",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.2",
+    "message": "예외 로깅에 올바른 로깅 문을 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#usecorrectexceptionlogging",
+    "description": "전체 스택 트레이스가 출력되도록 하려면 String과 Throwable 두 개의 인수를 가진 로깅 문을 사용하세요.\n\n이 규칙은 [Apache Commons Logging](https://commons.apache.org/proper/commons-logging/)에만 적용됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Main {\n    private static final Log _LOG = LogFactory.getLog( Main.class );\n    void bar() {\n        try {\n        } catch( Exception e ) {\n            _LOG.error( e ); //Wrong!\n        } catch( OtherException oe ) {\n            _LOG.error( oe.getMessage(), oe ); //Correct\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseEqualsToCompareStrings",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.1",
+    "message": "'==' 또는 '!=' 대신 equals()를 사용하여 문자열을 비교하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#useequalstocomparestrings",
+    "description": "'==' 또는 '!='를 사용하여 문자열을 비교하는 것은 양쪽 모두에 인턴된 문자열(`String#intern()`)을\n사용하는 경우에만 신뢰할 수 있습니다.\n\n대신 `equals()` 메서드를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public boolean test(String s) {\n    if (s == \"one\") return true;        // unreliable\n    if (\"two\".equals(s)) return true;   // better\n    return false;\n}"
+    ]
+  },
+  {
+    "name": "UselessOperationOnImmutable",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.5",
+    "message": "불변 객체에 대한 연산 결과가 무시됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.UselessOperationOnImmutableRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#uselessoperationonimmutable",
+    "description": "불변 객체에 대한 연산은 연산 결과가 새로운 객체이므로 객체 자체를 변경하지 않습니다.\n따라서 이러한 연산의 결과를 무시하는 것은 아마도 실수입니다. 해당 연산을 제거할 수 있을 것입니다.\n\n이 규칙은 `String`, `BigDecimal`, `BigInteger` 또는 `java.time.*`의 모든 타입을 불변으로 인식합니다.\n\n**더 이상 사용되지 않음:** 이 규칙은 PMD 7.17.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거됩니다.\n이 규칙은 {% rule UselessPureMethodCall %}로 대체되었습니다.",
+    "priority": 3,
+    "examples": [
+      "import java.math.*;\n\nclass Test {\n    void method1() {\n        BigDecimal bd=new BigDecimal(10);\n        bd.add(new BigDecimal(5));      // this will trigger the rule\n    }\n    void method2() {\n        BigDecimal bd=new BigDecimal(10);\n        bd = bd.add(new BigDecimal(5)); // this won't trigger the rule\n    }\n}"
+    ]
+  },
+  {
+    "name": "UselessPureMethodCall",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "7.17.0",
+    "message": "결과가 사용되지 않는 순수 메서드 {0}을(를) 호출하지 마세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.UselessPureMethodCallRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#uselesspuremethodcall",
+    "description": "이 규칙은 결과가 사용되지 않는 순수 메서드 호출을 감지합니다. 순수 메서드는 부작용이 없는 메서드입니다.\n따라서 이러한 메서드 호출의 결과를 무시하는 것은 아마도 실수입니다.\n\n메서드 호출을 제거하거나 결과를 사용해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n    public void foo() {\n        List.of(\"foo\").size(); // result unused\n        Stream.of(\"bar\").map(item -> System.out.format(\"%s\", item)); // result unused\n        Stream.of(\"bar\").forEach(item -> System.out.format(\"%s\", item)); // better\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseLocaleWithCaseConversions",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.0",
+    "message": "String.toLowerCase()/toUpperCase() 호출 시 Locale을 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#uselocalewithcaseconversions",
+    "description": "`String::toLowerCase()/toUpperCase()` 변환을 수행할 때 대소문자 변환 규칙을 지정하기 위해\n명시적 locale 인수를 사용하세요.\n\n인수 없이 `String::toLowerCase()`를 사용하면 암시적으로 `Locale::getDefault()`를 사용합니다.\n문제는 기본 로캘이 현재 JVM 설정(보통 실행 중인 시스템)에 따라 달라진다는 것입니다.\n시스템 기본값을 사용하는 것이 정확히 원하는 것일 수 있지만(예: 표준 입력을 통해 받은 문자열을 조작하는 경우),\n그렇지 않을 수도 있습니다(예: 네트워크나 파일을 통해 문자열을 받고 인코딩이 환경과 무관하게\n잘 정의된 경우). 후자의 경우, 기본 로캘을 사용하면 다른 대소문자 변환 규칙을 가진\n로캘의 시스템에서 예상치 못한 결과를 낼 수 있어 대소문자 변환이 불안정해집니다.\n예를 들어 터키어에서 `i`의 대문자 형태는 영어에서의 `I`(U+0049)가 아닌 `\\u0130`(U+0130, 비ASCII)입니다.\n\n이 규칙은 문자열을 다룰 때 개발자가 로캘에 대해 생각하도록 *강제*하기 위한 것입니다.\n작성 시점에 로캘 선택에 대한 의식적인 결정을 내림으로써, 나중에 놀라운 동작의 위험을 줄이고\n미래의 독자에게 의도를 전달할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "// violation - implicitly system-dependent conversion\nif (x.toLowerCase().equals(\"list\")) {}\n\n// The above will not match \"LIST\" on a system with a Turkish locale.\n// It could be replaced with\nif (x.toLowerCase(Locale.US).equals(\"list\")) { }\n// or simply\nif (x.equalsIgnoreCase(\"list\")) { }\n\n// ok - system independent conversion\nString z = a.toLowerCase(Locale.ROOT);\n\n// ok - explicit system-dependent conversion\nString z2 = a.toLowerCase(Locale.getDefault());"
+    ]
+  },
+  {
+    "name": "UseProperClassLoader",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.7",
+    "message": "J2EE에서 getClassLoader()가 예상대로 동작하지 않을 수 있습니다. 대신 Thread.currentThread().getContextClassLoader()를 사용하세요.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#useproperclassloader",
+    "description": "J2EE에서 getClassLoader() 메서드가 예상대로 동작하지 않을 수 있습니다.\n대신 Thread.currentThread().getContextClassLoader()를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    ClassLoader cl = Bar.class.getClassLoader();\n}"
+    ]
+  },
+  {
+    "name": "DoNotThrowExceptionInFinally",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "4.2",
+    "message": "finally 블록의 throw 문은 제어 흐름을 이해하기 어렵게 만듭니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#donotthrowexceptioninfinally",
+    "description": "'finally' 블록 내에서 예외를 던지는 것은 다른 예외나 코드 결함을 마스킹할 수 있으므로 혼란스럽습니다.\n참고: 이것은 Lint4j 규칙 \"A throw in a finally block\"의 PMD 구현입니다",
+    "priority": 4,
+    "examples": [
+      "public class Foo {\n    public void bar() {\n        try {\n            // Here do some stuff\n        } catch( Exception e) {\n            // Handling the issue\n        } finally {\n            // is this really a good idea ?\n            throw new Exception();\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "DontImportSun",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "1.5",
+    "message": "'sun.*' 패키지에서 임포트하는 것을 피하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#dontimportsun",
+    "description": "'sun.*' 패키지에서 임포트하는 것을 피하세요. 이 패키지들은 이식성이 없으며 변경될 수 있습니다.\n\nSun API에 의존해야 하는 경우, 이 의존성을 가능한 한 작은 범위로 제한하세요. 예를 들어, 불안정한 API 주변에 안정적인 래퍼 클래스를 작성합니다. 그런 다음 래퍼의 구현에서 이 규칙을 억제할 수 있습니다.\n\n**더 이상 사용되지 않음:** 이 규칙은 PMD 7.21.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거될 예정입니다.\n이 규칙은 {% rule UnsupportedJdkApiUsage %}로 대체되었습니다.",
+    "priority": 4,
+    "examples": [
+      "import sun.misc.foo;\npublic class Foo {}"
+    ]
+  },
+  {
+    "name": "InstantiationToGetClass",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "2.0",
+    "message": "getClass()를 호출하기 위해 객체를 인스턴스화하지 마세요. 대신 .class public 멤버를 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#instantiationtogetclass",
+    "description": "getClass()를 호출하기 위해 객체를 인스턴스화하지 마세요. 대신 .class public 멤버를 사용하세요.",
+    "priority": 4,
+    "examples": [
+      "// replace this\nClass c = new String().getClass();\n\n// with this:\nClass c = String.class;"
+    ]
+  },
+  {
+    "name": "StringBufferInstantiationWithChar",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "3.9",
+    "message": "`new StringBuilder()` 또는 `new StringBuffer()`의 인수가 char에서 int로 암시적으로 변환됩니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#stringbufferinstantiationwithchar",
+    "description": "초기화 인수로 제공된 개별 문자 값은 정수로 변환됩니다.\n이로 인해 예상보다 큰 내부 버퍼 크기가 발생할 수 있습니다. 예시:\n\n```\nnew StringBuffer()      //  16\nnew StringBuffer(6)     //  6\nnew StringBuffer(\"hello world\")  // 11 + 16 = 27\nnew StringBuffer('A')   //  chr(A) = 65\nnew StringBuffer(\"A\")   //  1 + 16 = 17\n\nnew StringBuilder()     //  16\nnew StringBuilder(6)    //  6\nnew StringBuilder(\"hello world\")  // 11 + 16 = 27\nnew StringBuilder('C')   //  chr(C) = 67\nnew StringBuilder(\"A\")   //  1 + 16 = 17\n```",
+    "priority": 4,
+    "examples": [
+      "// misleading instantiation, these buffers\n// are actually sized to 99 characters long\nStringBuffer  sb1 = new StringBuffer('c');\nStringBuilder sb2 = new StringBuilder('c');\n\n// in these forms, just single characters are allocated\nStringBuffer  sb3 = new StringBuffer(\"c\");\nStringBuilder sb4 = new StringBuilder(\"c\");"
+    ]
+  },
+  {
+    "name": "InvalidLogMessageFormat",
+    "category": "errorprone",
+    "categoryName": "오류 발생 가능성",
+    "since": "5.5.0",
+    "message": "잘못된 메시지 형식",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.errorprone.InvalidLogMessageFormatRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_errorprone.html#invalidlogmessageformat",
+    "description": "slf4j 및 log4j2(6.19.0부터) 로거에서 인수와 플레이스홀더의 수가 일치하지 않는 메시지를 검사합니다.\n\n6.32.0부터 매개변수화된 메시지 플레이스홀더(`{}`) 외에도 문자열 형식 메시지의 형식 지정자(`%s`)도 지원됩니다.\n\n이 규칙은 PMD 6.19.0에서 \"InvalidSlf4jMessageFormat\"에서 이름이 변경되었습니다.",
+    "priority": 5,
+    "examples": [
+      "LOGGER.error(\"forget the arg {}\");\nLOGGER.error(\"forget the arg %s\");\nLOGGER.error(\"too many args {}\", \"arg1\", \"arg2\");\nLOGGER.error(\"param {}\", \"arg1\", new IllegalStateException(\"arg\")); //The exception is shown separately, so is correct."
+    ]
+  },
+  {
+    "name": "DoubleCheckedLocking",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "1.04",
+    "message": "이중 검사 잠금(Double checked locking)은 Java에서 스레드 안전하지 않습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.multithreading.DoubleCheckedLockingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#doublecheckedlocking",
+    "description": "Java에서 이중 검사 잠금(Double Checked Locking) 패턴을 사용하면 부분적으로 생성된 객체가 반환될 수 있습니다.\n최적화된 JRE는 참조가 가리키는 객체의 생성자를 호출하기 전에 baz 변수에 참조를 할당할 수 있습니다.\n\n참고: Java 5부터는 변수를 `volatile`로 선언하면 이중 검사 잠금이 동작하도록 할 수 있습니다.\n\n자세한 내용은 다음을 참조하세요: &lt;http://www.javaworld.com/javaworld/jw-02-2001/jw-0209-double.html>\n또는 &lt;http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html>",
+    "priority": 1,
+    "examples": [
+      "public class Foo {\n    /*volatile */ Object baz = null; // fix for Java5 and later: volatile\n    Object bar() {\n        if (baz == null) { // baz may be non-null yet not fully created\n            synchronized(this) {\n                if (baz == null) {\n                    baz = new Object();\n                }\n              }\n        }\n        return baz;\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidUsingVolatile",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "4.1",
+    "message": "volatile 수정자의 사용은 권장되지 않습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#avoidusingvolatile",
+    "description": "'volatile' 키워드의 사용은 일반적으로 Java 애플리케이션을 세밀하게 조정하는 데 사용되며, 따라서 Java 메모리 모델에 대한\n높은 전문 지식이 필요합니다. 더욱이 그 작동 범위는 다소 잘못 알려져 있습니다. 그러므로 volatile 키워드는\n유지보수 목적 및 이식성을 위해 사용해서는 안 됩니다.",
+    "priority": 2,
+    "examples": [
+      "public class Data {\n  private volatile String var1; // not suggested\n  private          String var2; // preferred\n}"
+    ]
+  },
+  {
+    "name": "AvoidSynchronizedAtMethodLevel",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "3.0",
+    "message": "메서드 수준의 동기화 대신 블록 수준의 잠금을 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#avoidsynchronizedatmethodlevel",
+    "description": "메서드 수준의 동기화는 가상 스레드를 고정(pin)시키며 성능 문제를 일으킬 수 있습니다. 또한 메서드에 새로운 코드가 추가될 때\n문제를 일으킬 수 있습니다. 블록 수준의 ReentrantLock은 상호 배제가 필요한 코드만 잠금되도록 보장하는 데 도움이 됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    // Try to avoid this:\n    synchronized void foo() {\n        // code, that doesn't need synchronization\n        // ...\n        // code, that requires synchronization\n        if (!sharedData.has(\"bar\")) {\n            sharedData.add(\"bar\");\n        }\n        // more code, that doesn't need synchronization\n        // ...\n    }\n    // Prefer this:\n    Lock instanceLock = new ReentrantLock();\n\n    void bar() {\n        // code, that doesn't need synchronization\n        // ...\n        try {\n            instanceLock.lock();  // or instanceLock.tryLock(long time, TimeUnit unit)\n            if (!sharedData.has(\"bar\")) {\n                sharedData.add(\"bar\");\n            }\n        } finally {\n            instanceLock.unlock();\n        }\n        // more code, that doesn't need synchronization\n        // ...\n    }\n\n    // Try to avoid this for static methods:\n    static synchronized void fooStatic() {\n    }\n\n    // Prefer this:\n    private static Lock CLASS_LOCK = new ReentrantLock();\n\n    static void barStatic() {\n        // code, that doesn't need synchronization\n        // ...\n        try {\n            CLASS_LOCK.lock();\n            // code, that requires synchronization\n        } finally {\n            CLASS_LOCK.unlock();\n        }\n        // more code, that doesn't need synchronization\n        // ...\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidSynchronizedStatement",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "7.5.0",
+    "message": "동기화 대신 ReentrantLock을 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#avoidsynchronizedstatement",
+    "description": "동기화는 가상 스레드를 고정(pin)시키며 성능 문제를 일으킬 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    // Try to avoid this:\n    void foo() {\n        // code that doesn't need mutual exclusion\n        synchronized(this) {\n            // code that requires mutual exclusion\n        }\n        // more code that doesn't need mutual exclusion\n    }\n    // Prefer this:\n    Lock instanceLock = new ReentrantLock();\n\n    void foo() {\n        // code that doesn't need mutual exclusion\n        try {\n            instanceLock.lock();  // or instanceLock.tryLock(long time, TimeUnit unit)\n            // code that requires mutual exclusion\n        } finally {\n            instanceLock.unlock();\n        }\n        // more code that doesn't need mutual exclusion\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidThreadGroup",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "3.6",
+    "message": "java.lang.ThreadGroup 사용을 피하세요; 스레드 안전하지 않습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#avoidthreadgroup",
+    "description": "java.lang.ThreadGroup 사용을 피하세요; 스레드 환경에서 사용하도록 설계되었지만\n스레드 안전하지 않은 메서드를 포함하고 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class Bar {\n    void buz() {\n        ThreadGroup tg = new ThreadGroup(\"My threadgroup\");\n        tg = new ThreadGroup(tg, \"my thread group\");\n        tg = Thread.currentThread().getThreadGroup();\n        tg = System.getSecurityManager().getThreadGroup();\n    }\n}"
+    ]
+  },
+  {
+    "name": "DoNotUseThreads",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "4.1",
+    "message": "J2EE 규격을 준수하려면 웹 애플리케이션에서 스레드를 사용하지 않아야 합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#donotusethreads",
+    "description": "J2EE 사양은 스레드 사용을 명시적으로 금지합니다. 스레드는 J2EE 서버에 의해 관리되고 모니터링되어야 하는 자원입니다.\n애플리케이션이 자체적으로 스레드를 생성하거나 자체 커스텀 스레드 풀을 사용하면 해당 스레드는 관리되지 않으며, 이는 자원 고갈로 이어질 수 있습니다.\n또한 EJB는 클러스터 내의 머신 간에 이동될 수 있으며, 관리되는 자원만 함께 이동할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "// This is not allowed\npublic class UsingThread extends Thread {\n\n}\n\n// Neither this,\npublic class UsingExecutorService {\n\n    public void methodX() {\n        ExecutorService executorService = Executors.newFixedThreadPool(5);\n    }\n}\n\n// Nor this,\npublic class Example implements ExecutorService {\n\n}\n\n// Nor this,\npublic class Example extends AbstractExecutorService {\n\n}\n\n// Nor this\npublic class UsingExecutors {\n\n    public void methodX() {\n        Executors.newSingleThreadExecutor().submit(() -> System.out.println(\"Hello!\"));\n    }\n}"
+    ]
+  },
+  {
+    "name": "NonThreadSafeSingleton",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "3.4",
+    "message": "싱글톤이 스레드 안전하지 않습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.multithreading.NonThreadSafeSingletonRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#nonthreadsafesingleton",
+    "description": "스레드 안전하지 않은 싱글톤은 잘못된 상태 변경을 초래할 수 있습니다. 가능하면 객체를 직접 인스턴스화하여\n정적 싱글톤을 제거하세요. 정적 싱글톤은 어차피 단일 인스턴스만 존재하므로 일반적으로 필요하지 않습니다.\n다른 가능한 해결책으로는 전체 메서드를 동기화하거나\n[요청 시 초기화 홀더 클래스(initialize-on-demand holder class)](https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom)를 사용하는 것입니다.\n\n이중 검사 잠금(double-checked locking) 패턴의 사용을 자제하세요. Java 메모리 모델은\n변수가 `volatile`로 선언되지 않는 한 이 패턴의 동작을 보장하지 않으며, 불필요한 성능 저하를 초래합니다.\n[참조](http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html)\n\nEffective Java 항목 48을 참조하세요.",
+    "priority": 3,
+    "examples": [
+      "private static Foo foo = null;\n\n//multiple simultaneous callers may see partially initialized objects\npublic static Foo getFoo() {\n    if (foo==null) {\n        foo = new Foo();\n    }\n    return foo;\n}"
+    ]
+  },
+  {
+    "name": "UnsynchronizedStaticFormatter",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "6.11.0",
+    "message": "정적 Formatter 객체는 동기화된 방식으로 접근해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.multithreading.UnsynchronizedStaticFormatterRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#unsynchronizedstaticformatter",
+    "description": "`java.text.Format`의 인스턴스는 일반적으로 동기화되지 않습니다.\nSun은 각 스레드마다 별도의 포맷 인스턴스를 사용할 것을 권장합니다.\n여러 스레드가 정적 포매터에 접근해야 하는 경우, 포매터는 블록 수준에서\n동기화되어야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    private static final SimpleDateFormat sdf = new SimpleDateFormat();\n    void bar() {\n        sdf.format(); // poor, no thread-safety\n    }\n    void foo() {\n        synchronized (sdf) { // preferred\n            sdf.format();\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseConcurrentHashMap",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "4.2.6",
+    "message": "Java 5 이상에서 동시 접근이 있는 경우, ConcurrentHashMap 구현을 사용해야 합니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#useconcurrenthashmap",
+    "description": "Java 5에서 멀티스레드 접근을 위해 설계된 새로운 Map 구현이 도입되었으므로, 다른 스레드를 차단하지 않고\n효율적인 맵 읽기를 수행할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "public class ConcurrentApp {\n  public void getMyInstance() {\n    Map map1 = new HashMap();           // fine for single-threaded access\n    Map map2 = new ConcurrentHashMap(); // preferred for use with multiple threads\n\n    // the following case will be ignored by this rule\n    Map map3 = someModule.methodThatReturnMap(); // might be OK, if the returned map is already thread-safe\n  }\n}"
+    ],
+    "minLanguageVersion": "1.5"
+  },
+  {
+    "name": "UseNotifyAllInsteadOfNotify",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "3.0",
+    "message": "Thread.notify() 대신 Thread.notifyAll()을 호출하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#usenotifyallinsteadofnotify",
+    "description": "Thread.notify()는 객체를 모니터링하는 스레드 하나를 깨웁니다. 둘 이상의 스레드가 모니터링하고 있는 경우\n하나만 선택됩니다. 선택되는 스레드는 임의적이므로, 일반적으로 notifyAll()을 호출하는 것이 더 안전합니다.",
+    "priority": 3,
+    "examples": [
+      "void bar() {\n    x.notify();\n    // If many threads are monitoring x, only one (and you won't know which) will be notified.\n    // use instead:\n    x.notifyAll();\n  }"
+    ]
+  },
+  {
+    "name": "DontCallThreadRun",
+    "category": "multithreading",
+    "categoryName": "멀티스레딩",
+    "since": "4.3",
+    "message": "Thread.run()을 직접 호출하지 마세요, Thread.start()를 사용하세요",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_multithreading.html#dontcallthreadrun",
+    "description": "Thread.run() 메서드를 명시적으로 호출하면 호출자의 제어 스레드에서 실행됩니다. 의도한 동작을 위해서는 Thread.start()를 호출하세요.",
+    "priority": 4,
+    "examples": [
+      "Thread t = new Thread();\nt.run();            // use t.start() instead\nnew Thread().run(); // same violation"
+    ]
+  },
+  {
+    "name": "AvoidFileStream",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "6.0.0",
+    "message": "FileInputStream, FileOutputStream, FileReader 또는 FileWriter의 인스턴스화를 피하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#avoidfilestream",
+    "description": "FileInputStream과 FileOutputStream 클래스에는 가비지 컬렉션 일시 중지를 유발하는\nfinalizer 메서드가 포함되어 있습니다.\n자세한 내용은 [JDK-8080225](https://bugs.openjdk.org/browse/JDK-8080225)를 참조하십시오.\n\nFileReader와 FileWriter 생성자는 FileInputStream과 FileOutputStream을 인스턴스화하므로,\nfinalizer 메서드가 호출되면서 가비지 컬렉션 문제가 다시 발생합니다.\n\n* `new FileInputStream(fileName)` 대신 `Files.newInputStream(Paths.get(fileName))`을 사용하십시오.\n* `new FileOutputStream(fileName)` 대신 `Files.newOutputStream(Paths.get(fileName))`을 사용하십시오.\n* `new FileReader(fileName)` 대신 `Files.newBufferedReader(Paths.get(fileName))`을 사용하십시오.\n* `new FileWriter(fileName)` 대신 `Files.newBufferedWriter(Paths.get(fileName))`을 사용하십시오.\n\n참고로, `java.nio` API는 더 이상 `FileNotFoundException`을 던지지 않으며, 대신\n`NoSuchFileException`을 던집니다. 코드에서 `FileNotFoundException`을 명시적으로 처리했다면\n이를 조정해야 합니다. 두 예외 모두 `IOException`의 하위 클래스이므로,\n이를 catch하면 둘 다 처리됩니다.",
+    "priority": 1,
+    "examples": [
+      "// these instantiations cause garbage collection pauses, even if properly closed\n\n    FileInputStream fis = new FileInputStream(fileName);\n    FileOutputStream fos = new FileOutputStream(fileName);\n    FileReader fr = new FileReader(fileName);\n    FileWriter fw = new FileWriter(fileName);\n\n    // the following instantiations help prevent Garbage Collection pauses, no finalization\n\n    try(InputStream is = Files.newInputStream(Paths.get(fileName))) {\n    }\n    try(OutputStream os = Files.newOutputStream(Paths.get(fileName))) {\n    }\n    try(BufferedReader br = Files.newBufferedReader(Paths.get(fileName), StandardCharsets.UTF_8)) {\n    }\n    try(BufferedWriter wr = Files.newBufferedWriter(Paths.get(fileName), StandardCharsets.UTF_8)) {\n    }"
+    ],
+    "minLanguageVersion": "1.7"
+  },
+  {
+    "name": "StringInstantiation",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "1.0",
+    "message": "String 객체의 인스턴스화를 피하십시오; 이는 일반적으로 불필요합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.StringInstantiationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#stringinstantiation",
+    "description": "String 객체의 인스턴스화를 피하십시오; 문자열은 불변이며 안전하게 공유할 수 있으므로 이는 일반적으로 불필요합니다.",
+    "priority": 2,
+    "examples": [
+      "private String bar = new String(\"bar\"); // just do a String bar = \"bar\";"
+    ]
+  },
+  {
+    "name": "AddEmptyString",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "4.0",
+    "message": "빈 문자열을 추가하지 마십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.AddEmptyStringRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#addemptystring",
+    "description": "빈 문자열과 연결하여 리터럴을 문자열로 변환하는 것은 비효율적입니다.\n대신 타입별 `toString()` 메서드나 `String.valueOf()`를 사용하는 것이 훨씬 좋습니다.",
+    "priority": 3,
+    "examples": [
+      "String s = \"\" + 123;                // inefficient\nString t = Integer.toString(456);   // preferred approach"
+    ]
+  },
+  {
+    "name": "AppendCharacterWithChar",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.5",
+    "message": "StringBuffer.append에서 문자를 문자열로 추가하는 것을 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.AppendCharacterWithCharRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#appendcharacterwithchar",
+    "description": "StringBuffer/StringBuilder.append 메서드에서 문자를 문자열로 연결하는 것을 피하십시오.",
+    "priority": 3,
+    "examples": [
+      "StringBuffer sb = new StringBuffer();\nsb.append(\"a\");     // avoid this\n\nStringBuffer sb = new StringBuffer();\nsb.append('a');     // use this instead"
+    ]
+  },
+  {
+    "name": "AvoidArrayLoops",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.5",
+    "message": "Arrays.copyOf 또는 System.arraycopy가 더 효율적입니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#avoidarrayloops",
+    "description": "두 배열 간에 데이터를 수동으로 복사하는 대신, 더 효율적인 `Arrays.copyOf` 또는\n`System.arraycopy` 메서드를 사용하십시오.\n\n배열의 일부만 복사하려면 `Arrays.copyOfRange` 또는 `System.arraycopy`를 사용하십시오.\n\n_같은_ 배열 내에서 요소를 복사/이동하려면 (예: 요소 이동), `System.arraycopy`를 사용하십시오.",
+    "priority": 3,
+    "examples": [
+      "class Scratch {\n    void copy_a_to_b() {\n        int[] a = new int[10];\n        int[] b = new int[10];\n        for (int i = 0; i < a.length; i++) {\n            b[i] = a[i];\n        }\n        // equivalent\n        b = Arrays.copyOf(a, a.length);\n        // equivalent\n        System.arraycopy(a, 0, b, 0, a.length);\n\n        int[] c = new int[10];\n        // this will not trigger the rule\n        for (int i = 0; i < c.length; i++) {\n            b[i] = a[c[i]];\n        }\n    }\n}",
+      "class Scratch {\n    void shift_left(int[] a) {\n        for (int i = 0; i < a.length - 1; i++) {\n            a[i] = a[i + 1];\n        }\n        // equivalent\n        System.arraycopy(a, 1, a, 0, a.length - 1);\n    }\n    void shift_right(int[] a) {\n        for (int i = a.length - 1; i > 0; i--) {\n            a[i] = a[i - 1];\n        }\n        // equivalent\n        System.arraycopy(a, 0, a, 1, a.length - 1);\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidCalendarDateCreation",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "6.25.0",
+    "message": "현재 시간을 가져오기 위해 Calendar를 사용하고 있으며, 이는 비용이 많이 듭니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#avoidcalendardatecreation",
+    "description": "문제: `java.util.Calendar`는 무거운 객체이며 생성 비용이 높습니다. 캘린더 계산이 필요한 경우에만\n사용해야 합니다.\n\n해결책: `new Date()`, Java 8 이상의 `java.time.LocalDateTime.now()` 또는 `ZonedDateTime.now()`를 사용하십시오.",
+    "priority": 3,
+    "examples": [
+      "import java.time.LocalDateTime;\nimport java.util.Calendar;\nimport java.util.Date;\n\npublic class DateStuff {\n    private Date bad1() {\n        return Calendar.getInstance().getTime(); // now\n    }\n    private Date good1a() {\n        return new Date(); // now\n    }\n    private LocalDateTime good1b() {\n        return LocalDateTime.now();\n    }\n    private long bad2() {\n        return Calendar.getInstance().getTimeInMillis();\n    }\n    private long good2() {\n        return System.currentTimeMillis();\n    }\n}"
+    ]
+  },
+  {
+    "name": "AvoidInstantiatingObjectsInLoops",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "2.2",
+    "message": "루프 내에서 새로운 객체를 인스턴스화하는 것을 피하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.AvoidInstantiatingObjectsInLoopsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#avoidinstantiatingobjectsinloops",
+    "description": "루프 내에서 생성된 새 객체는 루프 외부에서 생성하여 재사용할 수 있는지 확인해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Something {\n    public static void main( String as[] ) {\n        for (int i = 0; i < 10; i++) {\n            Foo f = new Foo(); // Avoid this whenever you can it's really expensive\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "BigIntegerInstantiation",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.9",
+    "message": "이미 존재하는 BigInteger 및 BigDecimal(ZERO, ONE, TEN)의 인스턴스를 생성하지 마십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.BigIntegerInstantiationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#bigintegerinstantiation",
+    "description": "이미 존재하는 BigInteger(`BigInteger.ZERO`, `BigInteger.ONE`)의 인스턴스를 생성하지 마십시오.\nJava 1.5 이상에서는 BigInteger.TEN과 BigDecimal(`BigDecimal.ZERO`, `BigDecimal.ONE`, `BigDecimal.TEN`)을,\nJava 9 이상에서는 `BigInteger.TWO`를 사용하십시오.",
+    "priority": 3,
+    "examples": [
+      "BigInteger bi1 = new BigInteger(\"1\");    // reference BigInteger.ONE instead\nBigInteger bi2 = new BigInteger(\"0\");    // reference BigInteger.ZERO instead\nBigInteger bi3;\nbi3 = new BigInteger(\"0\");               // reference BigInteger.ZERO instead\n\nBigDecimal bd1 = new BigDecimal(0);      // reference BigDecimal.ZERO instead\nBigDecimal bd2 = new BigDecimal(\"0.\") ;  // reference BigDecimal.ZERO instead\nBigDecimal bd3 = new BigDecimal(10);     // reference BigDecimal.TEN instead"
+    ]
+  },
+  {
+    "name": "ConsecutiveAppendsShouldReuse",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "5.1",
+    "message": "StringBuffer(또는 StringBuilder).append가 대상 변수를 재사용하지 않고 연속적으로 호출되고 있습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.ConsecutiveAppendsShouldReuseRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#consecutiveappendsshouldreuse",
+    "description": "StringBuffer/StringBuilder .append의 연속 호출은 대상 객체를 재사용하여 체이닝해야 합니다. 이렇게 하면 더 작은 바이트코드를 생성하고,\n오버헤드를 줄이며, 인라이닝을 개선하여 성능을 향상시킬 수 있습니다. 전체 분석은 [여기](https://github.com/pmd/pmd/issues/202#issuecomment-274349067)에서 확인할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "String foo = \" \";\n\nStringBuffer buf = new StringBuffer();\nbuf.append(\"Hello\"); // poor\nbuf.append(foo);\nbuf.append(\"World\");\n\nStringBuffer buf = new StringBuffer();\nbuf.append(\"Hello\").append(foo).append(\"World\"); // good"
+    ]
+  },
+  {
+    "name": "ConsecutiveLiteralAppends",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.5",
+    "message": "StringBuffer(또는 StringBuilder).append가 리터럴로 {0}회 연속 호출되었습니다. 하나의 결합된 문자열로 단일 append를 사용하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.ConsecutiveLiteralAppendsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#consecutiveliteralappends",
+    "description": "StringBuffer/StringBuilder.append(...)를 리터럴로 연속 호출하는 것은 피해야 합니다.\n리터럴은 상수이므로 이미 하나의 문자열 리터럴로 결합할 수 있으며, 이 문자열을\n단일 메서드 호출로 추가할 수 있습니다.",
+    "priority": 3,
+    "examples": [
+      "StringBuilder buf = new StringBuilder();\nbuf.append(\"Hello\").append(\" \").append(\"World\");    // poor\nbuf.append(\"Hello World\");                          // good\n\nbuf.append('h').append('e').append('l').append('l').append('o'); // poor\nbuf.append(\"hello\");                                             // good\n\nbuf.append(1).append('m');  // poor\nbuf.append(\"1m\");           // good"
+    ]
+  },
+  {
+    "name": "InefficientEmptyStringCheck",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.6",
+    "message": "String.trim().length() == 0 / String.trim().isEmpty()는 빈 문자열을 검증하는 비효율적인 방법입니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.InefficientEmptyStringCheckRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#inefficientemptystringcheck",
+    "description": "`string.trim()` 또는 `string.strip()`의 길이를 확인하는 것은 문자열이 실제로 공백인지\n결정하는 비효율적인 방법입니다. 크기를 확인하기 위해 새로운 `String` 객체를 생성하기 때문입니다.\nJava 11부터는 `string.isBlank()`를 사용하여 문자열이 공백으로만 구성되어 있는지 결정할 수 있으며,\n이 검사는 `string.strip().isEmpty()`와 동일합니다. `string.trim().isEmpty()`의 의미를 얻으려면\n문자를 반복하면서 0x20과 비교할 수 있습니다:\n\n```java\nprivate boolean checkTrimEmpty(String str) {\n    return str.chars().allMatch(c -> c <= 0x20);\n}\n```\n\nnull 검사를 포함하는 라이브러리 함수를 사용하는 것도 고려할 수 있습니다\n(예: commons-lang의 Apache `StringUtils#isBlank`,\nSpring 프레임워크의 `StringUtils#hasText`) 또는 다른 공백 정의를 사용할 수 있습니다\n(예: Guava의 Google `CharMatcher#whitespace`).\n\n`string.strip().isBlank()` 호출도 중복이며 `string.isBlank()`로 단순화해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public void bar(String string) {\n    if (string != null && string.trim().length() > 0) {\n        doSomething();\n    }\n}"
+    ]
+  },
+  {
+    "name": "InefficientStringBuffering",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.4",
+    "message": "StringBuffer/StringBuilder 생성자 또는 append()에서 비리터럴을 연결하는 것을 피하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.InefficientStringBufferingRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#inefficientstringbuffering",
+    "description": "StringBuffer 생성자 또는 append()에서 비리터럴을 연결하는 것을 피하십시오. 중간 버퍼가\nJVM에 의해 생성되고 파괴되어야 하기 때문입니다.",
+    "priority": 3,
+    "examples": [
+      "// Avoid this, two buffers are actually being created here\nStringBuffer sb = new StringBuffer(\"tmp = \"+System.getProperty(\"java.io.tmpdir\"));\n\n// do this instead\nStringBuffer sb = new StringBuffer(\"tmp = \");\nsb.append(System.getProperty(\"java.io.tmpdir\"));"
+    ]
+  },
+  {
+    "name": "InsufficientStringBufferDeclaration",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.6",
+    "message": "{0}이(가) 크기 {1}로 초기화되었지만, 최소 {2}자가 추가되었습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.InsufficientStringBufferDeclarationRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#insufficientstringbufferdeclaration",
+    "description": "StringBuffer 또는 StringBuilder의 크기를 적절히 미리 설정하지 않으면 런타임 중에 여러 번\n크기를 재조정해야 할 수 있습니다. 이 규칙은 실제로 StringBuffer.append()에 전달되는\n총 문자 수를 결정하려고 시도하지만, \"최악의 경우\" 시나리오에 대한 최선의 추정을 나타냅니다.\n빈 StringBuffer/StringBuilder 생성자는 객체를 16자로 초기화합니다. 생성자의 길이를\n결정할 수 없는 경우 이 기본값이 사용됩니다.",
+    "priority": 3,
+    "examples": [
+      "StringBuilder bad = new StringBuilder();\nbad.append(\"This is a long string that will exceed the default 16 characters\");\n\nStringBuilder good = new StringBuilder(41);\ngood.append(\"This is a long string, which is pre-sized\");"
+    ]
+  },
+  {
+    "name": "OptimizableToArrayCall",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "1.8",
+    "message": "이 Collection.toArray() 호출은 최적화할 수 있습니다",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#optimizabletoarraycall",
+    "description": "컬렉션의 `toArray(E[])` 메서드 호출은 크기가 0인 대상 배열을 지정해야 합니다. 이렇게 하면 JVM이\n메모리 할당과 복사를 최대한 최적화할 수 있습니다.\n\n이 규칙의 이전 버전(PMD 6.0.0 이전)은 반대를 제안했지만, 현재 JVM 구현은\n대상 배열에 대한 완전한 제어권을 가질 때 항상 더 나은 성능을 보입니다. 또한 리플렉션을 통한\n배열 할당은 현재 직접 할당만큼 빠릅니다.\n\n[Arrays of Wisdom of the Ancients](https://shipilev.net/blog/2016/arrays-wisdom-ancients/)도 참조하십시오.\n\n참고: 올바른 타입의 배열이 필요하지 않은 경우, 배열 없이 사용하는 단순한 `toArray()` 메서드가\n더 빠르지만, `Object[]` 타입의 배열만 반환합니다.",
+    "priority": 3,
+    "examples": [
+      "List<Foo> foos = getFoos();\n\n// much better; this one allows the jvm to allocate an array of the correct size and effectively skip\n// the zeroing, since each array element will be overridden anyways\nFoo[] fooArray = foos.toArray(new Foo[0]);\n\n// inefficient, the array needs to be zeroed out by the jvm before it is handed over to the toArray method\nFoo[] fooArray = foos.toArray(new Foo[foos.size()]);"
+    ],
+    "minLanguageVersion": "1.6"
+  },
+  {
+    "name": "RedundantFieldInitializer",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "5.0",
+    "message": "''${variableName}''에 대해 중복된 필드 초기화를 사용하지 마십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.RedundantFieldInitializerRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#redundantfieldinitializer",
+    "description": "Java는 알려진 기본값으로 필드를 초기화하므로, 동일한 기본값의 명시적 초기화는\n중복이며 더 큰 클래스 파일을 생성합니다(필드당 약 3개의 추가 바이트코드 명령어).",
+    "priority": 3,
+    "examples": [
+      "public class C {\n    boolean b   = false;    // examples of redundant initializers\n    byte by     = 0;\n    short s     = 0;\n    char c      = 0;\n    int i       = 0;\n    long l      = 0;\n\n    float f     = .0f;    // all possible float literals\n    double d    = 0d;     // all possible double literals\n    Object o    = null;\n\n    MyClass mca[] = null;\n    int i1 = 0, ia1[] = null;\n\n    class Nested {\n        boolean b = false;\n    }\n}"
+    ]
+  },
+  {
+    "name": "StringToString",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "1.0",
+    "message": "이미 String인 객체에서 toString()을 호출하지 마십시오; 이는 불필요합니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#stringtostring",
+    "description": "이미 문자열 인스턴스로 알려진 객체에서 toString()을 호출하는 것을 피하십시오; 이는 불필요합니다.",
+    "priority": 3,
+    "examples": [
+      "private String baz() {\n    String bar = \"howdy\";\n    return bar.toString();\n}"
+    ]
+  },
+  {
+    "name": "UseArrayListInsteadOfVector",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.0",
+    "message": "Vector 대신 ArrayList를 사용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#usearraylistinsteadofvector",
+    "description": "스레드 안전 연산이 필요하지 않은 경우 ArrayList는 Vector보다 훨씬 더 나은 Collection 구현입니다.",
+    "priority": 3,
+    "examples": [
+      "import java.util.*;\npublic class SimpleTest extends TestCase {\n    public void testX() {\n    Collection c1 = new Vector();\n    Collection c2 = new ArrayList();    // achieves the same with much better performance\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseArraysAsList",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.5",
+    "message": "타이트한 루프 대신 asList를 사용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#usearraysaslist",
+    "description": "`java.util.Arrays` 클래스에는 객체 배열에서 새 List를 생성할 때 사용해야 하는 `asList()` 메서드가 있습니다.\n배열의 모든 요소를 하나씩 복사하는 루프를 실행하는 것보다 더 빠릅니다.\n\n`Arrays.asList()`의 결과는 지정된 배열에 의해 지원되며,\n반환된 리스트의 변경 사항은 배열이 수정되는 결과를 초래합니다.\n이러한 이유로 `Arrays.asList()`의 반환 리스트에 새 요소를 추가하는 것은 불가능합니다\n(UnsupportedOperationException).\n이것이 불편한 경우(예: 동시 접근 때문) `new ArrayList<>(Arrays.asList(...))`를 사용해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Test {\n    public void foo(Integer[] ints) {\n        // could just use Arrays.asList(ints)\n        List<Integer> l = new ArrayList<>(100);\n        for (int i = 0; i < ints.length; i++) {\n            l.add(ints[i]);\n        }\n\n        List<Integer> anotherList = new ArrayList<>();\n        for (int i = 0; i < ints.length; i++) {\n            anotherList.add(ints[i].toString()); // won't trigger the rule\n        }\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseIndexOfChar",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.5",
+    "message": "String.indexOf(char)는 String.indexOf(String)보다 빠릅니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.UseIndexOfCharRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#useindexofchar",
+    "description": "단일 문자의 인덱스를 확인할 때는 String.indexOf(char)를 사용하십시오; 더 빠르게 실행됩니다.",
+    "priority": 3,
+    "examples": [
+      "String s = \"hello world\";\n// avoid this\nif (s.indexOf(\"d\") {}\n// instead do this\nif (s.indexOf('d') {}"
+    ]
+  },
+  {
+    "name": "UseIOStreamsWithApacheCommonsFileItem",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "6.25.0",
+    "message": "메모리 집약적인 FileItem.get() 또는 FileItem.getString()을 피하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#useiostreamswithapachecommonsfileitem",
+    "description": "문제: [FileItem.get()](https://javadoc.io/static/commons-fileupload/commons-fileupload/1.5/org/apache/commons/fileupload/FileItem.html#get--)\n및 [FileItem.getString()](https://javadoc.io/static/commons-fileupload/commons-fileupload/1.5/org/apache/commons/fileupload/FileItem.html#getString--)의 사용은\n전체 파일을 메모리에 로드하므로 메모리를 고갈시킬 수 있습니다.\n\n해결책: [FileItem.getInputStream()](https://javadoc.io/static/commons-fileupload/commons-fileupload/1.5/org/apache/commons/fileupload/FileItem.html#getInputStream--)\n및 버퍼링을 사용하십시오.",
+    "priority": 3,
+    "examples": [
+      "import org.apache.commons.fileupload.FileItem;\n\npublic class FileStuff {\n   private String bad(FileItem fileItem) {\n        return fileItem.getString();\n   }\n\n   private InputStream good(FileItem fileItem) {\n        return fileItem.getInputStream();\n   }\n}"
+    ]
+  },
+  {
+    "name": "UselessStringValueOf",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.8",
+    "message": "문자열에 추가하기 위해 String.valueOf를 호출할 필요가 없습니다.",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.UselessStringValueOfRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#uselessstringvalueof",
+    "description": "문자열에 추가하기 위해 String.valueOf를 호출할 필요가 없습니다; valueOf()의 인자를 직접 사용하면 됩니다.",
+    "priority": 3,
+    "examples": [
+      "public String convert(int i) {\n    String s;\n    s = \"a\" + String.valueOf(i);    // not required\n    s = \"a\" + i;                    // preferred approach\n    return s;\n}"
+    ]
+  },
+  {
+    "name": "UseStringBufferForStringAppends",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.1",
+    "message": "문자열 연결 시 += 대신 StringBuilder(비동기) 또는 StringBuffer(동기)를 사용하십시오",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.performance.UseStringBufferForStringAppendsRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#usestringbufferforstringappends",
+    "description": "문자열 추가를 위한 '+=' 연산자의 사용은 JVM이 내부 StringBuffer를 생성하고 사용하게 만듭니다.\n이러한 연결이 상당수 사용되는 경우 StringBuilder 또는 스레드 안전한 StringBuffer를 명시적으로\n사용하는 것이 이를 피하기 위해 권장됩니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    String inefficientConcatenation() {\n        String result = \"\";\n        for (int i = 0; i < 10; i++) {\n            // warning: this concatenation will create one new StringBuilder per iteration\n            result += getStringFromSomeWhere(i);\n        }\n        return result;\n    }\n\n    String efficientConcatenation() {\n        // better would be to use one StringBuilder for the entire loop\n        StringBuilder result = new StringBuilder();\n        for (int i = 0; i < 10; i++) {\n            result.append(getStringFromSomeWhere(i));\n        }\n        return result.toString();\n    }\n}"
+    ]
+  },
+  {
+    "name": "UseStringBufferLength",
+    "category": "performance",
+    "categoryName": "성능",
+    "since": "3.4",
+    "message": "CharSequence.toString의 비효율적인 사용입니다; 대신 CharSequence.length를 호출하십시오.",
+    "ruleClass": "net.sourceforge.pmd.lang.rule.xpath.XPathRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_performance.html#usestringbufferlength",
+    "description": "StringBuffer.toString().equals(\"\") 또는 StringBuffer.toString().length() == ... 대신\nStringBuffer.length()를 사용하여 StringBuffer의 길이를 확인하십시오.",
+    "priority": 3,
+    "examples": [
+      "StringBuffer sb = new StringBuffer();\n\nif (sb.toString().equals(\"\")) {}        // inefficient\n\nif (sb.length() == 0) {}                // preferred"
+    ]
+  },
+  {
+    "name": "HardCodedCryptoKey",
+    "category": "security",
+    "categoryName": "보안",
+    "since": "6.4.0",
+    "message": "하드코딩된 암호화 키를 사용하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.security.HardCodedCryptoKeyRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_security.html#hardcodedcryptokey",
+    "description": "암호화 작업에 하드코딩된 값을 사용하지 마세요. 키는 소스 코드 외부에 저장해야 합니다.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void good() {\n        SecretKeySpec secretKeySpec = new SecretKeySpec(Properties.getKey(), \"AES\");\n    }\n\n    void bad() {\n        SecretKeySpec secretKeySpec = new SecretKeySpec(\"my secret here\".getBytes(), \"AES\");\n    }\n}"
+    ]
+  },
+  {
+    "name": "InsecureCryptoIv",
+    "category": "security",
+    "categoryName": "보안",
+    "since": "6.3.0",
+    "message": "암호화 작업에 하드코딩된 초기화 벡터(IV)를 사용하지 마세요",
+    "ruleClass": "net.sourceforge.pmd.lang.java.rule.security.InsecureCryptoIvRule",
+    "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_security.html#insecurecryptoiv",
+    "description": "암호화 작업에 하드코딩된 초기화 벡터(IV)를 사용하지 마세요. 무작위로 생성된 IV를 사용하세요.",
+    "priority": 3,
+    "examples": [
+      "public class Foo {\n    void good() {\n        SecureRandom random = new SecureRandom();\n        byte iv[] = new byte[16];\n        random.nextBytes(bytes);\n    }\n\n    void bad() {\n        byte[] iv = new byte[] { 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, };\n    }\n\n    void alsoBad() {\n        byte[] iv = \"secret iv in here\".getBytes();\n    }\n}"
+    ]
+  }
+];

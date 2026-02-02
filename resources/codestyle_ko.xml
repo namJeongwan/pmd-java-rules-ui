@@ -1,0 +1,2235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="코드 스타일"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        특정 코딩 스타일을 강제하는 규칙입니다.
+    </description>
+
+    <rule name="AtLeastOneConstructor"
+          language="java"
+          since="1.04"
+          message="각 클래스는 최소 하나의 생성자를 선언해야 합니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.AtLeastOneConstructorRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#atleastoneconstructor">
+        <description>
+<![CDATA[
+비정적(non-static) 클래스는 최소 하나의 생성자를 선언해야 합니다.
+정적 멤버만 있는 클래스는 무시되며, 이러한 클래스를 탐지하려면 [UseUtilityClassRule](pmd_rules_java_design.html#useutilityclass)을 참조하세요.
+]]>
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+   // missing constructor
+  public void doSomething() { ... }
+  public void doOtherThing { ... }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidDollarSigns"
+          language="java"
+          since="1.5"
+          message="변수/메서드/클래스/인터페이스 이름에 달러 기호($) 사용을 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#avoiddollarsigns">
+        <description>
+변수/메서드/클래스/인터페이스 이름에 달러 기호($) 사용을 피하세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+      //ClassDeclaration           [contains(@SimpleName, '$')]
+    | //EnumDeclaration            [contains(@SimpleName, '$')]
+    | //AnnotationTypeDeclaration  [contains(@SimpleName, '$')]
+    | //RecordDeclaration          [contains(@SimpleName, '$')]
+    | //VariableId                 [contains(@Name, '$')]
+    | //MethodDeclaration          [contains(@Name, '$')]
+
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Fo$o {  // not a recommended name
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidProtectedFieldInFinalClass"
+          language="java"
+          since="2.1"
+          message="final 클래스에서 protected 필드 사용을 피하세요. private 또는 패키지 접근 제어자로 변경하세요."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#avoidprotectedfieldinfinalclass">
+        <description>
+final 클래스는 하위 클래스를 만들 수 없으므로 protected 필드를 사용하지 마세요.
+private 또는 패키지 접근 제어자를 사용하여 의도를 명확히 하세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration[@Final = true()]
+/ClassBody
+/FieldDeclaration[@Visibility = "protected"]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public final class Bar {
+  private int x;
+  protected int y;  // bar cannot be subclassed, so is y really private or package visible?
+  Bar() {}
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidProtectedMethodInFinalClassNotExtending"
+          language="java"
+          since="5.1"
+          message="다른 클래스를 상속하지 않는 final 클래스에서 protected 메서드 사용을 피하세요. private 또는 패키지 접근 제어자로 변경하세요."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#avoidprotectedmethodinfinalclassnotextending">
+        <description>
+대부분의 final 클래스는 하위 클래스를 만들 수 없으므로 protected 메서드를 사용하지 마세요. 이는
+protected 메서드가 있는 다른 클래스를 상속한 final 클래스(가시성을 줄일 수 없는 경우)에서만
+허용되어야 합니다. private 또는 패키지 접근 제어자를 사용하여 의도를 명확히 하세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration[@Final= true() and not(ExtendsList)]
+/ClassBody
+/MethodDeclaration[@Visibility="protected" and @Name != 'finalize']
+ ]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public final class Foo {
+  private int bar() {}
+  protected int baz() {} // Foo cannot be subclassed, and doesn't extend anything, so is baz() really private or package visible?
+}
+ ]]>
+        </example>
+    </rule>
+
+    <rule name="AvoidUsingNativeCode"
+          language="java"
+          since="4.1"
+          message="네이티브 코드 사용은 권장되지 않습니다."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#avoidusingnativecode">
+        <description>
+Java Native Interface(JNI) 호출에 대한 불필요한 의존은 애플리케이션의 이식성을 직접적으로 낮추고
+유지보수 부담을 증가시킵니다.
+        </description>
+        <priority>2</priority>
+        <properties>
+            <property name="xpath">
+                <value>//MethodCall[TypeExpression/ClassType[pmd-java:typeIs('java.lang.System')]
+                                    and @MethodName = 'loadLibrary']</value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class SomeJNIClass {
+
+     public SomeJNIClass() {
+         System.loadLibrary("nativelib");
+     }
+
+     static {
+         System.loadLibrary("nativelib");
+     }
+
+     public void invalidCallsInMethod() throws SecurityException, NoSuchMethodException {
+         System.loadLibrary("nativelib");
+     }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="BooleanGetMethodName"
+          language="java"
+          since="4.0"
+          message="boolean 또는 Boolean을 반환하는 'getX()' 메서드는 'isX()'로 이름을 지어야 합니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#booleangetmethodname">
+        <description>
+            boolean 또는 Boolean 결과를 반환하는 메서드는 이를 나타내는 술어문 형태로 이름을 지어야 합니다.
+            예: 'isReady()', 'hasValues()', 'canCommit()', 'willFail()' 등. 이러한 메서드에 'get' 접두사 사용을 피하세요.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//MethodDeclaration
+    [starts-with(@Name, 'get')]
+    [@Arity = 0 or $checkParameterizedMethods = true()]
+    [ (PrimitiveType[@Kind = 'boolean'] or ClassType[pmd-java:typeIs('java.lang.Boolean')]) and @Overridden = false() ]
+]]>
+                </value>
+            </property>
+            <property name="checkParameterizedMethods" type="Boolean" description="매개변수가 있는 메서드도 검사" value="false"/>
+        </properties>
+        <example>
+            <![CDATA[
+public boolean getFoo();            // bad
+public Boolean getFoo();            // bad
+public boolean isFoo();             // ok
+public Boolean isFoo();             // ok
+public boolean getFoo(boolean bar); // ok, unless checkParameterizedMethods=true
+]]>
+        </example>
+    </rule>
+
+    <rule name="CallSuperInConstructor"
+          language="java"
+          since="3.0"
+          message="생성자에서 super()를 호출하는 것이 좋은 습관입니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#callsuperinconstructor">
+        <description>
+생성자에서 super()를 호출하는 것이 좋은 습관입니다. super()가 호출되지 않았지만
+다른 생성자(예: 오버로드된 생성자)가 호출된 경우, 이 규칙은 보고하지 않습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration[ExtendsList/*]
+  /ClassBody
+  /ConstructorDeclaration[ not(Block/ExplicitConstructorInvocation) ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo extends Bar{
+  public Foo() {
+   // call the constructor of Bar
+   super();
+  }
+ public Foo(int code) {
+  // do something with code
+   this();
+   // no problem with this
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ClassNamingConventions"
+          language="java"
+          since="1.2"
+          message="The {0} name ''{1}'' doesn''t match ''{2}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.ClassNamingConventionsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#classnamingconventions">
+        <description>
+            타입 선언에 대한 설정 가능한 명명 규칙입니다. 이 규칙은 해당 종류(예: enum 또는
+            interface)에 적용되는 정규식과 일치하지 않는 타입 선언을 보고합니다.
+            각 정규식은 속성을 통해 설정할 수 있습니다.
+
+            기본적으로 이 규칙은 표준 Java 명명 규칙(Pascal case)을 사용합니다.
+
+            이 규칙은 유틸리티 클래스를 감지하고 해당 클래스에 다른 명명 규칙을 적용할 수 있습니다.
+            예를 들어, `utilityClassPattern` 속성을 `[A-Z][a-zA-Z0-9]+(Utils?|Helper|Constants)`로
+            설정하면 "Util(s)", "Helper" 또는 "Constants"로 끝나지 않는 유틸리티 클래스를 보고합니다.
+
+            이 규칙에서 유틸리티 클래스는 다음과 같이 정의됩니다: 상위 클래스를 상속하거나
+            인터페이스를 구현하지 않으며, 정적 필드 또는 메서드만 있는 구체적인 클래스입니다.
+
+            이 규칙은 다음 규칙을 사용하여 테스트 클래스를 감지합니다: 테스트 클래스는 최상위 클래스로,
+            JUnit 3 TestCase를 상속하거나 JUnit4/5 또는 TestNG의 Test 어노테이션이 달린 메서드가
+            하나 이상 있는 클래스입니다.
+        </description>
+        <priority>1</priority>
+        <example>
+<![CDATA[
+// This is Pascal case, the recommended naming convention in Java
+// Note that the default values of this rule don't allow underscores
+// or accented characters in type names
+public class FooBar {}
+
+// You may want abstract classes to be named 'AbstractXXX',
+// in which case you can customize the regex for abstract
+// classes to 'Abstract[A-Z]\w+'
+public abstract class Thing {}
+
+// This class doesn't respect the convention, and will be flagged
+public class Éléphant {}
+]]>
+        </example>
+    </rule>
+
+    <rule name="CommentDefaultAccessModifier"
+          language="java"
+          since="5.4.0"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.CommentDefaultAccessModifierRule"
+          message="{0} ''{1}''에 기본 접근 제어자 주석이 누락되었습니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#commentdefaultaccessmodifier">
+        <description>
+어노테이션, 클래스, Enum, 메서드, 생성자 또는 필드가 기본 접근 제어자를 가지도록 의도한 실수를 방지하려면
+선언 시작 부분에 주석을 추가해야 합니다.
+기본적으로 주석은 `/* default */` 또는 `/* package */`여야 하며, 다른 형식을 원하면 정규식을 제공해야 합니다.
+
+이 규칙은 기본적으로 `@VisibleForTesting` 어노테이션 또는 JUnit5/TestNG 어노테이션이 있는 모든 경우를 무시합니다.
+인식할 어노테이션을 사용자 정의하려면 "ignoredAnnotations" 속성을 사용하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    final String stringValue = "some string";
+    String getString() {
+       return stringValue;
+    }
+
+    class NestedFoo {
+    }
+}
+
+// should be
+public class Foo {
+    /* default */ final String stringValue = "some string";
+    /* default */ String getString() {
+       return stringValue;
+    }
+
+    /* default */ class NestedFoo {
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ConfusingTernary"
+          language="java"
+          since="1.9"
+          message="if (x != y) ..; else ..; 사용을 피하세요"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.ConfusingTernaryRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#confusingternary">
+        <description>
+"else" 절이 있는 "if" 표현식에서 부정문 사용을 피하세요. 예를 들어, 다음을:
+`if (x != y) diff(); else same();`를 다음과 같이 바꾸세요: `if (x == y) same(); else diff();`.
+
+"else"가 없는 대부분의 "if (x != y)" 경우는 주로 반환 케이스이므로, 이 규칙을 일관되게
+사용하면 코드 가독성이 향상됩니다. 또한 "오류 케이스가 먼저인가?" 또는 "일반적인 케이스가
+먼저인가?"와 같은 사소한 순서 문제를 해결합니다.
+
+null 검사는 일반적으로 긍정 조건으로 간주되므로, 기본적으로 이 규칙에서 무시됩니다.
+즉, `a == null`과 `a != null` 모두 허용됩니다. 특정 스타일을 강제하고 다른 스타일을
+금지하려면 `nullCheckBranch` 속성을 사용하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+boolean bar(int x, int y) {
+    return (x != y) ? diff : same;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ControlStatementBraces"
+          language="java"
+          since="6.2.0"
+          message="이 구문에는 중괄호가 있어야 합니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#controlstatementbraces">
+        <description>
+            제어문에 대한 중괄호 정책을 강제합니다. 'if ... else' 문과 반복문에는 선택 사항이더라도
+            중괄호를 사용하는 것이 권장됩니다. 이는 일반적으로 코드를 더 명확하게 하고, 나중에 다른 문을
+            추가해야 할 때를 대비합니다. 이 규칙은 속성을 통해 어떤 문에 중괄호가 필요한지 제어할 수
+            있습니다.
+
+            6.2.0부터 이 규칙은 WhileLoopMustUseBraces, ForLoopMustUseBraces, IfStmtMustUseBraces,
+            IfElseStmtMustUseBraces를 대체합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="checkIfElseStmt" type="Boolean" value="true" description="'if ... else' 문에 중괄호를 요구" />
+            <property name="checkSingleIfStmt" type="Boolean" value="true" description="단일 분기 'if' 문에 중괄호를 요구" />
+            <property name="checkWhileStmt" type="Boolean" value="true" description="'while' 반복문에 중괄호를 요구" />
+            <property name="checkForStmt" type="Boolean" value="true" description="'for' 반복문에 중괄호를 요구" />
+            <property name="checkDoWhileStmt" type="Boolean" value="true" description="'do ... while' 반복문에 중괄호를 요구" />
+            <property name="checkCaseStmt" type="Boolean" value="false" description="switch의 case에 중괄호를 요구"/>
+
+            <property name="allowEmptyLoop" type="Boolean" value="false" description="빈 문이 있는 반복문을 허용, 예: 'while(true);'" />
+            <property name="xpath">
+                <value><![CDATA[
+                //WhileStatement[$checkWhileStmt and not(Block) and not($allowEmptyLoop and EmptyStatement)]
+                |
+                //ForStatement[$checkForStmt and not(Block) and not($allowEmptyLoop and EmptyStatement)]
+                |
+                //ForeachStatement[$checkForStmt and not(Block) and not($allowEmptyLoop and EmptyStatement)]
+                |
+                //DoStatement[$checkDoWhileStmt and not(Block) and not($allowEmptyLoop and EmptyStatement)]
+                |
+                (: The violation is reported on the sub statement -- not the if statement :)
+                //IfStatement[$checkIfElseStmt]
+                    /*[position() > 1 and not(self::Block or self::IfStatement)]
+                      [ $checkSingleIfStmt
+                            (: Inside this (...) is the definition of a "single if statement" :)
+                            or not(parent::*/@Else = false() (: No else stmt :)
+                                   (: Not the last branch of an 'if ... else if' chain :)
+                                   and not(parent::IfStatement[parent::IfStatement]))]
+
+                |
+                (: Reports case labels if one of their subordinate statements is not braced :)
+                //SwitchFallthroughBranch[$checkCaseStmt]
+                             [count(*) > 1 and (count(*) > 2 or not(child::*[2]/self::Block))]
+                ]]></value>
+            </property>
+        </properties>
+        <example>
+            <![CDATA[
+while (true)    // not recommended
+  x++;
+
+while (true) {  // preferred approach
+  x++;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="EmptyControlStatement"
+          language="java"
+          since="6.46.0"
+          message="이 제어문에 빈 분기가 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.EmptyControlStatementRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#emptycontrolstatement">
+        <!-- Note about naming: EmptyCodeBlock does not work because the rule flags `if(true);`  -->
+        <!-- EmptyControlStatement is weird because `{}` is not a control statement, and we also flag initializers. -->
+        <!-- EmptyStatement does not work because `;` is called an "empty statement" and is not flagged by this rule, rather, by UnnecessarySemicolon. -->
+        <!-- EmptyCodeConstruct would work but sounds a bit odd (right?). -->
+        <description><![CDATA[
+            본문이 비어 있는 제어문과 빈 초기화 블록을 보고합니다.
+
+            검사되는 코드 구조는 다음과 같습니다:
+            - `try` 문의 본문
+            - `try` 문의 `finally` 절
+            - `switch` 문
+            - `synchronized` 문
+            - `if` 문
+            - 반복문: `while`, `for`, `do .. while`
+            - 초기화 블록
+            - 문으로 사용된 블록 (스코핑용)
+
+            이 규칙은 EmptyFinallyBlock, EmptyIfStmt, EmptyInitializer, EmptyStatementBlock,
+            EmptySwitchStatements, EmptySynchronizedBlock, EmptyTryBlock, EmptyWhileStmt 규칙을 대체합니다.
+
+            {% rule java/errorprone/EmptyCatchBlock %}은 여전히 독립적인 규칙입니다.
+
+            EmptyStatementNotInLoop은 {% rule java/codestyle/UnnecessarySemicolon %}으로 대체되었습니다.
+        ]]></description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+class Foo {
+    {
+        if (true); // empty if statement
+        if (true) { // empty as well
+        }
+    }
+
+    {} // empty initializer
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="EmptyMethodInAbstractClassShouldBeAbstract"
+          language="java"
+          since="4.1"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="추상 클래스의 빈 메서드는 대신 abstract로 선언해야 합니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#emptymethodinabstractclassshouldbeabstract">
+        <description>
+추상 클래스의 빈 메서드 또는 자동 생성된 메서드는 abstract로 태그해야 합니다. 이는 구체적인
+하위 클래스에서 자체 버전을 구현해야 하는 개발자의 부적절한 사용을 제거하는 데 도움이 됩니다.
+        </description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration[@RegularClass = true() and pmd-java:modifiers() = "abstract"]
+  /ClassBody
+    /MethodDeclaration
+    [@Final = false()]
+    [Block[
+      let $size := count(*[not(self::EmptyStatement)])
+      return $size = 0
+             or $size = 1 and ReturnStatement[NullLiteral
+                                              or NumericLiteral[@ValueAsInt = 0]
+                                              or StringLiteral[@Empty = true()]]
+    ]]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public abstract class ShouldBeAbstract {
+    public Object couldBeAbstract() {
+        // Should be abstract method ?
+        return null;
+    }
+
+    public void couldBeAbstract() {
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ExtendsObject"
+          language="java"
+          since="5.0"
+          message="명시적으로 Object를 상속할 필요가 없습니다."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#extendsobject">
+        <description>명시적으로 Object를 상속할 필요가 없습니다.</description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ExtendsList/ClassType[pmd-java:typeIsExactly('java.lang.Object')]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo extends Object {     // not required
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="FieldDeclarationsShouldBeAtStartOfClass"
+          language="java"
+          since="5.0"
+          message="필드는 메서드 선언, 생성자, 초기화 블록 또는 내부 클래스보다 앞서 클래스의 최상단에 선언해야 합니다."
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.FieldDeclarationsShouldBeAtStartOfClassRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#fielddeclarationsshouldbeatstartofclass">
+        <description>
+필드는 메서드 선언, 생성자, 초기화 블록 또는 내부 클래스보다 앞서 클래스의 최상단에 선언해야 합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class HelloWorldBean {
+
+  // Field declared before methods / inner classes - OK
+  private String _thing;
+
+  public String getMessage() {
+    return "Hello World!";
+  }
+
+  // Field declared after methods / inner classes - avoid this
+  private String _fieldInWrongLocation;
+}
+]]>
+        </example>
+    </rule>
+
+
+    <rule name="FieldNamingConventions"
+          language="java"
+          since="6.7.0"
+          message="The {0} name ''{1}'' doesn''t match ''{2}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.FieldNamingConventionsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#fieldnamingconventions">
+        <description>
+            필드 선언에 대한 설정 가능한 명명 규칙입니다. 이 규칙은 해당 종류(예: 상수(static final),
+            enum 상수, final 필드)에 적용되는 정규식과 일치하지 않는 변수 선언을 보고합니다.
+            각 정규식은 속성을 통해 설정할 수 있습니다.
+
+            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용하며, 상수와 enum 상수에는
+            ALL_UPPER 규칙을 사용합니다.
+        </description>
+        <priority>1</priority>
+        <example>
+            <![CDATA[
+            class Foo {
+                int myField = 1; // This is in camel case, so it's ok
+                int my_Field = 1; // This contains an underscore, it's not ok by default
+                                  // but you may allow it, or even require the "my_" prefix
+
+                final int FinalField = 1; // you may configure a different convention for final fields,
+                                          // e.g. here PascalCase: [A-Z][a-zA-Z0-9]*
+
+                interface Interface {
+                    double PI = 3.14; // interface "fields" use the constantPattern property
+                }
+
+                enum AnEnum {
+                    ORG, NET, COM; // These use a separate property but are set to ALL_UPPER by default
+                }
+            }
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="FinalParameterInAbstractMethod"
+          language="java"
+          since="6.42.0"
+          message="추상 메서드의 final 매개변수"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          typeResolution="true"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#finalparameterinabstractmethod">
+        <description>
+            인터페이스 메서드의 매개변수를 final로 선언하는 것은 무의미합니다. 구현체에서 이를 준수하지 않을 수 있기 때문입니다.
+        </description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//MethodDeclaration
+    [FormalParameters/FormalParameter[@Final = true()]]
+    [not(Block)]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+            <![CDATA[
+public interface MyInterface {
+  void process(final Object arg); // Avoid using final here
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ForLoopShouldBeWhileLoop"
+          language="java"
+          since="1.02"
+          message="이 for 반복문은 while 반복문으로 단순화할 수 있습니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#forloopshouldbewhileloop">
+        <description>
+일부 for 반복문은 while 반복문으로 단순화할 수 있으며, 이렇게 하면 더 간결해집니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ForStatement[not(ForInit | ForUpdate) and count(*) = 2]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo {
+    void bar() {
+        for (;true;) true; // No Init or Update part, may as well be: while (true)
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="FormalParameterNamingConventions"
+          language="java"
+          since="6.6.0"
+          message="The {0} name ''{1}'' doesn''t match ''{2}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.FormalParameterNamingConventionsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#formalparameternamingconventions">
+        <description>
+            메서드 및 람다의 형식 매개변수에 대한 설정 가능한 명명 규칙입니다.
+            이 규칙은 해당 종류(예: 람다 매개변수 또는 final 형식 매개변수)에 적용되는 정규식과
+            일치하지 않는 형식 매개변수를 보고합니다. 각 정규식은 속성을 통해 설정할 수 있습니다.
+
+            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용합니다.
+        </description>
+        <priority>1</priority>
+        <example>
+            <![CDATA[
+            class Foo {
+
+                abstract void bar(int myInt); // This is Camel case, so it's ok
+
+                void bar(int my_i) { // this will be reported
+
+                }
+
+                void lambdas() {
+
+                    // lambdas parameters can be configured separately
+                    Consumer<String> lambda1 = s_str -> { };
+
+                    // lambda parameters with an explicit type can be configured separately
+                    Consumer<String> lambda1 = (String str) -> { };
+
+                }
+
+            }
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="GenericsNaming"
+          language="java"
+          since="4.2.6"
+          deprecated="true"
+          message="제네릭 이름은 한 글자의 대문자여야 합니다."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#genericsnaming">
+        <description>
+제네릭 값에 대한 참조 이름은 단일 대문자로 제한되어야 합니다.
+
+**더 이상 사용되지 않음:** 이 규칙은 PMD 7.17.0부터 더 이상 사용되지 않으며 PMD 8.0.0에서 제거될 예정입니다. 이 규칙은 타입 매개변수에 대해 더 포괄적이고 설정 가능한 명명 규칙을 제공하는 {% rule TypeParameterNamingConventions %}로 대체되었습니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//TypeParameter[
+  string-length(@Name) > 1
+  or
+  upper-case(@Name) != @Name
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public interface GenericDao<E extends BaseModel, K extends Serializable> extends BaseDao {
+    // This is ok...
+}
+
+public interface GenericDao<E extends BaseModel, K extends Serializable> {
+    // Also this
+}
+
+public interface GenericDao<e extends BaseModel, K extends Serializable> {
+    // 'e' should be an 'E'
+}
+
+public interface GenericDao<EF extends BaseModel, K extends Serializable> {
+   // 'EF' is not ok.
+}
+]]>
+        </example>
+    </rule>
+
+
+    <rule name="IdenticalCatchBranches"
+          language="java"
+          since="6.4.0"
+          minimumLanguageVersion="1.7"
+          message="''{0}'' 분기와 동일한 ''catch'' 분기"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.IdenticalCatchBranchesRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#identicalcatchbranches">
+        <description>
+            동일한 `catch` 분기는 세로 공간을 차지하고 기능을 추가하지 않으면서 코드의 복잡성을
+            증가시킵니다. 동일한 분기를 단일 멀티캐치 분기로 합치는 것이 더 좋은 스타일입니다.
+        </description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+try {
+    // do something
+} catch (IllegalArgumentException e) {
+    throw e;
+} catch (IllegalStateException e) { // Can be collapsed into the previous block
+    throw e;
+}
+
+try {
+    // do something
+} catch (IllegalArgumentException | IllegalStateException e) { // This is better
+    throw e;
+}
+            ]]>
+        </example>
+    </rule>
+
+
+    <rule name="LambdaCanBeMethodReference"
+          language="java"
+          since="7.1.0"
+          message="람다 표현식을 메서드 참조로 작성할 수 있습니다: `{0}`"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.LambdaCanBeMethodReferenceRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#lambdacanbemethodreference">
+        <description>
+            이 규칙은 메서드 참조로 더 간결하게 작성할 수 있는 람다 표현식을 보고합니다. 이는 람다가 하나의 메서드만 호출하고, 전체 람다 매개변수 목록을 순서대로 해당 메서드에 전달하는 표현식 람다인 경우입니다. 예:
+            ```java
+                x -> Foo.call(x) // Foo::call이 될 수 있음
+                x -> call(x)     // this::call이 될 수 있음 (call이 인스턴스 메서드인 경우)
+                (x, y, z) -> call(x, y, z) // this::call이 될 수 있음
+                () -> foo.get() // foo::get이 될 수 있음
+                x -> x.foo()    // XType::foo가 될 수 있음 (XType은 x의 타입)
+            ```
+
+            경우에 따라 람다를 메서드 참조로 다시 작성하면 코드의 의미가 변경될 수 있습니다. 예를 들어 `(x) -> someVar.call(x)`에서 람다 호출 시 `someVar`가 null이면 NullPointerException(NPE)이 발생할 수 있습니다. 메서드 참조 `someVar::call`도 `someVar`가 null이면 NPE를 발생시키지만, 메서드 참조가 생성되는 시점에서 발생하는 반면 람다는 오류 없이 생성되고 람다가 호출될 때만 NPE가 발생합니다(절대 호출되지 않을 수도 있음). 코드는 이러한 미묘한 의미론적 차이에 의존해서는 안 되므로, 이러한 잠재적으로 문제가 있는 람다도 기본적으로 보고됩니다. 이 동작은 `ignoreIfMayNPE` 속성을 `true`로 설정하여 비활성화할 수 있습니다.
+
+            `ignoreIfMayNPE` 속성은 기본적으로 true입니다. 기본적으로 수신자가 메서드 호출 자체인 호출은 부작용을 일으킬 수 있으므로 무시됩니다. 이는 `ignoreIfReceiverIsMethod` 속성을 `false`로 설정하여 변경할 수 있습니다.
+
+            범위 제한:
+            - 이 규칙은 `x -> new CtorCall().something(x)` 형태의 람다를 보고하지 않습니다. 메서드 참조의 의미론은 단일 새 객체를 생성하는 것이지만 람다는 호출마다 하나의 객체를 생성하기 때문입니다.
+            - 이 규칙은 메서드 호출의 한정자가 부작용을 수행하는지 알 수 없습니다. 즉, `(x) -> sideEffectingMethod().foo(x)`가 보고됩니다. 이 경우 경고를 억제하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+            import java.util.stream.Stream;
+
+            public class LambdaCanBeMethodReference {
+                static {
+                    Stream.of("abc", "d")
+                            .mapToInt(s -> s.length()) // could be String::length
+                            .reduce((x, y) -> Integer.sum(x, y)) // could be Integer::sum
+                            .getAsInt();
+                }
+            }
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="LinguisticNaming"
+          language="java"
+          since="6.7.0"
+          message="언어적 안티패턴 - 메서드 이름과 반환 타입이 언어적으로 일치하지 않습니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.LinguisticNamingRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#linguisticnaming">
+        <description>
+            이 규칙은 언어적 명명 안티패턴을 찾습니다. boolean이어야 할 것처럼 이름이 지어졌지만
+            다른 타입인 필드를 검사합니다. 또한 이름에 따르면 boolean을 반환해야 하지만 그렇지 않은
+            메서드도 검사합니다. 추가로, getter는 무언가를 반환하고 setter는 반환하지 않는지 검사합니다.
+            마지막으로, "to"로 시작하는 메서드(변환 메서드)가 이름에 따라 하나의 객체를 다른 객체로
+            변환해야 하므로 실제로 무언가를 반환하는지 검사합니다. 추가적으로 이름에 "To"를 포함하는
+            메서드(역시 변환 메서드)를 검사하는 옵션이 있습니다. 그러나 이 감지는 오탐이 발생하기 쉬우므로
+            기본적으로 비활성화되어 있습니다.
+
+            자세한 내용은 [Linguistic Antipatterns - What They Are and How
+Developers Perceive Them](https://doi.org/10.1007/s10664-014-9350-8)을 참조하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class LinguisticNaming {
+    int isValid;    // the field name indicates a boolean, but it is an int.
+    boolean isTrue; // correct type of the field
+
+    void myMethod() {
+        int hasMoneyLocal;      // the local variable name indicates a boolean, but it is an int.
+        boolean hasSalaryLocal; // correct naming and type
+    }
+
+    // the name of the method indicates, it is a boolean, but the method returns an int.
+    int isValid() {
+        return 1;
+    }
+    // correct naming and return type
+    boolean isSmall() {
+        return true;
+    }
+
+    // the name indicates, this is a setter, but it returns something
+    int setName() {
+        return 1;
+    }
+
+    // the name indicates, this is a getter, but it doesn't return anything
+    void getName() {
+        // nothing to return?
+    }
+
+    // the name indicates, it transforms an object and should return the result
+    void toDataType() {
+        // nothing to return?
+    }
+    // the name indicates, it transforms an object and should return the result
+    void grapeToWine() {
+        // nothing to return?
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="LocalHomeNamingConvention"
+          language="java"
+          since="4.0"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="Session EJB의 Local Home 인터페이스는 'LocalHome'으로 끝나야 합니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#localhomenamingconvention">
+        <description>
+Session EJB의 Local Home 인터페이스는 'LocalHome'으로 끝나야 합니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration
+[
+    pmd-java:typeIs('javax.ejb.EJBLocalHome')
+    and not(ends-with(@SimpleName, 'LocalHome'))
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public interface MyBeautifulLocalHome extends javax.ejb.EJBLocalHome {} // proper name
+
+public interface MissingProperSuffix extends javax.ejb.EJBLocalHome {}  // non-standard name
+]]>
+        </example>
+    </rule>
+
+    <rule name="LocalInterfaceSessionNamingConvention"
+          language="java"
+          since="4.0"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="Session EJB의 Local 인터페이스는 'Local'로 끝나야 합니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#localinterfacesessionnamingconvention">
+        <description>
+Session EJB의 Local 인터페이스는 'Local'로 끝나야 합니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration
+[
+    pmd-java:typeIs('javax.ejb.EJBLocalObject')
+    and not(ends-with(@SimpleName, 'Local'))
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public interface MyLocal extends javax.ejb.EJBLocalObject {}                // proper name
+
+public interface MissingProperSuffix extends javax.ejb.EJBLocalObject {}    // non-standard name
+]]>
+        </example>
+    </rule>
+
+    <rule name="LocalVariableCouldBeFinal"
+          language="java"
+          since="2.2"
+          message="지역 변수 ''{0}''을(를) final로 선언할 수 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.LocalVariableCouldBeFinalRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#localvariablecouldbefinal">
+        <description>
+한 번만 할당된 지역 변수는 final로 선언할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Bar {
+    public void foo () {
+    String txtA = "a";          // if txtA will not be assigned again it is better to do this:
+    final String txtB = "b";
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="LocalVariableNamingConventions"
+          language="java"
+          since="6.6.0"
+          message="The {0} name ''{1}'' doesn''t match ''{2}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.LocalVariableNamingConventionsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#localvariablenamingconventions">
+        <description>
+            지역 변수 선언 및 기타 로컬 범위 변수에 대한 설정 가능한 명명 규칙입니다. 이 규칙은
+            해당 종류(예: final 변수 또는 catch절 매개변수)에 적용되는 정규식과 일치하지 않는
+            변수 선언을 보고합니다. 각 정규식은 속성을 통해 설정할 수 있습니다.
+
+            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용합니다.
+        </description>
+        <priority>1</priority>
+        <example>
+            <![CDATA[
+            class Foo {
+                void bar() {
+                    int localVariable = 1; // This is in camel case, so it's ok
+                    int local_variable = 1; // This will be reported unless you change the regex
+
+                    final int i_var = 1; // final local variables can be configured separately
+
+                    try {
+                        foo();
+                    } catch (IllegalArgumentException e_illegal) {
+                        // exception block parameters can be configured separately
+                    }
+
+                }
+            }
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="LongVariable"
+          language="java"
+          since="0.3"
+          message="{0}과(와) 같이 지나치게 긴 변수 이름을 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#longvariable">
+        <description>
+필드, 형식 인자 또는 지역 변수 이름이 너무 길면 코드를 따라가기 어려울 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="minimum" type="Integer" description="변수 길이 보고 임계값" min="1" max="100" value="17"/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//VariableId[string-length(@Name) > $minimum]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Something {
+    int reallyLongIntName = -3;             // VIOLATION - Field
+    public static void main( String argumentsList[] ) { // VIOLATION - Formal
+        int otherReallyLongName = -5;       // VIOLATION - Local
+        for (int interestingIntIndex = 0;   // VIOLATION - For
+             interestingIntIndex < 10;
+             interestingIntIndex ++ ) {
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="MDBAndSessionBeanNamingConvention"
+          language="java"
+          since="4.0"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="SessionBean 또는 MessageBean은 Bean으로 끝나야 합니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#mdbandsessionbeannamingconvention">
+        <description>
+EJB 명세에 따르면 모든 MessageDrivenBean 또는 SessionBean은 'Bean'으로 끝나야 합니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration
+[
+    (pmd-java:typeIs('javax.ejb.SessionBean')
+     or pmd-java:typeIs('javax.ejb.MessageDrivenBean'))
+    and not(ends-with(@SimpleName, 'Bean'))
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class SomeBean implements SessionBean{}                  // proper name
+
+public class MissingTheProperSuffix implements SessionBean {}   // non-standard name
+]]>
+        </example>
+    </rule>
+
+    <rule name="MethodArgumentCouldBeFinal"
+          language="java"
+          since="2.2"
+          message="매개변수 ''{0}''이(가) 할당되지 않으므로 final로 선언할 수 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.MethodArgumentCouldBeFinalRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#methodargumentcouldbefinal">
+        <description>
+            메서드 본문 내에서 재할당되지 않아 final로 만들 수 있는 메서드 및 생성자 매개변수를 보고합니다.
+
+            이 규칙은 {% rule java/bestpractices/UnusedFormalParameter %} 규칙과 중복되지 않도록
+            사용되지 않는 매개변수를 무시합니다.
+            또한 추상 메서드의 매개변수도 무시합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+class Foo {
+    // reported, parameter can be declared final
+    public String foo1(String param) {
+        return param;
+    }
+    // not reported, parameter is declared final
+    public String foo2(final String param) {
+        return param.trim();
+    }
+    // not reported because param is unused
+    public String unusedParam(String param) {
+        return "abc";
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="MethodNamingConventions"
+          language="java"
+          since="1.2"
+          message="The {0} name ''{1}'' doesn''t match ''{2}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.MethodNamingConventionsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#methodnamingconventions">
+        <description>
+            메서드 선언에 대한 설정 가능한 명명 규칙입니다. 이 규칙은 해당 종류(예: JUnit 테스트 또는
+            네이티브 메서드)에 적용되는 정규식과 일치하지 않는 메서드 선언을 보고합니다.
+            각 정규식은 속성을 통해 설정할 수 있습니다.
+
+            기본적으로 이 규칙은 표준 Java 명명 규칙(Camel case)을 사용합니다.
+        </description>
+        <priority>1</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    public void fooStuff() {
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ModifierOrder"
+          language="java"
+          since="7.17.0"
+          message="수정자 순서가 잘못되었습니다 (실제 메시지는 규칙이 작성합니다)"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.ModifierOrderRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#modifierorder">
+        <description>
+            JLS에서 권장하는 수정자 순서를 강제합니다. 수정자 정렬 외에도 이 규칙은 모든 어노테이션이
+            모든 수정자 키워드 앞에 나타나도록 강제합니다.
+            `typeAnnotations` 속성을 설정하면 타입 어노테이션이 수정자 키워드의 오른쪽, 적용되는
+            타입 옆에 나타나도록 강제할 수도 있습니다.
+            이 속성은 세 가지 값을 가질 수 있습니다:
+            - `onType`: 타입 어노테이션은 적용되는 타입 옆에 배치되어야 합니다
+            - `onDecl`: 타입 어노테이션은 다른 어노테이션과 함께 수정자 앞에 배치되어야 합니다.
+            타입 어노테이션이 구문적으로 타입 내에 나타나는 경우(예:
+            `public Map.@Nullable Entry&lt;K,V&gt; method()` 또는 `public &lt;T&gt; @NonNull T method()`)에는
+            강제되지 않습니다.
+            - `anywhere` (기본값): 어느 위치든 허용됩니다. 그러나 키워드 수정자 사이에 산재할 수는
+            없습니다. 타입 어노테이션이 아닌 어노테이션은 여전히 키워드 수정자 앞에 있어야 합니다.
+        </description>
+        <priority>1</priority>
+        <example>
+<![CDATA[
+abstract public class Foo { // Warn: `public` should appear before `abstract`
+
+    // This order is not recommended, annotations should appear before keyword modifiers,
+    // and may appear after if they are type annotations.
+    public
+    @Override
+    static fooStuff() {
+    }
+
+    // This order is ok if property typeAnnotations is "anywhere", and enforced if it is "on decl":
+    @Nullable
+    public Object fooStuff() {}
+
+    // This order is ok if property typeAnnotations is "anywhere", and enforced if it is "on type":
+    public @Nullable Object fooStuff() {}
+
+
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="NoPackage"
+          language="java"
+          since="3.3"
+          message="모든 클래스, 인터페이스, enum 및 어노테이션은 이름이 있는 패키지에 속해야 합니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#nopackage">
+        <description>
+클래스, 인터페이스, enum 또는 어노테이션에 패키지 정의가 없는 경우를 감지합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>/CompilationUnit[not(PackageDeclaration)]/*[pmd-java:nodeIs("TypeDeclaration")][1]</value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+// no package declaration
+public class ClassInDefaultPackage {
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="OnlyOneReturn"
+          language="java"
+          since="1.0"
+          message="메서드에는 하나의 종료 지점만 있어야 하며, 이는 메서드의 마지막 문이어야 합니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.OnlyOneReturnRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#onlyonereturn">
+        <description>
+메서드에는 하나의 종료 지점만 있어야 하며, 이는 메서드의 마지막 문이어야 합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class OneReturnOnly1 {
+  public String foo(int x) {
+    if (x > 0) {
+      return "hey";   // first exit
+    }
+    return "hi";    // second exit
+  }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="PackageCase"
+          language="java"
+          since="3.3"
+          message="패키지 이름에 대문자가 포함되어 있습니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#packagecase">
+        <description>
+패키지 정의에 대문자가 포함된 경우를 감지합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>//PackageDeclaration[lower-case(@Name) != @Name]</value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+package com.MyCompany;  // should be lowercase name
+
+public class SomeClass {
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="PrematureDeclaration"
+          language="java"
+          since="5.0"
+          message="''{0}''의 선언을 사용 위치에 더 가깝게 이동할 수 있습니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.PrematureDeclarationRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#prematuredeclaration">
+        <description>
+사용되기 전에 정의된 변수를 검사합니다. 변수가 선언된 시점과 처음 읽히는 시점 사이에
+반환하거나 예외를 던질 수 있는 문이 있는 경우 선언이 조기로 간주됩니다.
+
+일부 변수는 처음 사용되기 전에 발생하는 부작용 때문에 첫 번째 사용 위치 가까이에 선언할 수
+없습니다. 대부분의 메서드 및 생성자 호출을 순수하지 않은 것으로 간주하여 이러한 경우의
+보고를 피하려고 합니다. 두 번째 예제를 참조하세요.
+
+이 규칙은 코드 가독성을 향상시키기 위한 것이지 최적화가 아닙니다. 스마트한 JIT는 변수가
+조기 선언되었는지 여부에 관계없이 코드를 재정렬할 수 있습니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public int getLength(String[] strings) {
+
+    int length = 0; // could be moved closer to the loop
+
+    if (strings == null || strings.length == 0) return 0;
+
+    for (String str : strings) {
+        length += str.length();
+    }
+
+    return length;
+}
+]]>
+        </example>
+        <example>
+<![CDATA[
+public int getLength(String[] strings) {
+
+    int startTime = System.nanoTime(); // cannot be moved because initializer is impure
+
+    if (strings == null || strings.length == 0) {
+        // some error logic
+        throw new SomeException(...);
+    }
+
+    for (String str : strings) {
+        length += str.length();
+    }
+
+    return System.nanoTime() - startTime;
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="RemoteInterfaceNamingConvention"
+          language="java"
+          since="4.0"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="Session EJB의 Remote 인터페이스에는 접미사를 붙이지 않아야 합니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#remoteinterfacenamingconvention">
+        <description>
+Session EJB의 Remote 인터페이스에는 접미사가 없어야 합니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration
+[
+    pmd-java:typeIs('javax.ejb.EJBObject')
+    and matches(@SimpleName, '.*(Session|EJB|Bean)$')
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+/* Poor Session suffix */
+public interface BadSuffixSession extends javax.ejb.EJBObject {}
+
+/* Poor EJB suffix */
+public interface BadSuffixEJB extends javax.ejb.EJBObject {}
+
+/* Poor Bean suffix */
+public interface BadSuffixBean extends javax.ejb.EJBObject {}
+]]>
+        </example>
+    </rule>
+
+    <rule name="RemoteSessionInterfaceNamingConvention"
+          language="java"
+          since="4.0"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="Session EJB의 Remote Home 인터페이스는 'Home'으로 끝나야 합니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#remotesessioninterfacenamingconvention">
+        <description>
+Session EJB의 Remote Home 인터페이스 타입은 'Home'으로 끝나야 합니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration
+[
+    pmd-java:typeIs('javax.ejb.EJBHome')
+    and not(ends-with(@SimpleName, 'Home'))
+]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public interface MyBeautifulHome extends javax.ejb.EJBHome {}       // proper name
+
+public interface MissingProperSuffix extends javax.ejb.EJBHome {}   // non-standard name
+]]>
+        </example>
+    </rule>
+
+    <rule name="ShortClassName"
+          language="java"
+          since="5.0"
+          message="{0}과(와) 같은 짧은 클래스 이름을 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#shortclassname">
+        <description>
+예를 들어 5자 미만의 짧은 클래스 이름은 권장되지 않습니다.
+        </description>
+        <priority>4</priority>
+        <properties>
+            <property name="minimum" type="Integer" value="5" min="1" max="100" description="클래스 이름에 필요한 최소 문자 수."/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassDeclaration[string-length(@SimpleName) < $minimum]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo {
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ShortMethodName"
+          language="java"
+          since="0.3"
+          message="짧은 메서드 이름 사용을 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#shortmethodname">
+        <description>
+매우 짧은 메서드 이름은 읽는 사람에게 도움이 되지 않습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="minimum" type="Integer" value="3" min="1" max="100" description="메서드 이름에 필요한 최소 문자 수."/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//MethodDeclaration[string-length(@Name) < $minimum]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class ShortMethod {
+    public void a( int i ) { // Violation
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="ShortVariable"
+          language="java"
+          since="0.3"
+          message="{0}과(와) 같은 짧은 이름의 변수를 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#shortvariable">
+        <description>
+필드, 지역 변수, enum 상수 이름 또는 매개변수 이름이 매우 짧으면 읽는 사람에게 도움이 되지 않습니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="minimum" type="Integer" value="3" min="1" max="100" description="변수 이름에 필요한 최소 문자 수."/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//VariableId[string-length(@Name) < $minimum]
+ (: ForStatement :)
+ [not(../../parent::ForInit)]
+ (: Foreach statement :)
+ [not(../../parent::ForeachStatement)]
+ (: Catch statement parameter :)
+ [not(parent::CatchParameter)]
+ (: Lambda expression parameter :)
+ [not(parent::LambdaParameter)]
+ (: Exclude Unnamed Variables (JEP 456) :)
+ [@Unnamed = false()]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Something {
+    private int q = 15;                         // field - too short
+    public static void main( String as[] ) {    // formal arg - too short
+        int r = 20 + q;                         // local var - too short
+        for (int i = 0; i < 10; i++) {          // not a violation (inside 'for' loop)
+            r += q;
+        }
+        for (Integer i : numbers) {             // not a violation (inside 'for-each' loop)
+            r += q;
+        }
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="TooManyStaticImports"
+          language="java"
+          since="4.1"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          message="정적 import가 너무 많으면 코드가 지저분해질 수 있습니다"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#toomanystaticimports">
+        <description>
+정적 import 기능을 남용하면 프로그램을 읽거나 유지보수하기 어렵게 만들어 네임스페이스를
+import한 모든 정적 멤버로 오염시킬 수 있습니다. 코드를 읽는 사람(몇 달 후의 본인 포함)은
+정적 멤버가 어느 클래스에서 왔는지 알 수 없습니다 (Sun 1.5 Language Guide).
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="maximumStaticImports" type="Integer"
+                      description="0으로 설정하면 모든 정적 import를 금지할 수 있습니다" min="0" max="100" value="4"/>
+            <property name="xpath">
+                <value>
+<![CDATA[
+.[count(ImportDeclaration[@Static = true()]) > $maximumStaticImports]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+import static Lennon;
+import static Ringo;
+import static George;
+import static Paul;
+import static Yoko; // Too much !
+]]>
+        </example>
+    </rule>
+
+    <rule name="TypeParameterNamingConventions"
+          language="java"
+          since="7.17.0"
+          message="The {0} name ''{1}'' doesn''t match ''{2}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.TypeParameterNamingConventionsRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#typeparameternamingconventions">
+        <description>
+            제네릭 타입 및 메서드의 타입 매개변수에 대한 설정 가능한 명명 규칙입니다.
+            이 규칙은 설정된 정규식과 일치하지 않는 타입 매개변수 선언을 보고합니다.
+            타입 매개변수는 클래스, 인터페이스, enum, 레코드 및 메서드에 나타날 수 있습니다.
+
+            기본적으로 이 규칙은 표준 Java 명명 규칙(단일 대문자)을 사용합니다.
+        </description>
+        <priority>4</priority>
+        <example>
+            <![CDATA[
+// Generic types - valid
+public interface Repository<T> { }
+public class Cache<K, V> { }
+
+// Generic types - invalid
+public interface Repository<type> { }      // lowercase
+public class Cache<KEY, VALUE> { }         // multiple letters
+
+// Generic methods - valid
+public class Util {
+    public static <T> T identity(T value) { return value; }
+    public <T, R> R transform(T input, Function<T, R> mapper) { }
+}
+
+// Generic methods - invalid
+public class Util {
+    public static <element> element get(element value) { }  // lowercase
+    public <INPUT, OUTPUT> OUTPUT convert(INPUT in) { }     // multiple letters
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryAnnotationValueElement"
+          language="java"
+          since="6.2.0"
+          message="유일한 요소일 때 어노테이션에서 value 사용을 피하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessaryannotationvalueelement">
+        <description>
+            유일한 요소일 때 어노테이션에서 value 사용을 피하세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//Annotation/AnnotationMemberList[count(*) = 1 and MemberValuePair[@Shorthand = false() and @Name = 'value']]
+]]>
+                </value>
+            </property>
+            <property name="java7Compatibility" type="Boolean" description="비활성화하면 java8+ 이상에만 적용되는 위반 사항도 표시합니다" value="false" />
+        </properties>
+        <example>
+            <![CDATA[
+@TestClassAnnotation(value = "TEST")
+public class Foo {
+
+    @TestMemberAnnotation(value = "TEST")
+    private String y;
+
+    @TestMethodAnnotation(value = "TEST")
+    public void bar() {
+        int x = 42;
+        return;
+    }
+}
+
+// should be
+
+@TestClassAnnotation("TEST")
+public class Foo {
+
+    @TestMemberAnnotation("TEST")
+    private String y;
+
+    @TestMethodAnnotation("TEST")
+    public void bar() {
+        int x = 42;
+        return;
+    }
+}
+
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryBoxing"
+          language="java"
+          since="7.0.0"
+          minimumLanguageVersion="1.5"
+          message="불필요한 {0}"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryBoxingRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessaryboxing">
+        <description>
+            안전하게 제거할 수 있는 명시적 박싱 및 언박싱 변환을 보고합니다.
+            컴파일러가 자동으로 삽입하거나, 의미론적으로 무의미한 경우(예: 값을 언박싱한 후
+            즉시 다시 박싱하는 경우)입니다.
+
+            이는 `valueOf` 또는 `intValue`, `byteValue` 등의 메서드 호출을 통해 발생하는
+            박싱 및 언박싱 변환만 처리합니다. 변환을 지시하는 캐스트는
+            {% rule UnnecessaryCast %}에서 대신 보고합니다.
+        </description>
+        <priority>3</priority>
+        <example><![CDATA[
+{
+        // Instead of
+        Integer integer = Integer.valueOf(2);
+        // you may just write
+        Integer integer = 2;
+
+        int i = integer.intValue(); // similarly for unboxing
+
+        // Instead of
+        int x = Integer.valueOf("42");
+        // you may just write
+        int x = Integer.parseInt("42");
+}
+            ]]>
+        </example>
+    </rule>
+
+    <!-- This is only restricted to java 5+ because the rule doesn't support
+         the type system pre-java5, where there were no autoboxing conversions. -->
+    <rule name="UnnecessaryCast"
+          language="java"
+          minimumLanguageVersion="1.5"
+          since="6.24.0"
+          message="불필요한 캐스트 ({0})"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryCastRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessarycast">
+        <description><![CDATA[
+캐스트의 피연산자가 이미 컨텍스트 타입에 적합하여 제거할 수 있는 캐스트를 감지합니다.
+예를 들어, 다음에서:
+```
+Object context = (Comparable) "o";
+```
+캐스트는 불필요합니다. `String`이 이미 `Comparable`과 `Object` 모두의 하위 타입이기 때문입니다.
+
+이는 Java 5의 오토박싱 기능으로 인해 피할 수 있는 캐스트도 표시합니다.
+```
+Integer integer = (Integer) 1;
+```
+리터럴은 어차피 `Integer`로 오토박싱됩니다.
+            ]]></description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+import java.util.function.Function;
+class SomeClass {
+   static {
+      Object o; long l; int i; Integer boxedInt;
+
+      // reference conversions
+
+      o = (Object) new SomeClass();      // unnecessary
+      o = (SomeClass) o;                 // necessary (narrowing cast)
+      o = (Comparable<String>) "string"; // unnecessary
+
+      // primitive conversions
+
+      l = (long) 2;   // unnecessary
+      l = (long) 2.0; // necessary (narrowing cast)
+      l = (byte) i;   // necessary (narrowing cast)
+
+      // boxing/unboxing casts (since java 5)
+
+      o = (Integer) 3;    // unnecessary (autoboxing would apply)
+      o = (long) 3;       // necessary (would be boxed to Long)
+      l = (int) boxedInt; // necessary (cannot cast Integer to long)
+
+      // casts that give a target type to a lambda/ method ref are necessary
+
+      o = (Function<Integer, String>) Integer::toString; // necessary (no target type)
+   }
+}
+]]>
+        </example>
+        <example>
+<![CDATA[
+import java.util.*;
+class SomeClass {
+   static {
+       /* Casts involving access to collections were common before Java 5, because collections
+        * were not generic. This rule may hence be useful when converting from using a raw
+        * type like `List` to a parameterized type like `List<String>`.
+        */
+       List<String> stringList = Arrays.asList("a", "b");
+       String element = (String) stringList.get(0); // this cast is unnecessary
+   }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryConstructor"
+          language="java"
+          since="1.0"
+          message="불필요한 생성자를 피하세요 - 컴파일러가 자동으로 생성합니다"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryConstructorRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessaryconstructor">
+        <description>
+이 규칙은 생성자가 필요하지 않은 경우를 감지합니다. 즉, 생성자가 하나뿐이고 해당 생성자가
+기본 생성자와 동일한 경우입니다. 기본 생성자는 선언하는 클래스와 동일한 접근 제어자를 가져야 합니다.
+enum 타입에서 기본 생성자는 암시적으로 private입니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+  public Foo() {}
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryFullyQualifiedName"
+          language="java"
+          since="5.0"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryFullyQualifiedNameRule"
+          message="불필요한 한정자 ''{0}'': ''{1}''이(가) 이미 범위에 있습니다{2}"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessaryfullyqualifiedname">
+        <description>
+import 문을 사용하면 완전 한정 이름을 사용하지 않아도 됩니다. import 문으로 처리되는
+완전 한정 이름의 사용은 불필요합니다. 완전 한정되지 않은 이름 사용을 고려하세요.
+        </description>
+        <priority>4</priority>
+        <example>
+<![CDATA[
+import java.util.List;
+
+public class Foo {
+    private java.util.List list1;   // Unnecessary FQN
+    private List list2;             // More appropriate given import of 'java.util.List'
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryImport"
+          language="java"
+          since="6.34.0"
+          message="불필요한 import ''{0}''"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryImportRule"
+          typeResolution="true"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessaryimport">
+        <description>
+            제거할 수 있는 import 문을 보고합니다. 사용되지 않거나, 중복되었거나,
+            import하는 멤버가 java.lang 또는 현재 패키지에 있어 이미 암시적으로 범위에
+            있는 경우입니다.
+
+            일부 import가 해결되지 않는 경우(예: 불완전한 보조 클래스패스로 PMD를
+            실행하는 경우), 오탐을 방지하기 위해 실제로 사용되지 않더라도 일부 import가
+            보수적으로 사용된 것으로 표시될 수 있습니다.
+        </description>
+        <priority>4</priority>
+        <example>
+<![CDATA[
+            import java.io.File;            // not used, can be removed
+            import java.util.Collections;   // used below
+            import java.util.*;             // so this one is not used
+
+            import java.lang.Object;        // imports from java.lang, unnecessary
+            import java.lang.Object;        // duplicate, unnecessary
+
+            public class Foo {
+                static Object emptyList() {
+                    return Collections.emptyList();
+                }
+            }
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryLocalBeforeReturn"
+          language="java"
+          deprecated="true"
+          since="3.3"
+          message="지역 변수 ''{0}''에 저장하지 말고 값을 직접 반환하는 것을 고려하세요"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryLocalBeforeReturnRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessarylocalbeforereturn">
+        <description>
+불필요한 지역 변수 생성을 피하세요.
+
+이 규칙은 7.17.0부터 더 이상 사용되지 않습니다. throw 문도 추가로 다루는 새 규칙
+{%rule VariableCanBeInlined %}을 대신 사용하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+   public int foo() {
+     int x = doSomething();
+     return x;  // instead, just 'return doSomething();'
+   }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryModifier"
+          language="java"
+          since="1.02"
+          message="{1} ''{2}''에 불필요한 수정자{0}{3}"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryModifierRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessarymodifier">
+        <description>
+인터페이스와 어노테이션의 필드는 자동으로 `public static final`이며, 메서드는 `public abstract`입니다.
+인터페이스 또는 어노테이션 내에 중첩된 클래스, 인터페이스 또는 어노테이션은 자동으로 `public static`입니다
+(모든 중첩된 인터페이스와 어노테이션은 자동으로 static입니다).
+중첩된 enum은 자동으로 `static`입니다.
+역사적인 이유로 컨텍스트에 의해 암시되는 수정자는 컴파일러에 의해 허용되지만 불필요합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public @interface Annotation {
+    public abstract void bar();     // both abstract and public are ignored by the compiler
+    public static final int X = 0;  // public, static, and final all ignored
+    public static class Bar {}      // public, static ignored
+    public static interface Baz {}  // ditto
+}
+public interface Foo {
+    public abstract void bar();     // both abstract and public are ignored by the compiler
+    public static final int X = 0;  // public, static, and final all ignored
+    public static class Bar {}      // public, static ignored
+    public static interface Baz {}  // ditto
+}
+public class Bar {
+    public static interface Baz {}  // static ignored
+    public static enum FooBar {    // static ignored
+        FOO;
+    }
+}
+public class FooClass {
+    static record BarRecord() {}     // static ignored
+}
+public interface FooInterface {
+    static record BarRecord() {}     // static ignored
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessaryReturn"
+          language="java"
+          since="1.3"
+          message="불필요한 return 문"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UnnecessaryReturnRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessaryreturn">
+        <description>
+불필요한 return 문 사용을 피하세요. 어차피 뒤에 실행할 명령이 없을 때 return은
+불필요합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    public void bar() {
+        int x = 42;
+        return;
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UnnecessarySemicolon"
+          language="java"
+          since="6.46.0"
+          message="불필요한 세미콜론"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#unnecessarysemicolon">
+        <description>
+            불필요한 세미콜론("빈 문" 및 "빈 선언"이라고도 함)을 보고합니다.
+            프로그램을 변경하지 않고 제거할 수 있습니다. Java 문법은 역사적인 이유로
+            이를 허용하지만 사용을 피해야 합니다.
+
+            이 규칙은 구문적으로 필요한 빈 문(예: 제어문의 본문인 경우)은
+            보고하지 않습니다.
+
+            이 규칙은 EmptyStatementNotInLoop을 대체합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+      (: empty declarations :)
+      //EmptyDeclaration
+      (: empty statements :)
+    | //Block/EmptyStatement
+
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+class Foo {
+    {
+        toString();; // one of these semicolons is unnecessary
+        if (true); // this semicolon is not unnecessary, but it could be an empty block instead (not reported)
+    }
+}; // this semicolon is unnecessary
+
+]]>
+        </example>
+    </rule>
+
+
+    <rule name="UseDiamondOperator"
+          language="java"
+          since="6.11.0"
+          message="명시적 타입 인수를 다이아몬드로 대체할 수 있습니다: `{0}`"
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UseDiamondOperatorRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#usediamondoperator"
+          minimumLanguageVersion="1.7">
+        <description><![CDATA[
+경우에 따라 제네릭 타입의 생성자 호출에서 명시적 타입 인수를 다이아몬드 타입 인수(`<>`)로
+대체하여 컴파일러가 추론하도록 할 수 있습니다. 이 규칙은 타입 인수의 중복을 피하고 코드를
+더 간결하고 읽기 쉽게 만들기 위해 가능한 모든 곳에서 다이아몬드 타입 인수를 사용하도록 권장합니다.
+
+이 규칙은 코드베이스를 Java 1.7, Java 1.8 또는 Java 9로 업그레이드할 때 유용합니다.
+다이아몬드 구문은 Java 1.7에서 처음 도입되었습니다. Java 8에서는 Java의 타입 추론이
+개선되어 더 많은 타입 인수가 불필요해졌습니다. Java 9에서는 익명 클래스 생성자에 대해
+타입 인수 추론이 가능해졌습니다.
+            ]]></description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+            import java.util.*;
+            class Foo {
+                static {
+                    List<String> strings;
+                    strings = new ArrayList<String>(); // unnecessary duplication of type parameters
+                    strings = new ArrayList<>();       // using diamond type arguments is more concise
+
+                    strings = new ArrayList(); // accidental use of a raw type, you can use ArrayList<> instead
+
+                    strings = new ArrayList<>() {
+                        // for anonymous classes, this is possible since Java 9 only
+                    };
+                }
+            }
+            ]]>
+        </example>
+    </rule>
+
+    <rule name="UseExplicitTypes"
+          language="java"
+          minimumLanguageVersion="10"
+          since="7.0.0"
+          message="명시적 타입을 사용하세요"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#useexplicittypes">
+        <description>
+Java 10에서 `var` 키워드가 도입되었습니다. 이는 변수 선언의 초기화식에서 타입을 추론할 수 있으므로
+작성해야 하는 코드의 양을 줄여줍니다.
+
+이것은 본질적으로 트레이드오프입니다: 한편으로는 중복 정보를 제거하여 코드를 더 읽기 쉽게 만들 수
+있습니다. 다른 한편으로는 유용한 정보를 생략하여 코드를 더 읽기 어렵게 만들 수 있습니다.
+`var`를 사용해야 할 때와 사용하지 말아야 할 때에 대한 일률적인 규칙은 없습니다.
+
+문을 읽을 때 타입이 본질적으로 명확한 경우(즉, 리터럴 값이나 생성자 호출에 대한 할당)
+`var`를 사용하는 것이 합리적일 수 있습니다. 이러한 사용 사례는 속성을 통해 활성화할 수 있습니다.
+
+람다 매개변수는 기본적으로 이미 추론되므로 허용됩니다(`var` 키워드는 완전히 선택 사항입니다).
+
+[Local Variable Type Inference Style Guidelines](https://openjdk.org/projects/amber/guides/lvti-style-guide)도 참조하세요.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="allowLiterals" type="Boolean" value="false" description="변수가 리터럴로 직접 초기화될 때 허용"/>
+            <property name="allowCtors" type="Boolean" value="false" description="변수가 생성자 호출로 직접 초기화될 때 허용"/>
+            <property name="allowCasts" type="Boolean" value="false" description="변수가 캐스트 결과로 직접 초기화될 때 허용"/>
+            <property name="allowLoopVariable" type="Boolean" value="false" description="향상된 for 반복문에서 반복 변수로 사용될 때 허용"/>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//LocalVariableDeclaration[@TypeInferred = true()]
+    [not(VariableDeclarator[*[pmd-java:nodeIs("Literal")]]) or $allowLiterals = false()]
+    [not(VariableDeclarator[ConstructorCall]) or $allowCtors = false()]
+    [not(VariableDeclarator[CastExpression]) or $allowCasts = false()]
+    [not(parent::ForeachStatement) or $allowLoopVariable = false()]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="UselessParentheses"
+          language="java"
+          since="5.0"
+          message="불필요한 괄호."
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.UselessParenthesesRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#uselessparentheses">
+        <description>
+            괄호 표현식은 기본 연산자 우선순위 규칙을 재정의하는 데 사용됩니다. 제거해도
+            연산자의 상대적 중첩이 변경되지 않는 괄호는 불필요합니다. 둘러싸는 표현식의
+            의미를 변경하지 않기 때문입니다.
+
+            엄밀히 말해 불필요하지만 가독성을 위해 유용하다고 여겨질 수 있는 괄호도 있습니다.
+            이 규칙은 두 가지 종류의 불필요한 괄호에 대한 위반을 무시할 수 있습니다:
+            - 다른 우선순위의 연산자를 구분하는 "명확화" 괄호. 불필요하지만 우선순위 규칙을
+            명시적으로 만들어 잘 사용되지 않는 연산자에 유용할 수 있습니다. 예:
+            ```java
+                (a + b) &amp; c // `a + b &amp; c`와 동일하지만 아마 더 명확함
+            ```
+            보고하려면 `ignoreClarifying` 속성을 해제하세요.
+
+            - 등호 연산자 주위의 다른 괄호 쌍과 시각적으로 균형을 맞추는 불필요한 "균형" 괄호.
+            예를 들어, 이 두 표현식은 동일합니다:
+            ```java
+                (a == null) != (b == null)
+                a == null != (b == null)
+            ```
+            오른쪽 괄호는 필수이고 왼쪽 괄호는 단지 시각적으로 더 보기 좋습니다.
+            보고하려면 `ignoreBalancing` 속성을 해제하세요.
+
+        </description>
+        <priority>4</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    {
+        int n = 0;
+        n = (n);         // here
+        n = (n * 2) * 3; // and here
+        n = n * (2 * 3); // and here
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UselessQualifiedThis"
+          language="java"
+          since="5.4.0"
+          message="같은 클래스에서의 불필요한 한정된 this 사용."
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#uselessqualifiedthis">
+        <description>
+            같은 클래스에서의 한정된 this 사용을 보고합니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ThisExpression/ClassType
+[ ancestor::*[pmd-java:nodeIs('TypeDeclaration')][1]/@SimpleName = ./@SimpleName ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+public class Foo {
+    final Foo otherFoo = Foo.this;  // use "this" directly
+
+    public void doSomething() {
+         final Foo anotherFoo = Foo.this;  // use "this" directly
+    }
+
+    private ActionListener returnListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doSomethingWithQualifiedThis(Foo.this);  // This is fine
+            }
+        };
+    }
+
+    private class Foo3 {
+        final Foo myFoo = Foo.this;  // This is fine
+    }
+
+    private class Foo2 {
+        final Foo2 myFoo2 = Foo2.this;  // Use "this" directly
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseShortArrayInitializer"
+        language="java"
+        since="6.15.0"
+        message="배열 초기화를 더 짧게 작성할 수 있습니다"
+        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+        externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#useshortarrayinitializer">
+        <description>
+<![CDATA[
+배열 필드 또는 변수를 선언하고 초기화할 때, `new`를 사용하여 명시적으로 새 배열을 생성할 필요가 없습니다.
+대신 중괄호로 배열의 초기 내용을 표현식으로 간단히 정의할 수 있습니다.
+
+예: `int[] x = new int[] { 1, 2, 3 };`은 `int[] x = { 1, 2, 3 };`으로 작성할 수 있습니다.
+]]>
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//VariableDeclarator
+    [VariableId[@TypeInferred = false() and @ArrayType = true()]]
+    [ArrayAllocation/ArrayInitializer]
+                ]]></value>
+            </property>
+        </properties>
+        <example>
+<![CDATA[
+Foo[] x = new Foo[] { ... }; // Overly verbose
+Foo[] x = { ... }; //Equivalent to above line
+]]>
+        </example>
+    </rule>
+
+    <rule name="UseUnderscoresInNumericLiterals"
+          language="java"
+          since="6.10.0"
+          minimumLanguageVersion="1.7"
+          message="숫자 {0}은(는) 세 자리마다 밑줄로 구분해야 합니다"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#useunderscoresinnumericliterals">
+        <description>
+            Java 1.7부터 숫자 리터럴은 밑줄을 사용하여 자릿수를 구분할 수 있습니다. 이 규칙은
+            특정 길이 이상의 숫자 리터럴에 가독성을 높이기 위해 밑줄을 사용하도록 강제합니다.
+
+            이 규칙은 현재 10진수(base 10) 리터럴만 지원합니다. 밑줄이 필요하지 않은
+            허용 가능한 길이는 속성을 통해 설정할 수 있습니다. 해당 길이 미만이더라도
+            잘못 배치된(3자리 그룹을 만들지 않는) 밑줄은 보고됩니다.
+        </description>
+        <priority>3</priority>
+        <properties>
+            <property name="acceptableDecimalLength" type="Integer" value="4" min="3" max="1000"
+                      description="10진수 리터럴에 밑줄이 필요하지 않은 길이"/>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//NumericLiteral
+ (: Filter out literals in base other than 10 :)
+ [@Base = 10]
+ (: Filter out ignored field name :)
+ [not(ancestor::VariableDeclarator[1][@Name = 'serialVersionUID'])]
+ [
+   some $num in tokenize(@Image, "[dDfFlLeE+\-]")
+   satisfies not(
+                  ( contains($num, ".")
+                    and string-length(substring-before($num, ".")) <= $acceptableDecimalLength
+                    and string-length(substring-after($num, ".")) <= $acceptableDecimalLength
+                    or string-length($num) <= $acceptableDecimalLength
+                  )
+                  and not(contains($num,"_"))
+                  or matches($num, "^[0-9]{1,3}(_[0-9]{3})*(\.([0-9]{3}_)*[0-9]{1,3})?$")
+                )
+ ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <example>
+            <![CDATA[
+public class Foo {
+    private int num = 1000000; // should be 1_000_000
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="VariableCanBeInlined"
+          language="java"
+          since="7.17.0"
+          message="지역 변수 ''{0}''에 저장하지 말고 값을 직접 사용하는 것을 고려하세요."
+          class="net.sourceforge.pmd.lang.java.rule.codestyle.VariableCanBeInlinedRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_codestyle.html#variablecanbeinlined">
+        <description>
+            지역 변수를 선언한 후 즉시 반환하거나 던지지 않아야 합니다. 이러한 변수 선언은
+            불필요한 복잡성을 추가하고 코드를 읽기 어렵게 만듭니다. 값을 직접 반환하거나
+            던지는 것이 더 간결하고 깔끔한 경우가 많습니다.
+
+            이 규칙은 SonarSource 규칙 [S1488](https://sonarsource.github.io/rspec/#/rspec/S1488)을 구현합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+            <![CDATA[
+                class Foo {
+                    Object foo() {
+                        var foo = "foo";
+                        return foo;  // instead, just 'return "foo";'
+                    }
+
+                    Object bar() {
+                        var ex = getIllegalArgumentException();
+                        throw ex; // instead, just 'throw getIllegalArgumentException();'
+                    }
+
+                    Object baz() {
+                        var baz = switch (foo()) {
+                            case "foo" -> {
+                                var foo = foo();
+                                yield foo;  // Can be simplified to 'yield foo();'
+                            }
+                            case "bar" -> {
+                                var bar = bar();
+                                yield bar;  // Can be simplified to 'yield bar();'
+                            }
+                            default -> bar("baz");
+                        };
+                        return baz; // instead, just 'return switch (foo()) {...'
+                    }
+                }
+            ]]>
+        </example>
+    </rule>
+</ruleset>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMD Java 규칙</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java"
+          class="java-logo">
+        <h2>PMD 규칙</h2>
+      </div>
+      <nav class="filter-list">
+        <div class="filter-section">
+          <h3>카테고리</h3>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="bestpractices">
+            <span class="category-icon bestpractices">&#x2705;</span> 모범 사례
+            <span class="filter-count" id="count-bestpractices">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="codestyle">
+            <span class="category-icon codestyle">&#x1F3A8;</span> 코드 스타일
+            <span class="filter-count" id="count-codestyle">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="design">
+            <span class="category-icon design">&#x1F3D7;</span> 설계
+            <span class="filter-count" id="count-design">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="documentation">
+            <span class="category-icon documentation">&#x1F4DD;</span> 문서화
+            <span class="filter-count" id="count-documentation">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="errorprone">
+            <span class="category-icon errorprone">&#x26A0;</span> 오류 가능성
+            <span class="filter-count" id="count-errorprone">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="multithreading">
+            <span class="category-icon multithreading">&#x1F504;</span> 멀티스레딩
+            <span class="filter-count" id="count-multithreading">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="performance">
+            <span class="category-icon performance">&#x26A1;</span> 성능
+            <span class="filter-count" id="count-performance">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-category="security">
+            <span class="category-icon security">&#x1F512;</span> 보안
+            <span class="filter-count" id="count-security">0</span>
+          </label>
+        </div>
+        <div class="filter-section">
+          <h3>우선순위</h3>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-priority="1">
+            <span class="priority-dot p1"></span> P1 - 즉시 수정
+            <span class="filter-count" id="count-p1">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-priority="2">
+            <span class="priority-dot p2"></span> P2 - 높음
+            <span class="filter-count" id="count-p2">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-priority="3">
+            <span class="priority-dot p3"></span> P3 - 보통
+            <span class="filter-count" id="count-p3">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-priority="4">
+            <span class="priority-dot p4"></span> P4 - 낮음
+            <span class="filter-count" id="count-p4">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-priority="5">
+            <span class="priority-dot p5"></span> P5 - 참고
+            <span class="filter-count" id="count-p5">0</span>
+          </label>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="content-header">
+        <div class="header-title">
+          <h1>PMD Java 정적 코드 분석</h1>
+          <p id="ruleCountSummary">290개의 규칙으로 Java 코드의 품질, 설계, 성능, 보안 문제를 찾습니다</p>
+        </div>
+      </header>
+
+      <!-- Search & Filter Bar -->
+      <div class="filters">
+        <div class="search-box">
+          <input type="text" placeholder="규칙 검색..." id="searchInput">
+          <span class="search-icon">&#x1F50D;</span>
+        </div>
+        <div class="result-info">
+          <span id="filteredCount">290</span>개 규칙
+        </div>
+      </div>
+
+      <!-- Rules Container -->
+      <div class="rules-container">
+        <!-- Rules List -->
+        <div class="rules-list-container">
+          <div class="rules-grid" id="rulesGrid">
+            <!-- Rules will be inserted here by JavaScript -->
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" id="pagination">
+            <!-- Pagination will be inserted here by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Rule Detail Panel -->
+        <div class="rule-detail" id="ruleDetail">
+          <div class="detail-placeholder">
+            <div class="placeholder-icon">&#x1F4CB;</div>
+            <p>규칙을 선택하면 상세 정보가 표시됩니다</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+  <script src="rules_data.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

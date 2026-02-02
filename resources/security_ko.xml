@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="보안" xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+잠재적인 보안 결함을 표시하는 규칙입니다.
+    </description>
+
+    <rule name="HardCodedCryptoKey"
+          language="java"
+          since="6.4.0"
+          message="하드코딩된 암호화 키를 사용하지 마세요"
+          class="net.sourceforge.pmd.lang.java.rule.security.HardCodedCryptoKeyRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_security.html#hardcodedcryptokey">
+        <description>
+암호화 작업에 하드코딩된 값을 사용하지 마세요. 키는 소스 코드 외부에 저장해야 합니다.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    void good() {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(Properties.getKey(), "AES");
+    }
+
+    void bad() {
+        SecretKeySpec secretKeySpec = new SecretKeySpec("my secret here".getBytes(), "AES");
+    }
+}
+]]>
+        </example>
+    </rule>
+
+    <rule name="InsecureCryptoIv"
+          language="java"
+          since="6.3.0"
+          message="암호화 작업에 하드코딩된 초기화 벡터(IV)를 사용하지 마세요"
+          class="net.sourceforge.pmd.lang.java.rule.security.InsecureCryptoIvRule"
+          externalInfoUrl="${pmd.website.baseurl}/pmd_rules_java_security.html#insecurecryptoiv">
+        <description>
+암호화 작업에 하드코딩된 초기화 벡터(IV)를 사용하지 마세요. 무작위로 생성된 IV를 사용하세요.
+        </description>
+        <priority>3</priority>
+        <example>
+<![CDATA[
+public class Foo {
+    void good() {
+        SecureRandom random = new SecureRandom();
+        byte iv[] = new byte[16];
+        random.nextBytes(bytes);
+    }
+
+    void bad() {
+        byte[] iv = new byte[] { 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, };
+    }
+
+    void alsoBad() {
+        byte[] iv = "secret iv in here".getBytes();
+    }
+}
+]]>
+        </example>
+    </rule>
+</ruleset>
