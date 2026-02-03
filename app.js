@@ -54,6 +54,14 @@ const priorityLabels = {
   5: 'P5'
 };
 
+// Tier names
+const tierNames = {
+  '1': '\uD544\uC218',
+  '2': '\uAD8C\uC7A5',
+  '3': '\uC120\uD0DD',
+  'skip': '\uC2A4\uD0B5'
+};
+
 // Load rules from embedded data
 async function loadRules() {
   rulesGrid.innerHTML = `
@@ -87,21 +95,38 @@ async function loadRules() {
 
 // Update filter counts
 function updateCounts() {
-  const { categories, priorities } = getActiveFilters();
+  const { categories, priorities, tiers } = getActiveFilters();
 
   const categoryCounts = {};
   const priorityCounts = {};
+  const tierCounts = {};
 
   rules.forEach(rule => {
-    // Category counts: filtered by priorities
-    if (priorities.length === 0 || priorities.includes(String(rule.priority))) {
+    const tier = String(rule.tier || 3);
+
+    // Tier counts: filtered by categories + priorities
+    if ((categories.length === 0 || categories.includes(rule.category)) &&
+      (priorities.length === 0 || priorities.includes(String(rule.priority)))) {
+      tierCounts[tier] = (tierCounts[tier] || 0) + 1;
+    }
+
+    // Category counts: filtered by priorities + tiers
+    if ((priorities.length === 0 || priorities.includes(String(rule.priority))) &&
+      (tiers.length === 0 || tiers.includes(tier))) {
       categoryCounts[rule.category] = (categoryCounts[rule.category] || 0) + 1;
     }
 
-    // Priority counts: filtered by categories
-    if (categories.length === 0 || categories.includes(rule.category)) {
+    // Priority counts: filtered by categories + tiers
+    if ((categories.length === 0 || categories.includes(rule.category)) &&
+      (tiers.length === 0 || tiers.includes(tier))) {
       priorityCounts[rule.priority] = (priorityCounts[rule.priority] || 0) + 1;
     }
+  });
+
+  // Update DOM - tier counts
+  ['1', '2', '3', 'skip'].forEach(tier => {
+    const el = document.getElementById(`count-tier-${tier}`);
+    if (el) el.textContent = tierCounts[tier] || 0;
   });
 
   // Update DOM - category counts
@@ -121,6 +146,7 @@ function updateCounts() {
 function getActiveFilters() {
   const categories = [];
   const priorities = [];
+  const tiers = [];
 
   document.querySelectorAll('[data-category]:checked').forEach(cb => {
     categories.push(cb.dataset.category);
@@ -130,24 +156,31 @@ function getActiveFilters() {
     priorities.push(cb.dataset.priority);
   });
 
-  return { categories, priorities };
+  document.querySelectorAll('[data-tier]:checked').forEach(cb => {
+    tiers.push(cb.dataset.tier);
+  });
+
+  return { categories, priorities, tiers };
 }
 
 // Apply filters
 function applyFilters() {
-  const { categories, priorities } = getActiveFilters();
+  const { categories, priorities, tiers } = getActiveFilters();
   const searchTerm = searchInput.value.toLowerCase().trim();
 
   filteredRules = rules.filter(rule => {
+    const tier = String(rule.tier || 3);
     const matchesCategory = categories.length === 0 || categories.includes(rule.category);
     const matchesPriority = priorities.length === 0 || priorities.includes(String(rule.priority));
+    const matchesTier = tiers.length === 0 || tiers.includes(tier);
     const matchesSearch = searchTerm === '' ||
       rule.name.toLowerCase().includes(searchTerm) ||
       rule.message.toLowerCase().includes(searchTerm) ||
       rule.description.toLowerCase().includes(searchTerm) ||
-      (rule.categoryName && rule.categoryName.toLowerCase().includes(searchTerm));
+      (rule.categoryName && rule.categoryName.toLowerCase().includes(searchTerm)) ||
+      (rule.claude_comment && rule.claude_comment.toLowerCase().includes(searchTerm));
 
-    return matchesCategory && matchesPriority && matchesSearch;
+    return matchesCategory && matchesPriority && matchesTier && matchesSearch;
   });
 
   currentPage = 1;
@@ -159,10 +192,57 @@ function applyFilters() {
 // Setup filter listeners
 function setupFilters() {
   document.querySelectorAll('.filter-checkbox input').forEach(checkbox => {
-    checkbox.addEventListener('change', applyFilters);
+    checkbox.addEventListener('change', () => {
+      updateToggleState(checkbox);
+      applyFilters();
+    });
   });
 
+  // Toggle all checkboxes per section
+  setupToggleAll('toggleTier', '[data-tier]');
+  setupToggleAll('toggleCategory', '[data-category]');
+  setupToggleAll('togglePriority', '[data-priority]');
+
   searchInput.addEventListener('input', debounce(applyFilters, 300));
+}
+
+// Setup toggle-all checkbox for a filter section
+function setupToggleAll(toggleId, checkboxSelector) {
+  const toggle = document.getElementById(toggleId);
+  if (!toggle) return;
+
+  toggle.addEventListener('change', () => {
+    const checkboxes = document.querySelectorAll(checkboxSelector);
+    checkboxes.forEach(cb => { cb.checked = toggle.checked; });
+    applyFilters();
+  });
+}
+
+// Update toggle-all checkbox state based on individual checkboxes
+function updateToggleState(changedCheckbox) {
+  const selectorMap = {
+    'tier': { toggle: 'toggleTier', selector: '[data-tier]' },
+    'category': { toggle: 'toggleCategory', selector: '[data-category]' },
+    'priority': { toggle: 'togglePriority', selector: '[data-priority]' }
+  };
+
+  const attrType = changedCheckbox.dataset.tier ? 'tier'
+    : changedCheckbox.dataset.category ? 'category'
+    : changedCheckbox.dataset.priority ? 'priority'
+    : null;
+
+  if (!attrType) return;
+
+  const { toggle: toggleId, selector } = selectorMap[attrType];
+  const toggleEl = document.getElementById(toggleId);
+  if (!toggleEl) return;
+
+  const checkboxes = document.querySelectorAll(selector);
+  const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+  const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+  toggleEl.checked = allChecked;
+  toggleEl.indeterminate = !allChecked && someChecked;
 }
 
 // Debounce utility
@@ -195,16 +275,18 @@ function renderRules() {
   }
 
   rulesGrid.innerHTML = pageRules.map(rule => {
+    const tier = String(rule.tier || 3);
     return `
     <div class="rule-card ${selectedRuleName === rule.name ? 'active' : ''}" data-name="${rule.name}">
       <div class="rule-card-header">
         <span class="rule-category-icon ${rule.category}">${categoryIcons[rule.category] || '\uD83D\uDCCB'}</span>
         <span class="rule-id">${rule.name}</span>
-        <span class="priority-badge p${rule.priority}">${priorityLabels[rule.priority]}</span>
+        <span class="tier-badge tier-${tier}" title="\uCD94\uCC9C \uB4F1\uAE09: ${tierNames[tier] || tier}">${tier === 'skip' ? '\u2014' : tier}</span>
       </div>
       <div class="rule-title">${rule.message}</div>
       <div class="rule-meta">
         <span class="category-tag ${rule.category}">${rule.categoryName}</span>
+        <span class="priority-badge p${rule.priority}">${priorityLabels[rule.priority]}</span>
         <span class="rule-since">v${rule.since}</span>
       </div>
     </div>
@@ -283,6 +365,11 @@ function selectRule(ruleName) {
     card.classList.toggle('active', card.dataset.name === ruleName);
   });
 
+  // Tier info
+  const tier = String(rule.tier || 3);
+  const tierLabel = tierNames[tier] || tier;
+  const claudeComment = rule.claude_comment || '';
+
   // Build examples HTML
   const examplesHtml = rule.examples && rule.examples.length > 0
     ? rule.examples.map((ex, i) => `<pre><code class="language-java">${escapeHtml(ex)}</code></pre>`).join('\n')
@@ -343,9 +430,20 @@ function selectRule(ruleName) {
         <span class="rule-category-icon ${rule.category}">${categoryIcons[rule.category] || '\uD83D\uDCCB'}</span>
         <span class="category-tag ${rule.category}">${rule.categoryName}</span>
         <span class="priority-badge p${rule.priority}">${priorityNames[rule.priority]}</span>
+        <span class="tier-badge tier-${tier}">Tier ${tier === 'skip' ? 'Skip' : tier}</span>
       </div>
       <h2>${rule.message}</h2>
       <span class="rule-id">${rule.name}</span>
+      ${claudeComment ? `
+      <div class="ai-recommendation tier-${tier}">
+        <div class="ai-recommendation-header">
+          <span class="ai-icon">\uD83E\uDD16</span>
+          <span class="ai-label">Claude Comment</span>
+          <span class="ai-tier">Tier ${tier === 'skip' ? 'Skip' : tier} \u2014 ${tierLabel}</span>
+        </div>
+        <p class="ai-recommendation-text">${claudeComment}</p>
+      </div>
+      ` : ''}
     </div>
     <div class="detail-tabs">
       <button class="detail-tab active" data-tab="desc">\uC124\uBA85</button>

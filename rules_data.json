@@ -1,4 +1,3 @@
-const RULES_DATA =
 [
   {
     "name": "AvoidReassigningParameters",
@@ -12,9 +11,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class Hello {\n  private void greet(String name) {\n    name = name.trim();\n    System.out.println(\"Hello \" + name);\n\n    // preferred\n    String trimmedName = name.trim();\n    System.out.println(\"Hello \" + trimmedName);\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 매개변수 재할당은 코드 가독성을 떨어뜨리고 의도치 않은 버그를 유발할 수 있습니다"
+    ]
   },
   {
     "name": "GuardLogStatement",
@@ -28,9 +25,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "// Add this for performance - avoid manipulating strings if the logger may drop it\nif (log.isDebugEnabled()) {\n    log.debug(\"log something\" + param1 + \" and \" + param2 + \"concat strings\");\n}\n\n// Avoid the guarding if statement with substituting parameters\nlog.debug(\"log something {} and {}\", param1, param2);\n\n// Avoid the guarding if statement with formatters\nlog.debug(\"log something %s and %s\", param1, param2);\n\n// This is still an issue, method invocations may be expensive / have side-effects\nlog.debug(\"log something expensive: {}\", calculateExpensiveLoggingText());\n\n// Avoid the guarding if statement with lazy logging and lambdas\nlog.debug(\"log something expensive: {}\", () -> calculateExpensiveLoggingText());\n\n// … alternatively use method references\nlog.debug(\"log something expensive: {}\", this::calculateExpensiveLoggingText);"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 불필요한 문자열 연산을 방지하여 성능을 향상시킵니다. SLF4J 파라미터 치환 사용 권장"
+    ]
   },
   {
     "name": "ImplicitFunctionalInterface",
@@ -44,9 +39,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "// The intent on this declaration is unclear, and the rule will report it.\n            public interface MyInterface {\n                void doSomething();\n            }\n\n            // This is clearly intended as a functional interface.\n            @FunctionalInterface\n            public interface MyInterface {\n                void doSomething();\n            }\n\n            // This is clearly NOT intended as a functional interface.\n            @SuppressWarnings(\"PMD.ImplicitFunctionalInterface\")\n            public interface MyInterface {\n                void doSomething();\n            }"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - @FunctionalInterface 명시는 좋은 관행이나 필수는 아닙니다"
+    ]
   },
   {
     "name": "AbstractClassWithoutAbstractMethod",
@@ -60,9 +53,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public abstract class Foo {\n  void int method1() { ... }\n  void int method2() { ... }\n  // consider using abstract methods or removing\n  // the abstract modifier and adding protected constructors\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 추상 메서드 없는 추상 클래스는 설계 의도가 불분명하나, 템플릿 패턴 등 합당한 경우도 있습니다"
+    ]
   },
   {
     "name": "AccessorClassGeneration",
@@ -77,9 +68,7 @@ const RULES_DATA =
     "examples": [
       "public class Outer {\n void method(){\n  Inner ic = new Inner();//Causes generation of accessor class\n }\n public class Inner {\n  private Inner(){}\n }\n}"
     ],
-    "maxLanguageVersion": "10",
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 접근자 클래스 생성은 마이너한 최적화 이슈입니다"
+    "maxLanguageVersion": "10"
   },
   {
     "name": "AccessorMethodGeneration",
@@ -94,9 +83,7 @@ const RULES_DATA =
     "examples": [
       "public class OuterClass {\n    private int counter;\n    /* package */ int id;\n\n    public class InnerClass {\n        InnerClass() {\n            OuterClass.this.counter++; // wrong accessor method will be generated\n        }\n\n        public int getOuterClassId() {\n            return OuterClass.this.id; // id is package-private, no accessor method needed\n        }\n    }\n}"
     ],
-    "maxLanguageVersion": "10",
-    "tier": 3,
-    "claude_comment": "선택 - 컴파일러가 생성하는 접근자 메서드에 대한 마이너한 최적화 규칙입니다"
+    "maxLanguageVersion": "10"
   },
   {
     "name": "ArrayIsStoredDirectly",
@@ -110,9 +97,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    private String [] x;\n        public void foo (String [] param) {\n        // Don't do this, make a copy of the array at least\n        this.x=param;\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 외부에서 전달된 배열을 직접 저장하면 캡슐화가 깨지고 예기치 않은 데이터 변경이 발생합니다"
+    ]
   },
   {
     "name": "AvoidMessageDigestField",
@@ -126,9 +111,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.security.MessageDigest;\npublic class AvoidMessageDigestFieldExample {\n    private final MessageDigest sharedMd;\n    public AvoidMessageDigestFieldExample() throws Exception {\n        sharedMd = MessageDigest.getInstance(\"SHA-256\");\n    }\n    public byte[] calculateHashShared(byte[] data) {\n        // sharing a MessageDigest like this without synchronizing access\n        // might lead to wrong results\n        sharedMd.reset();\n        sharedMd.update(data);\n        return sharedMd.digest();\n    }\n\n    // better\n    public byte[] calculateHash(byte[] data) throws Exception {\n        MessageDigest md = MessageDigest.getInstance(\"SHA-256\");\n        md.update(data);\n        return md.digest();\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - MessageDigest를 필드로 사용하면 스레드 안전성 문제와 보안 취약점이 발생합니다"
+    ]
   },
   {
     "name": "AvoidPrintStackTrace",
@@ -142,9 +125,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n    void bar() {\n        try {\n            // do something\n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - printStackTrace()는 운영 환경에서 로그 관리가 불가능하고 민감 정보가 노출될 수 있습니다"
+    ]
   },
   {
     "name": "AvoidReassigningCatchVariables",
@@ -158,9 +139,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public void foo() {\n        try {\n            // do something\n        } catch (Exception e) {\n            e = new NullPointerException(); // not recommended\n        }\n\n        try {\n            // do something\n        } catch (MyException | ServerException e) {\n            e = new RuntimeException(); // won't compile\n        }\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - catch 변수 재할당은 원본 예외 정보를 잃어버릴 위험이 있습니다"
+    ]
   },
   {
     "name": "AvoidReassigningLoopVariables",
@@ -174,9 +153,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  private void foo() {\n    for (String s : listOfStrings()) {\n      s = s.trim(); // OK, when foreachReassign is \"firstOnly\" or \"allow\"\n      doSomethingWith(s);\n\n      s = s.toUpper(); // OK, when foreachReassign is \"allow\"\n      doSomethingElseWith(s);\n    }\n\n    for (int i=0; i < 10; i++) {\n      if (check(i)) {\n        i++; // OK, when forReassign is \"skip\" or \"allow\"\n      }\n\n      i = 5;  // OK, when forReassign is \"allow\"\n\n      doSomethingWith(i);\n    }\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 루프 변수 재할당은 무한 루프나 예기치 않은 동작을 유발할 수 있습니다"
+    ]
   },
   {
     "name": "AvoidStringBufferField",
@@ -190,9 +167,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    private StringBuffer buffer;    // potential memory leak as an instance variable;\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - StringBuffer/StringBuilder를 필드로 사용하면 스레드 안전성 문제가 발생할 수 있습니다"
+    ]
   },
   {
     "name": "AvoidUsingHardCodedIP",
@@ -206,9 +181,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    private String ip = \"127.0.0.1\";     // not recommended\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 하드코딩된 IP 주소는 환경 이식성을 해치고 보안 위험을 초래합니다"
+    ]
   },
   {
     "name": "CheckResultSet",
@@ -222,9 +195,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "Statement stat = conn.createStatement();\nResultSet rst = stat.executeQuery(\"SELECT name FROM person\");\nrst.next();     // what if it returns false? bad form\nString firstName = rst.getString(1);\n\nStatement stat = conn.createStatement();\nResultSet rst = stat.executeQuery(\"SELECT name FROM person\");\nif (rst.next()) {    // result is properly examined and used\n    String firstName = rst.getString(1);\n    } else  {\n        // handle missing data\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - ResultSet.next() 확인 없이 접근하면 SQLException이 발생합니다"
+    ]
   },
   {
     "name": "ConstantsInInterface",
@@ -245,9 +216,7 @@ const RULES_DATA =
         "defaultValue": "true",
         "description": "인터페이스가 메서드를 정의하는 경우 인터페이스의 상수를 무시할지 여부"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 인터페이스에 상수를 정의하는 것은 안티패턴입니다. 별도 상수 클래스를 사용하세요"
+    ]
   },
   {
     "name": "DoubleBraceInitialization",
@@ -261,9 +230,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "// this is double-brace initialization\nreturn new ArrayList<String>(){{\n    add(\"a\");\n    add(\"b\");\n    add(\"c\");\n}};\n\n// the better way is to not create an anonymous class:\nList<String> a = new ArrayList<>();\na.add(\"a\");\na.add(\"b\");\na.add(\"c\");\nreturn a;"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 이중 중괄호 초기화는 익명 클래스를 생성하여 메모리 누수와 직렬화 문제를 유발합니다"
+    ]
   },
   {
     "name": "EnumComparison",
@@ -277,9 +244,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "enum Color { RED, GREEN, BLUE }\nclass ColorTester {\n  boolean isRed(Color color) {\n    return color.equals(Color.RED); // violation\n  }\n\n  boolean isGreen(Color color) {\n    return color == Color.GREEN; // preferred\n  }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - Enum은 == 비교가 안전하지만, equals()도 정상 동작하므로 팀 컨벤션에 따르세요"
+    ]
   },
   {
     "name": "ExhaustiveSwitchHasDefault",
@@ -293,9 +258,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n    enum MyEnum { A, B };\n\n    void doSomething(MyEnum e) {\n        switch(e) {\n            case A -> System.out.println(\"a\");\n            case B -> System.out.println(\"b\");\n            default -> System.out.println(\"unnecessary default\");\n        };\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 모든 케이스를 처리하는 switch에 default 추가 여부는 팀 스타일에 따라 결정하세요"
+    ]
   },
   {
     "name": "ForLoopCanBeForeach",
@@ -310,9 +273,7 @@ const RULES_DATA =
     "examples": [
       "public class MyClass {\n  void loop(List<String> l) {\n    for (int i = 0; i < l.size(); i++) { // pre Java 1.5\n      System.out.println(l.get(i));\n    }\n\n    for (String s : l) {        // post Java 1.5\n      System.out.println(s);\n    }\n  }\n}"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 2,
-    "claude_comment": "권장 - enhanced for 루프는 가독성이 높고 인덱스 관련 오류를 방지합니다"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "ForLoopVariableCount",
@@ -333,9 +294,7 @@ const RULES_DATA =
         "defaultValue": "1",
         "description": "일반 for 문의 제어 변수 수"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - for 루프에 변수가 많으면 복잡도가 증가하고 버그 발생 가능성이 높아집니다"
+    ]
   },
   {
     "name": "JUnit4SuitesShouldUseSuiteAnnotation",
@@ -349,9 +308,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class BadExample extends TestCase{\n\n    public static Test suite(){\n        return new Suite();\n    }\n}\n\n@RunWith(Suite.class)\n@SuiteClasses( { TestOne.class, TestTwo.class })\npublic class GoodTest {\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - JUnit4 테스트 스위트 규칙으로, JUnit5 사용 시 해당되지 않습니다"
+    ]
   },
   {
     "name": "LabeledStatement",
@@ -373,9 +330,7 @@ const RULES_DATA =
         "defaultValue": "true",
         "description": "루프 문(do, while, for) 앞의 레이블을 허용할지 여부"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 레이블 문은 코드 흐름을 복잡하게 만들어 유지보수를 어렵게 합니다"
+    ]
   },
   {
     "name": "LiteralsFirstInComparisons",
@@ -389,9 +344,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n    boolean bar(String x) {\n        return x.equals(\"2\"); // should be \"2\".equals(x)\n    }\n    boolean bar(String x) {\n        return x.equalsIgnoreCase(\"2\"); // should be \"2\".equalsIgnoreCase(x)\n    }\n    boolean bar(String x) {\n        return (x.compareTo(\"bar\") > 0); // should be: \"bar\".compareTo(x) < 0\n    }\n    boolean bar(String x) {\n        return (x.compareToIgnoreCase(\"bar\") > 0); // should be: \"bar\".compareToIgnoreCase(x) < 0\n    }\n    boolean bar(String x) {\n        return x.contentEquals(\"bar\"); // should be \"bar\".contentEquals(x)\n    }\n\n    static final String CONSTANT = \"const\";\n    {\n        CONSTANT.equals(\"literal\"); // not reported, this is effectively the same as writing \"const\".equals(\"foo\")\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 리터럴을 먼저 두면 NPE를 방지할 수 있습니다 (Yoda 조건)"
+    ]
   },
   {
     "name": "LooseCoupling",
@@ -405,9 +358,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.ArrayList;\nimport java.util.HashSet;\n\npublic class Bar {\n    // sub-optimal approach\n    private ArrayList<SomeType> list = new ArrayList<>();\n\n    public HashSet<SomeType> getFoo() {\n        return new HashSet<SomeType>();\n    }\n\n    // preferred approach\n    private List<SomeType> list = new ArrayList<>();\n\n    public Set<SomeType> getFoo() {\n        return new HashSet<SomeType>();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 구현 클래스 대신 인터페이스 타입 사용으로 결합도를 낮추세요"
+    ]
   },
   {
     "name": "MethodReturnsInternalArray",
@@ -421,9 +372,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class SecureSystem {\n    UserData [] ud;\n    public UserData [] getUserData() {\n        // Don't return directly the internal array, return a copy\n        return ud;\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 내부 배열을 직접 반환하면 캡슐화가 깨지고 외부에서 내부 상태를 변경할 수 있습니다"
+    ]
   },
   {
     "name": "MissingOverride",
@@ -438,9 +387,7 @@ const RULES_DATA =
     "examples": [
       "public class Foo implements Runnable {\n                // This method is overridden, and should have an @Override annotation\n                public void run() {\n\n                }\n            }"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 2,
-    "claude_comment": "권장 - @Override 누락은 실수로 새 메서드를 정의하는 버그를 유발할 수 있습니다"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "NonExhaustiveSwitch",
@@ -454,9 +401,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {{\n    int x = 2;\n    switch (x) {\n      case 1: int j = 6;\n      case 2: int j = 8;\n      // missing default: here\n    }\n}}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 모든 케이스를 처리하지 않는 switch는 예기치 않은 동작을 유발합니다"
+    ]
   },
   {
     "name": "PreserveStackTrace",
@@ -470,9 +415,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void good() {\n        try{\n            Integer.parseInt(\"a\");\n        } catch (Exception e) {\n            throw new Exception(e); // Ok, this initializes the cause of the new exception\n        }\n        try {\n            Integer.parseInt(\"a\");\n        } catch (Exception e) {\n            throw (IllegalStateException)new IllegalStateException().initCause(e); // second possibility to create exception chain.\n        }\n    }\n    void wrong() {\n        try{\n            Integer.parseInt(\"a\");\n        } catch (Exception e) {\n            // Violation: this only preserves the message and not the stack trace\n            throw new Exception(e.getMessage());\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 스택 트레이스 보존은 운영 환경에서 장애 분석에 필수적입니다"
+    ]
   },
   {
     "name": "PrimitiveWrapperInstantiation",
@@ -486,9 +429,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n                private Integer ZERO = new Integer(0);      // violation\n                private Integer ZERO1 = Integer.valueOf(0); // better\n                private Integer ZERO1 = 0;                  // even better\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - new Integer() 대신 Integer.valueOf() 사용으로 캐싱 이점을 활용하세요"
+    ]
   },
   {
     "name": "RelianceOnDefaultCharset",
@@ -502,9 +443,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void bad() throws IOException {\n        new InputStreamReader(inputStream);  // violation\n        new OutputStreamWriter(outputStream);  // violation\n        URLEncoder.encode(\"test string\");  // violation (deprecated)\n        new PrintStream(outputStream);  // violation\n        new PrintWriter(\"output.txt\");  // violation\n        new Scanner(inputStream);  // violation\n        new Formatter();  // violation\n        \"test\".getBytes();  // violation\n        new ByteArrayOutputStream().toString();  // violation\n        new FileReader(\"input.txt\");  // violation\n        new FileWriter(\"output.txt\");  // violation\n    }\n\n    void good() throws IOException {\n        new InputStreamReader(inputStream, StandardCharsets.UTF_8);  // ok\n        new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);  // ok\n        URLEncoder.encode(\"test string\", StandardCharsets.UTF_8);  // ok\n        new PrintStream(outputStream, true, StandardCharsets.UTF_8);  // ok\n        new PrintWriter(\"output.txt\", StandardCharsets.UTF_8);  // ok\n        new Scanner(inputStream, StandardCharsets.UTF_8);  // ok\n        new Formatter(Locale.US);  // ok\n        \"test\".getBytes(StandardCharsets.UTF_8);  // ok\n        new ByteArrayOutputStream().toString(StandardCharsets.UTF_8);  // ok\n        new FileReader(\"input.txt\", StandardCharsets.UTF_8);  // ok\n        new FileWriter(\"output.txt\", StandardCharsets.UTF_8);  // ok\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 기본 문자셋 의존은 플랫폼 간 인코딩 버그를 유발합니다. 명시적으로 지정하세요"
+    ]
   },
   {
     "name": "ReplaceEnumerationWithIterator",
@@ -518,9 +457,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo implements Enumeration {\n    private int x = 42;\n    public boolean hasMoreElements() {\n        return true;\n    }\n    public Object nextElement() {\n        return String.valueOf(i++);\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Enumeration은 레거시 API입니다. Iterator를 사용하세요"
+    ]
   },
   {
     "name": "ReplaceHashtableWithMap",
@@ -534,9 +471,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void bar() {\n        Hashtable h = new Hashtable();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Hashtable은 레거시 클래스입니다. HashMap이나 ConcurrentHashMap을 사용하세요"
+    ]
   },
   {
     "name": "ReplaceVectorWithList",
@@ -550,9 +485,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.Vector;\npublic class Foo {\n    void bar() {\n        Vector v = new Vector();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Vector는 레거시 클래스입니다. ArrayList나 CopyOnWriteArrayList를 사용하세요"
+    ]
   },
   {
     "name": "SimplifiableTestAssertion",
@@ -566,9 +499,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import org.junit.Test;\nimport static org.junit.Assert.*;\n\nclass SomeTestClass {\n    Object a,b;\n    @Test\n    void testMethod() {\n        assertTrue(a.equals(b)); // could be assertEquals(a, b);\n        assertTrue(!a.equals(b)); // could be assertNotEquals(a, b);\n\n        assertTrue(!something); // could be assertFalse(something);\n        assertFalse(!something); // could be assertTrue(something);\n\n        assertTrue(a == b); // could be assertSame(a, b);\n        assertTrue(a != b); // could be assertNotSame(a, b);\n\n        assertTrue(a == null); // could be assertNull(a);\n        assertTrue(a != null); // could be assertNotNull(a);\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 단순화 가능한 테스트 단언문은 가독성과 오류 메시지를 개선합니다"
+    ]
   },
   {
     "name": "UnitTestAssertionsShouldIncludeMessage",
@@ -582,9 +513,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    @Test\n    public void testSomething() {\n        assertEquals(\"foo\", \"bar\");\n        // Use the form:\n        // assertEquals(\"Foo does not equals bar\", \"foo\", \"bar\");\n        // instead\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 단언문에 메시지 포함은 좋은 관행이나, 메서드명이 명확하면 생략 가능합니다"
+    ]
   },
   {
     "name": "UnitTestContainsTooManyAsserts",
@@ -598,9 +527,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyTestCase {\n    // Ok\n    @Test\n    public void testMyCaseWithOneAssert() {\n        boolean myVar = false;\n        assertFalse(\"should be false\", myVar);\n    }\n\n    // Bad, too many asserts (assuming max=1)\n    @Test\n    public void testMyCaseWithMoreAsserts() {\n        boolean myVar = false;\n        assertFalse(\"myVar should be false\", myVar);\n        assertEquals(\"should equals false\", false, myVar);\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 단언문 수 제한은 팀 컨벤션에 따라 조정이 필요합니다"
+    ]
   },
   {
     "name": "UnitTestShouldIncludeAssert",
@@ -614,9 +541,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n   @Test\n   public void testSomething() {\n      Bar b = findBar();\n      // This is better than having a NullPointerException\n      // assertNotNull(\"bar not found\", b);\n      b.work();\n   }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 단언문 없는 테스트는 실제로 아무것도 검증하지 않는 무의미한 테스트입니다"
+    ]
   },
   {
     "name": "UnitTestShouldUseAfterAnnotation",
@@ -630,9 +555,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyTest {\n    public void tearDown() {\n        bad();\n    }\n}\npublic class MyTest2 {\n    @After public void tearDown() {\n        good();\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - tearDown() 대신 @After 사용은 JUnit4 스타일 선호도에 따릅니다"
+    ]
   },
   {
     "name": "UnitTestShouldUseBeforeAnnotation",
@@ -646,9 +569,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyTest {\n    public void setUp() {\n        bad();\n    }\n}\npublic class MyTest2 {\n    @Before public void setUp() {\n        good();\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - setUp() 대신 @Before 사용은 JUnit4 스타일 선호도에 따릅니다"
+    ]
   },
   {
     "name": "UnitTestShouldUseTestAnnotation",
@@ -669,9 +590,7 @@ const RULES_DATA =
         "defaultValue": "Test",
         "description": "테스트 클래스를 식별하는 데 사용되는 정규식 패턴"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - @Test 어노테이션 누락은 테스트가 실행되지 않는 심각한 문제를 초래합니다"
+    ]
   },
   {
     "name": "UnnecessaryVarargsArrayCreation",
@@ -685,9 +604,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.Arrays;\n\nclass C {\n    static {\n        Arrays.asList(new String[]{\"foo\", \"bar\",});\n        // should be\n        Arrays.asList(\"foo\", \"bar\");\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 가변인자 배열 생성 제거는 코드 간결성을 위한 마이너 개선입니다"
+    ]
   },
   {
     "name": "UnnecessaryWarningSuppression",
@@ -701,9 +618,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Something {\n                // Unless some rule triggered on the following line, this rule will report the comment:\n                private void foo() {} // NOPMD\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 불필요한 @SuppressWarnings는 실제 경고를 무시하게 만들 수 있습니다"
+    ]
   },
   {
     "name": "UnusedAssignment",
@@ -720,9 +635,7 @@ const RULES_DATA =
       "class B {\n\n    int method(int i, int j) {\n        // this initializer is redundant,\n        // it is overwritten in all branches of the `if`\n        int k = 0;\n\n        // Both the assignments to k are unused, because k is\n        // not read after the if/else\n        // This may hide a bug: the programmer probably wanted to return k\n        if (i < j)\n            k = i;\n        else\n            k = j;\n\n        return j;\n    }\n\n}",
       "class C {\n\n    int method() {\n        int i = 0;\n\n        checkSomething(++i);\n        checkSomething(++i);\n        checkSomething(++i);\n        checkSomething(++i);\n\n        // That last increment is not reported unless\n        // the property `checkUnusedPrefixIncrement` is\n        // set to `true`\n        // Technically it could be written (i+1), but it\n        // is not very important\n    }\n\n}",
       "class C {\n\n    // variables that are truly unused (at most assigned to, but never accessed)\n    // are only reported if property `reportUnusedVariables` is true\n\n    void method(int param) { } // for example this method parameter\n\n    // even then, you can suppress the violation with an annotation:\n\n    void method(@SuppressWarning(\"unused\") int param) { } // no violation, even if `reportUnusedVariables` is true\n\n    // For catch parameters, or for resources which don't need to be used explicitly,\n    // you can give a name that starts with \"ignored\" to ignore such warnings\n\n    {\n        try (Something ignored = Something.create()) {\n            // even if ignored is unused, it won't be flagged\n            // its purpose might be to side-effect in the create/close routines\n\n        } catch (Exception e) { // this is unused and will cause a warning if `reportUnusedVariables` is true\n            // you should choose a name that starts with \"ignored\"\n            return;\n        }\n    }\n\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 사용되지 않는 할당은 논리 오류의 징후이거나 불필요한 코드입니다"
+    ]
   },
   {
     "name": "UnusedFormalParameter",
@@ -736,9 +649,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    private void bar(String howdy) {\n        // howdy is not used\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 사용되지 않는 매개변수는 API 설계 문제를 나타낼 수 있습니다"
+    ]
   },
   {
     "name": "UnusedLabel",
@@ -752,9 +663,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Example {\n    void main() {\n        lbl1: {                     // violation: Label \"lbl1\" is not nused\n            int x = 1;\n            System.out.println(x);\n        }\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 사용되지 않는 레이블은 불필요한 코드이며 혼란을 유발합니다"
+    ]
   },
   {
     "name": "UnusedLocalVariable",
@@ -768,9 +677,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public void doSomething() {\n        int i = 5; // Unused\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 사용되지 않는 지역 변수는 높은 확률로 논리 오류의 징후입니다"
+    ]
   },
   {
     "name": "UnusedPrivateField",
@@ -784,9 +691,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Something {\n    private static int FOO = 2; // Unused\n    private int i = 5; // Unused\n    private int j = 6;\n    public int addOne() {\n        return j++;\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 사용되지 않는 private 필드는 데드 코드이며 유지보수를 어렵게 합니다"
+    ]
   },
   {
     "name": "UnusedPrivateMethod",
@@ -800,9 +705,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Something {\n    private void foo() {} // unused\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 사용되지 않는 private 메서드는 데드 코드이며 제거해야 합니다"
+    ]
   },
   {
     "name": "UseCollectionIsEmpty",
@@ -816,9 +719,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void good() {\n        List foo = getList();\n        if (foo.isEmpty()) {\n            // blah\n        }\n    }\n\n    void bad() {\n        List foo = getList();\n        if (foo.size() == 0) {\n            // blah\n        }\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - collection.size() == 0 대신 isEmpty() 사용이 의도가 명확하고 일부 구현에서 더 효율적입니다"
+    ]
   },
   {
     "name": "UseEnumCollections",
@@ -832,9 +733,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.EnumMap;\n            import java.util.HashSet;\n\n            enum Example {\n                A, B, C;\n\n                public static Set<Example> newSet() {\n                    return new HashSet<>(); // Could be EnumSet.noneOf(Example.class)\n                }\n\n                public static <V> Map<Example, V> newMap() {\n                    return new HashMap<>(); // Could be new EnumMap<>(Example.class)\n                }\n            }"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - EnumSet/EnumMap은 성능이 우수하나 적용 범위가 제한적입니다"
+    ]
   },
   {
     "name": "UseStandardCharsets",
@@ -849,9 +748,7 @@ const RULES_DATA =
     "examples": [
       "public class UseStandardCharsets {\n    public void run() {\n\n        // looking up the charset dynamically\n        try (OutputStreamWriter osw = new OutputStreamWriter(out, Charset.forName(\"UTF-8\"))) {\n            osw.write(\"test\");\n        }\n\n        // best to use StandardCharsets\n        try (OutputStreamWriter osw = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {\n            osw.write(\"test\");\n        }\n    }\n}"
     ],
-    "minLanguageVersion": "1.7",
-    "tier": 2,
-    "claude_comment": "권장 - StandardCharsets 사용으로 UnsupportedEncodingException을 방지하세요"
+    "minLanguageVersion": "1.7"
   },
   {
     "name": "UseTryWithResources",
@@ -866,9 +763,7 @@ const RULES_DATA =
     "examples": [
       "public class TryWithResources {\n    public void run() {\n        InputStream in = null;\n        try {\n            in = openInputStream();\n            int i = in.read();\n        } catch (IOException e) {\n            e.printStackTrace();\n        } finally {\n            try {\n                if (in != null) in.close();\n            } catch (IOException ignored) {\n                // ignored\n            }\n        }\n\n        // better use try-with-resources\n        try (InputStream in2 = openInputStream()) {\n            int i = in2.read();\n        }\n    }\n}"
     ],
-    "minLanguageVersion": "1.7",
-    "tier": 1,
-    "claude_comment": "필수 - try-with-resources는 리소스 누수를 방지하는 필수 패턴입니다"
+    "minLanguageVersion": "1.7"
   },
   {
     "name": "WhileLoopWithLiteralBoolean",
@@ -882,9 +777,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Example {\n  {\n    while (true) { } // allowed\n    while (false) { } // disallowed\n    do { } while (true); // disallowed\n    do { } while (false); // disallowed\n    do { } while (false | false); // disallowed\n    do { } while (false || false); // disallowed\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - while(true) 사용은 무한 루프 의도를 명확히 하고 종료 조건을 검토해야 합니다"
+    ]
   },
   {
     "name": "OneDeclarationPerLine",
@@ -905,9 +798,7 @@ const RULES_DATA =
         "defaultValue": "false",
         "description": "true이면 선언이 별도의 줄에 있더라도 결합된 선언을 표시합니다."
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 한 줄에 하나의 선언은 가독성 향상에 도움되나 스타일 선호도 문제입니다"
+    ]
   },
   {
     "name": "UseVarargs",
@@ -922,9 +813,7 @@ const RULES_DATA =
     "examples": [
       "public class Foo {\n    public void foo(String s, Object[] args) {\n        // Do something here...\n    }\n\n    public void bar(String s, Object... args) {\n        // Ahh, varargs tastes much better...\n    }\n}"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 3,
-    "claude_comment": "선택 - 가변인자 사용 제안은 API 호환성을 고려하여 신중하게 적용하세요"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "ClassNamingConventions",
@@ -938,9 +827,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "// This is Pascal case, the recommended naming convention in Java\n// Note that the default values of this rule don't allow underscores\n// or accented characters in type names\npublic class FooBar {}\n\n// You may want abstract classes to be named 'AbstractXXX',\n// in which case you can customize the regex for abstract\n// classes to 'Abstract[A-Z]\\w+'\npublic abstract class Thing {}\n\n// This class doesn't respect the convention, and will be flagged\npublic class Éléphant {}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 일관된 클래스 명명 규칙은 팀 협업과 코드 가독성에 중요합니다"
+    ]
   },
   {
     "name": "EmptyMethodInAbstractClassShouldBeAbstract",
@@ -954,9 +841,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public abstract class ShouldBeAbstract {\n    public Object couldBeAbstract() {\n        // Should be abstract method ?\n        return null;\n    }\n\n    public void couldBeAbstract() {\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 빈 메서드를 추상으로 변경하는 것은 설계 선호도에 따릅니다"
+    ]
   },
   {
     "name": "FieldNamingConventions",
@@ -970,9 +855,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "class Foo {\n                int myField = 1; // This is in camel case, so it's ok\n                int my_Field = 1; // This contains an underscore, it's not ok by default\n                                  // but you may allow it, or even require the \"my_\" prefix\n\n                final int FinalField = 1; // you may configure a different convention for final fields,\n                                          // e.g. here PascalCase: [A-Z][a-zA-Z0-9]*\n\n                interface Interface {\n                    double PI = 3.14; // interface \"fields\" use the constantPattern property\n                }\n\n                enum AnEnum {\n                    ORG, NET, COM; // These use a separate property but are set to ALL_UPPER by default\n                }\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 일관된 필드 명명 규칙은 코드 이해도와 팀 협업에 중요합니다"
+    ]
   },
   {
     "name": "FinalParameterInAbstractMethod",
@@ -986,9 +869,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public interface MyInterface {\n  void process(final Object arg); // Avoid using final here\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 추상 메서드의 final 매개변수는 구현부에서 의미가 없어 불필요합니다"
+    ]
   },
   {
     "name": "FormalParameterNamingConventions",
@@ -1002,9 +883,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "class Foo {\n\n                abstract void bar(int myInt); // This is Camel case, so it's ok\n\n                void bar(int my_i) { // this will be reported\n\n                }\n\n                void lambdas() {\n\n                    // lambdas parameters can be configured separately\n                    Consumer<String> lambda1 = s_str -> { };\n\n                    // lambda parameters with an explicit type can be configured separately\n                    Consumer<String> lambda1 = (String str) -> { };\n\n                }\n\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 일관된 매개변수 명명 규칙은 코드 가독성에 직접적으로 기여합니다"
+    ]
   },
   {
     "name": "LocalVariableNamingConventions",
@@ -1018,9 +897,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "class Foo {\n                void bar() {\n                    int localVariable = 1; // This is in camel case, so it's ok\n                    int local_variable = 1; // This will be reported unless you change the regex\n\n                    final int i_var = 1; // final local variables can be configured separately\n\n                    try {\n                        foo();\n                    } catch (IllegalArgumentException e_illegal) {\n                        // exception block parameters can be configured separately\n                    }\n\n                }\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 일관된 지역 변수 명명 규칙은 코드 가독성을 높입니다"
+    ]
   },
   {
     "name": "MethodNamingConventions",
@@ -1034,9 +911,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class Foo {\n    public void fooStuff() {\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 일관된 메서드 명명 규칙은 API 사용성과 가독성에 중요합니다"
+    ]
   },
   {
     "name": "ModifierOrder",
@@ -1050,9 +925,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "abstract public class Foo { // Warn: `public` should appear before `abstract`\n\n    // This order is not recommended, annotations should appear before keyword modifiers,\n    // and may appear after if they are type annotations.\n    public\n    @Override\n    static fooStuff() {\n    }\n\n    // This order is ok if property typeAnnotations is \"anywhere\", and enforced if it is \"on decl\":\n    @Nullable\n    public Object fooStuff() {}\n\n    // This order is ok if property typeAnnotations is \"anywhere\", and enforced if it is \"on type\":\n    public @Nullable Object fooStuff() {}\n\n\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Java 언어 사양에 정의된 수정자 순서를 따르면 일관성이 높아집니다"
+    ]
   },
   {
     "name": "AvoidUsingNativeCode",
@@ -1066,9 +939,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class SomeJNIClass {\n\n     public SomeJNIClass() {\n         System.loadLibrary(\"nativelib\");\n     }\n\n     static {\n         System.loadLibrary(\"nativelib\");\n     }\n\n     public void invalidCallsInMethod() throws SecurityException, NoSuchMethodException {\n         System.loadLibrary(\"nativelib\");\n     }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 네이티브 코드 사용은 이식성과 보안 문제를 유발할 수 있어 신중해야 합니다"
+    ]
   },
   {
     "name": "AtLeastOneConstructor",
@@ -1082,9 +953,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n   // missing constructor\n  public void doSomething() { ... }\n  public void doOtherThing { ... }\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - 기본 생성자로 충분한 경우가 많아 강제하면 오히려 불필요한 코드가 늘어납니다"
+    ]
   },
   {
     "name": "AvoidDollarSigns",
@@ -1098,9 +967,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Fo$o {  // not a recommended name\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 달러 기호는 내부 클래스용으로 예약되어 있으나 일반적으로 사용하지 않습니다"
+    ]
   },
   {
     "name": "AvoidProtectedFieldInFinalClass",
@@ -1114,9 +981,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public final class Bar {\n  private int x;\n  protected int y;  // bar cannot be subclassed, so is y really private or package visible?\n  Bar() {}\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - final 클래스에서 protected 필드는 의미가 없어 접근 수준을 명확히 해야 합니다"
+    ]
   },
   {
     "name": "AvoidProtectedMethodInFinalClassNotExtending",
@@ -1130,9 +995,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public final class Foo {\n  private int bar() {}\n  protected int baz() {} // Foo cannot be subclassed, and doesn't extend anything, so is baz() really private or package visible?\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - final 클래스에서 protected 메서드는 의미가 없으므로 접근 수준을 조정하세요"
+    ]
   },
   {
     "name": "CallSuperInConstructor",
@@ -1146,9 +1009,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo extends Bar{\n  public Foo() {\n   // call the constructor of Bar\n   super();\n  }\n public Foo(int code) {\n  // do something with code\n   this();\n   // no problem with this\n  }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 명시적 super() 호출은 스타일 선호도 문제이며 컴파일러가 자동 추가합니다"
+    ]
   },
   {
     "name": "CommentDefaultAccessModifier",
@@ -1162,9 +1023,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    final String stringValue = \"some string\";\n    String getString() {\n       return stringValue;\n    }\n\n    class NestedFoo {\n    }\n}\n\n// should be\npublic class Foo {\n    /* default */ final String stringValue = \"some string\";\n    /* default */ String getString() {\n       return stringValue;\n    }\n\n    /* default */ class NestedFoo {\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - default 접근 수준에 주석을 다는 것은 좋은 관행이나 강제하기엔 과합니다"
+    ]
   },
   {
     "name": "ConfusingTernary",
@@ -1178,9 +1037,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "boolean bar(int x, int y) {\n    return (x != y) ? diff : same;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 삼항 연산자의 부정 조건 사용 여부는 가독성 선호도에 따릅니다"
+    ]
   },
   {
     "name": "ControlStatementBraces",
@@ -1201,9 +1058,7 @@ const RULES_DATA =
         "defaultValue": "true",
         "description": "'if ... else' 문에 중괄호를 요구"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 제어문에 중괄호를 항상 사용하면 실수로 인한 버그를 방지합니다"
+    ]
   },
   {
     "name": "EmptyControlStatement",
@@ -1217,9 +1072,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n    {\n        if (true); // empty if statement\n        if (true) { // empty as well\n        }\n    }\n\n    {} // empty initializer\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 빈 제어문은 대부분 실수이며, 의도적인 경우 주석으로 명시해야 합니다"
+    ]
   },
   {
     "name": "FieldDeclarationsShouldBeAtStartOfClass",
@@ -1233,9 +1086,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class HelloWorldBean {\n\n  // Field declared before methods / inner classes - OK\n  private String _thing;\n\n  public String getMessage() {\n    return \"Hello World!\";\n  }\n\n  // Field declared after methods / inner classes - avoid this\n  private String _fieldInWrongLocation;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 필드 위치는 팀 코딩 스타일에 따라 결정하세요"
+    ]
   },
   {
     "name": "ForLoopShouldBeWhileLoop",
@@ -1249,9 +1100,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void bar() {\n        for (;true;) true; // No Init or Update part, may as well be: while (true)\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 초기화/증가 없는 for 루프를 while로 변경하는 것은 스타일 선호도입니다"
+    ]
   },
   {
     "name": "IdenticalCatchBranches",
@@ -1266,9 +1115,7 @@ const RULES_DATA =
     "examples": [
       "try {\n    // do something\n} catch (IllegalArgumentException e) {\n    throw e;\n} catch (IllegalStateException e) { // Can be collapsed into the previous block\n    throw e;\n}\n\ntry {\n    // do something\n} catch (IllegalArgumentException | IllegalStateException e) { // This is better\n    throw e;\n}"
     ],
-    "minLanguageVersion": "1.7",
-    "tier": 2,
-    "claude_comment": "권장 - 동일한 catch 블록은 Java 7 multi-catch로 병합하여 코드를 간결하게 만드세요"
+    "minLanguageVersion": "1.7"
   },
   {
     "name": "LambdaCanBeMethodReference",
@@ -1282,9 +1129,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.stream.Stream;\n\n            public class LambdaCanBeMethodReference {\n                static {\n                    Stream.of(\"abc\", \"d\")\n                            .mapToInt(s -> s.length()) // could be String::length\n                            .reduce((x, y) -> Integer.sum(x, y)) // could be Integer::sum\n                            .getAsInt();\n                }\n            }"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 메서드 참조 사용은 간결하나 가독성 선호도에 따라 결정하세요"
+    ]
   },
   {
     "name": "LinguisticNaming",
@@ -1298,9 +1143,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class LinguisticNaming {\n    int isValid;    // the field name indicates a boolean, but it is an int.\n    boolean isTrue; // correct type of the field\n\n    void myMethod() {\n        int hasMoneyLocal;      // the local variable name indicates a boolean, but it is an int.\n        boolean hasSalaryLocal; // correct naming and type\n    }\n\n    // the name of the method indicates, it is a boolean, but the method returns an int.\n    int isValid() {\n        return 1;\n    }\n    // correct naming and return type\n    boolean isSmall() {\n        return true;\n    }\n\n    // the name indicates, this is a setter, but it returns something\n    int setName() {\n        return 1;\n    }\n\n    // the name indicates, this is a getter, but it doesn't return anything\n    void getName() {\n        // nothing to return?\n    }\n\n    // the name indicates, it transforms an object and should return the result\n    void toDataType() {\n        // nothing to return?\n    }\n    // the name indicates, it transforms an object and should return the result\n    void grapeToWine() {\n        // nothing to return?\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 이름과 실제 동작이 일치하지 않으면 코드 이해에 심각한 혼란을 줍니다"
+    ]
   },
   {
     "name": "LocalVariableCouldBeFinal",
@@ -1314,9 +1157,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar {\n    public void foo () {\n    String txtA = \"a\";          // if txtA will not be assigned again it is better to do this:\n    final String txtB = \"b\";\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 지역 변수의 final 선언은 불변성을 강조하나 팀 스타일에 따릅니다"
+    ]
   },
   {
     "name": "LongVariable",
@@ -1337,9 +1178,7 @@ const RULES_DATA =
         "defaultValue": "17",
         "description": "변수 길이 보고 임계값"
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 변수명 길이 제한은 주관적이며 오히려 긴 이름이 명확할 수 있습니다"
+    ]
   },
   {
     "name": "MethodArgumentCouldBeFinal",
@@ -1353,9 +1192,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n    // reported, parameter can be declared final\n    public String foo1(String param) {\n        return param;\n    }\n    // not reported, parameter is declared final\n    public String foo2(final String param) {\n        return param.trim();\n    }\n    // not reported because param is unused\n    public String unusedParam(String param) {\n        return \"abc\";\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 메서드 인자의 final 선언은 불변성을 강조하나 코드가 장황해질 수 있습니다"
+    ]
   },
   {
     "name": "NoPackage",
@@ -1369,9 +1206,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "// no package declaration\npublic class ClassInDefaultPackage {\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 패키지 선언 없는 클래스는 네임스페이스 충돌과 접근 제어 문제를 유발합니다"
+    ]
   },
   {
     "name": "OnlyOneReturn",
@@ -1385,9 +1220,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class OneReturnOnly1 {\n  public String foo(int x) {\n    if (x > 0) {\n      return \"hey\";   // first exit\n    }\n    return \"hi\";    // second exit\n  }\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - 단일 return 강제는 오히려 복잡한 중첩 구조를 만들어 가독성을 해칩니다"
+    ]
   },
   {
     "name": "PackageCase",
@@ -1401,9 +1234,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "package com.MyCompany;  // should be lowercase name\n\npublic class SomeClass {\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 패키지명은 소문자여야 하며 Java 표준 명명 규칙입니다"
+    ]
   },
   {
     "name": "PrematureDeclaration",
@@ -1418,9 +1249,7 @@ const RULES_DATA =
     "examples": [
       "public int getLength(String[] strings) {\n\n    int length = 0; // could be moved closer to the loop\n\n    if (strings == null || strings.length == 0) return 0;\n\n    for (String str : strings) {\n        length += str.length();\n    }\n\n    return length;\n}",
       "public int getLength(String[] strings) {\n\n    int startTime = System.nanoTime(); // cannot be moved because initializer is impure\n\n    if (strings == null || strings.length == 0) {\n        // some error logic\n        throw new SomeException(...);\n    }\n\n    for (String str : strings) {\n        length += str.length();\n    }\n\n    return System.nanoTime() - startTime;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 변수의 조기 선언 회피는 가독성 향상에 도움되나 마이너한 개선입니다"
+    ]
   },
   {
     "name": "ShortMethodName",
@@ -1441,9 +1270,7 @@ const RULES_DATA =
         "defaultValue": "3",
         "description": "메서드 이름에 필요한 최소 문자 수."
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 짧은 메서드명 제한은 유틸리티 메서드 등에서 거짓 양성이 많습니다"
+    ]
   },
   {
     "name": "ShortVariable",
@@ -1464,9 +1291,7 @@ const RULES_DATA =
         "defaultValue": "3",
         "description": "변수 이름에 필요한 최소 문자 수."
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 짧은 변수명 제한은 루프 변수(i, j) 등에서 거짓 양성이 많습니다"
+    ]
   },
   {
     "name": "TooManyStaticImports",
@@ -1487,9 +1312,7 @@ const RULES_DATA =
         "defaultValue": "4",
         "description": "0으로 설정하면 모든 정적 import를 금지할 수 있습니다"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 과도한 static import는 코드의 출처를 파악하기 어렵게 만듭니다"
+    ]
   },
   {
     "name": "UnnecessaryAnnotationValueElement",
@@ -1510,9 +1333,7 @@ const RULES_DATA =
         "defaultValue": "false",
         "description": "비활성화하면 java8+ 이상에만 적용되는 위반 사항도 표시합니다"
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 어노테이션 value 요소 제거는 마이너한 코드 정리입니다"
+    ]
   },
   {
     "name": "UnnecessaryBoxing",
@@ -1527,9 +1348,7 @@ const RULES_DATA =
     "examples": [
       "{\n        // Instead of\n        Integer integer = Integer.valueOf(2);\n        // you may just write\n        Integer integer = 2;\n\n        int i = integer.intValue(); // similarly for unboxing\n\n        // Instead of\n        int x = Integer.valueOf(\"42\");\n        // you may just write\n        int x = Integer.parseInt(\"42\");\n}"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 2,
-    "claude_comment": "권장 - 불필요한 박싱/언박싱은 성능 저하와 NPE 위험을 유발합니다"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "UnnecessaryCast",
@@ -1545,9 +1364,7 @@ const RULES_DATA =
       "import java.util.function.Function;\nclass SomeClass {\n   static {\n      Object o; long l; int i; Integer boxedInt;\n\n      // reference conversions\n\n      o = (Object) new SomeClass();      // unnecessary\n      o = (SomeClass) o;                 // necessary (narrowing cast)\n      o = (Comparable<String>) \"string\"; // unnecessary\n\n      // primitive conversions\n\n      l = (long) 2;   // unnecessary\n      l = (long) 2.0; // necessary (narrowing cast)\n      l = (byte) i;   // necessary (narrowing cast)\n\n      // boxing/unboxing casts (since java 5)\n\n      o = (Integer) 3;    // unnecessary (autoboxing would apply)\n      o = (long) 3;       // necessary (would be boxed to Long)\n      l = (int) boxedInt; // necessary (cannot cast Integer to long)\n\n      // casts that give a target type to a lambda/ method ref are necessary\n\n      o = (Function<Integer, String>) Integer::toString; // necessary (no target type)\n   }\n}",
       "import java.util.*;\nclass SomeClass {\n   static {\n       /* Casts involving access to collections were common before Java 5, because collections\n        * were not generic. This rule may hence be useful when converting from using a raw\n        * type like `List` to a parameterized type like `List<String>`.\n        */\n       List<String> stringList = Arrays.asList(\"a\", \"b\");\n       String element = (String) stringList.get(0); // this cast is unnecessary\n   }\n}"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 2,
-    "claude_comment": "권장 - 불필요한 캐스팅은 코드 가독성을 저하시키며 제거해야 합니다"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "UnnecessaryConstructor",
@@ -1561,9 +1378,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  public Foo() {}\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 기본 생성자와 동일한 생성자 제거는 마이너한 코드 정리입니다"
+    ]
   },
   {
     "name": "UnnecessaryLocalBeforeReturn",
@@ -1577,9 +1392,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n   public int foo() {\n     int x = doSomething();\n     return x;  // instead, just 'return doSomething();'\n   }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - return 전 불필요한 지역 변수 제거 여부는 디버깅 편의성과 트레이드오프입니다"
+    ]
   },
   {
     "name": "UnnecessaryModifier",
@@ -1593,9 +1406,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public @interface Annotation {\n    public abstract void bar();     // both abstract and public are ignored by the compiler\n    public static final int X = 0;  // public, static, and final all ignored\n    public static class Bar {}      // public, static ignored\n    public static interface Baz {}  // ditto\n}\npublic interface Foo {\n    public abstract void bar();     // both abstract and public are ignored by the compiler\n    public static final int X = 0;  // public, static, and final all ignored\n    public static class Bar {}      // public, static ignored\n    public static interface Baz {}  // ditto\n}\npublic class Bar {\n    public static interface Baz {}  // static ignored\n    public static enum FooBar {    // static ignored\n        FOO;\n    }\n}\npublic class FooClass {\n    static record BarRecord() {}     // static ignored\n}\npublic interface FooInterface {\n    static record BarRecord() {}     // static ignored\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 수정자 제거는 코드 정리 수준의 마이너 개선입니다"
+    ]
   },
   {
     "name": "UnnecessaryReturn",
@@ -1609,9 +1420,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public void bar() {\n        int x = 42;\n        return;\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - void 메서드 끝의 불필요한 return은 마이너한 스타일 이슈입니다"
+    ]
   },
   {
     "name": "UnnecessarySemicolon",
@@ -1625,9 +1434,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n    {\n        toString();; // one of these semicolons is unnecessary\n        if (true); // this semicolon is not unnecessary, but it could be an empty block instead (not reported)\n    }\n}; // this semicolon is unnecessary"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 세미콜론은 마이너한 스타일 이슈입니다"
+    ]
   },
   {
     "name": "UseDiamondOperator",
@@ -1642,9 +1449,7 @@ const RULES_DATA =
     "examples": [
       "import java.util.*;\n            class Foo {\n                static {\n                    List<String> strings;\n                    strings = new ArrayList<String>(); // unnecessary duplication of type parameters\n                    strings = new ArrayList<>();       // using diamond type arguments is more concise\n\n                    strings = new ArrayList(); // accidental use of a raw type, you can use ArrayList<> instead\n\n                    strings = new ArrayList<>() {\n                        // for anonymous classes, this is possible since Java 9 only\n                    };\n                }\n            }"
     ],
-    "minLanguageVersion": "1.7",
-    "tier": 2,
-    "claude_comment": "권장 - 다이아몬드 연산자 사용은 Java 7+ 표준이며 가독성을 향상시킵니다"
+    "minLanguageVersion": "1.7"
   },
   {
     "name": "UseExplicitTypes",
@@ -1664,9 +1469,7 @@ const RULES_DATA =
         "description": "변수가 리터럴로 직접 초기화될 때 허용"
       }
     ],
-    "minLanguageVersion": "10",
-    "tier": 3,
-    "claude_comment": "선택 - var 대신 명시적 타입 사용 여부는 팀 컨벤션에 따라 결정하세요"
+    "minLanguageVersion": "10"
   },
   {
     "name": "UselessQualifiedThis",
@@ -1680,9 +1483,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    final Foo otherFoo = Foo.this;  // use \"this\" directly\n\n    public void doSomething() {\n         final Foo anotherFoo = Foo.this;  // use \"this\" directly\n    }\n\n    private ActionListener returnListener() {\n        return new ActionListener() {\n            @Override\n            public void actionPerformed(ActionEvent e) {\n                doSomethingWithQualifiedThis(Foo.this);  // This is fine\n            }\n        };\n    }\n\n    private class Foo3 {\n        final Foo myFoo = Foo.this;  // This is fine\n    }\n\n    private class Foo2 {\n        final Foo2 myFoo2 = Foo2.this;  // Use \"this\" directly\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 qualified this 제거는 마이너한 코드 정리입니다"
+    ]
   },
   {
     "name": "UseShortArrayInitializer",
@@ -1696,9 +1497,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "Foo[] x = new Foo[] { ... }; // Overly verbose\nFoo[] x = { ... }; //Equivalent to above line"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 축약 배열 초기화 사용은 스타일 선호도 문제입니다"
+    ]
   },
   {
     "name": "UseUnderscoresInNumericLiterals",
@@ -1720,9 +1519,7 @@ const RULES_DATA =
         "description": "10진수 리터럴에 밑줄이 필요하지 않은 길이"
       }
     ],
-    "minLanguageVersion": "1.7",
-    "tier": 3,
-    "claude_comment": "선택 - 숫자 리터럴의 밑줄 사용은 가독성 향상에 도움되나 선택사항입니다"
+    "minLanguageVersion": "1.7"
   },
   {
     "name": "VariableCanBeInlined",
@@ -1736,9 +1533,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n                    Object foo() {\n                        var foo = \"foo\";\n                        return foo;  // instead, just 'return \"foo\";'\n                    }\n\n                    Object bar() {\n                        var ex = getIllegalArgumentException();\n                        throw ex; // instead, just 'throw getIllegalArgumentException();'\n                    }\n\n                    Object baz() {\n                        var baz = switch (foo()) {\n                            case \"foo\" -> {\n                                var foo = foo();\n                                yield foo;  // Can be simplified to 'yield foo();'\n                            }\n                            case \"bar\" -> {\n                                var bar = bar();\n                                yield bar;  // Can be simplified to 'yield bar();'\n                            }\n                            default -> bar(\"baz\");\n                        };\n                        return baz; // instead, just 'return switch (foo()) {...'\n                    }\n                }"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 변수 인라이닝은 가독성과 디버깅 편의성의 트레이드오프입니다"
+    ]
   },
   {
     "name": "BooleanGetMethodName",
@@ -1759,9 +1554,7 @@ const RULES_DATA =
         "defaultValue": "false",
         "description": "매개변수가 있는 메서드도 검사"
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - boolean 반환 메서드의 is/has 접두사 사용은 스타일 선호도입니다"
+    ]
   },
   {
     "name": "ExtendsObject",
@@ -1775,9 +1568,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public class Foo extends Object {     // not required\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 명시적 Object 상속 제거는 마이너한 코드 정리입니다"
+    ]
   },
   {
     "name": "GenericsNaming",
@@ -1791,9 +1582,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public interface GenericDao<E extends BaseModel, K extends Serializable> extends BaseDao {\n    // This is ok...\n}\n\npublic interface GenericDao<E extends BaseModel, K extends Serializable> {\n    // Also this\n}\n\npublic interface GenericDao<e extends BaseModel, K extends Serializable> {\n    // 'e' should be an 'E'\n}\n\npublic interface GenericDao<EF extends BaseModel, K extends Serializable> {\n   // 'EF' is not ok.\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 제네릭 타입 파라미터 명명은 단일 문자가 관례이나 강제할 필요는 없습니다"
+    ]
   },
   {
     "name": "LocalHomeNamingConvention",
@@ -1807,9 +1596,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public interface MyBeautifulLocalHome extends javax.ejb.EJBLocalHome {} // proper name\n\npublic interface MissingProperSuffix extends javax.ejb.EJBLocalHome {}  // non-standard name"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - EJB 전용 규칙으로 현대적인 Spring 기반 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "LocalInterfaceSessionNamingConvention",
@@ -1823,9 +1610,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public interface MyLocal extends javax.ejb.EJBLocalObject {}                // proper name\n\npublic interface MissingProperSuffix extends javax.ejb.EJBLocalObject {}    // non-standard name"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - EJB 전용 규칙으로 현대적인 Spring 기반 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "MDBAndSessionBeanNamingConvention",
@@ -1839,9 +1624,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public class SomeBean implements SessionBean{}                  // proper name\n\npublic class MissingTheProperSuffix implements SessionBean {}   // non-standard name"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - EJB 전용 규칙으로 현대적인 Spring 기반 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "RemoteInterfaceNamingConvention",
@@ -1855,9 +1638,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "/* Poor Session suffix */\npublic interface BadSuffixSession extends javax.ejb.EJBObject {}\n\n/* Poor EJB suffix */\npublic interface BadSuffixEJB extends javax.ejb.EJBObject {}\n\n/* Poor Bean suffix */\npublic interface BadSuffixBean extends javax.ejb.EJBObject {}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - EJB 전용 규칙으로 현대적인 Spring 기반 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "RemoteSessionInterfaceNamingConvention",
@@ -1871,9 +1652,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public interface MyBeautifulHome extends javax.ejb.EJBHome {}       // proper name\n\npublic interface MissingProperSuffix extends javax.ejb.EJBHome {}   // non-standard name"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - EJB 전용 규칙으로 현대적인 Spring 기반 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "ShortClassName",
@@ -1894,9 +1673,7 @@ const RULES_DATA =
         "defaultValue": "5",
         "description": "클래스 이름에 필요한 최소 문자 수."
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 짧은 클래스명 제한은 DTO, VO 등 관례적 이름에서 거짓 양성이 많습니다"
+    ]
   },
   {
     "name": "TypeParameterNamingConventions",
@@ -1910,9 +1687,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "// Generic types - valid\npublic interface Repository<T> { }\npublic class Cache<K, V> { }\n\n// Generic types - invalid\npublic interface Repository<type> { }      // lowercase\npublic class Cache<KEY, VALUE> { }         // multiple letters\n\n// Generic methods - valid\npublic class Util {\n    public static <T> T identity(T value) { return value; }\n    public <T, R> R transform(T input, Function<T, R> mapper) { }\n}\n\n// Generic methods - invalid\npublic class Util {\n    public static <element> element get(element value) { }  // lowercase\n    public <INPUT, OUTPUT> OUTPUT convert(INPUT in) { }     // multiple letters\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 타입 파라미터 명명 규칙은 기본 관례(T, E, K, V)를 따르는 것이 일반적입니다"
+    ]
   },
   {
     "name": "UnnecessaryFullyQualifiedName",
@@ -1926,9 +1701,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "import java.util.List;\n\npublic class Foo {\n    private java.util.List list1;   // Unnecessary FQN\n    private List list2;             // More appropriate given import of 'java.util.List'\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 정규화된 이름 제거는 마이너한 가독성 개선입니다"
+    ]
   },
   {
     "name": "UnnecessaryImport",
@@ -1942,9 +1715,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "import java.io.File;            // not used, can be removed\n            import java.util.Collections;   // used below\n            import java.util.*;             // so this one is not used\n\n            import java.lang.Object;        // imports from java.lang, unnecessary\n            import java.lang.Object;        // duplicate, unnecessary\n\n            public class Foo {\n                static Object emptyList() {\n                    return Collections.emptyList();\n                }\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 불필요한 import는 IDE에서 자동 정리 가능하며 코드를 깔끔하게 유지해야 합니다"
+    ]
   },
   {
     "name": "UselessParentheses",
@@ -1958,9 +1729,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public class Foo {\n    {\n        int n = 0;\n        n = (n);         // here\n        n = (n * 2) * 3; // and here\n        n = n * (2 * 3); // and here\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 괄호 제거는 가독성 선호도에 따라 다릅니다. 명시적 괄호가 명확할 수도 있습니다"
+    ]
   },
   {
     "name": "AbstractClassWithoutAnyMethod",
@@ -1974,9 +1743,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public abstract class Example {\n    String field;\n    int otherField;\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 메서드 없는 추상 클래스는 설계 결함의 징후이며 인터페이스나 상수 클래스로 변경을 검토하세요"
+    ]
   },
   {
     "name": "AvoidThrowingNullPointerException",
@@ -1990,9 +1757,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class Foo {\n    void bar() {\n        throw new NullPointerException();\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - NPE를 명시적으로 던지는 것은 안티패턴입니다. IllegalArgumentException 등을 사용하세요"
+    ]
   },
   {
     "name": "AvoidThrowingRawExceptionTypes",
@@ -2006,9 +1771,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class Foo {\n    public void bar() throws Exception {\n        throw new Exception();\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - Exception/RuntimeException 직접 throw는 예외 처리를 불가능하게 만듭니다"
+    ]
   },
   {
     "name": "ClassWithOnlyPrivateConstructorsShouldBeFinal",
@@ -2022,9 +1785,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class Foo {  //Should be final\n    private Foo() { }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - private 생성자만 있는 클래스는 final로 선언하여 의도를 명확히 하세요"
+    ]
   },
   {
     "name": "AvoidRethrowingException",
@@ -2038,9 +1799,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n    try {\n        // do something\n    }  catch (SomeException se) {\n       throw se;\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 예외를 그대로 다시 던지는 것은 불필요한 catch 블록이며 제거해야 합니다"
+    ]
   },
   {
     "name": "AvoidThrowingNewInstanceOfSameException",
@@ -2054,9 +1813,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n    try {\n        // do something\n    } catch (SomeException se) {\n        // harmless comment\n        throw new SomeException(se);\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 같은 예외를 새로 생성하여 던지면 원본 스택 트레이스가 손실됩니다"
+    ]
   },
   {
     "name": "AvoidUncheckedExceptionsInSignatures",
@@ -2070,9 +1827,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void foo() throws RuntimeException {\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - unchecked exception을 시그니처에 선언하는 것은 문서화 목적으로 유용할 수 있습니다"
+    ]
   },
   {
     "name": "CognitiveComplexity",
@@ -2086,9 +1841,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  // Has a cognitive complexity of 0\n  public void createAccount() {\n    Account account = new Account(\"PMD\");\n    // save account\n  }\n\n  // Has a cognitive complexity of 1\n  public Boolean setPhoneNumberIfNotExisting(Account a, String phone) {\n    if (a.phone == null) {                          // +1\n      a.phone = phone;\n      return true;\n    }\n\n    return false;\n  }\n\n  // Has a cognitive complexity of 4\n  public void updateContacts(List<Contact> contacts) {\n    List<Contact> contactsToUpdate = new ArrayList<Contact>();\n\n    for (Contact contact : contacts) {                           // +1\n      if (contact.department.equals(\"Finance\")) {                // +2 (nesting = 1)\n        contact.title = \"Finance Specialist\";\n        contactsToUpdate.add(contact);\n      } else if (contact.department.equals(\"Sales\")) {           // +1\n        contact.title = \"Sales Specialist\";\n        contactsToUpdate.add(contact);\n      }\n    }\n    // save contacts\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 높은 인지 복잡도는 코드 이해를 어렵게 하며 리팩토링이 필요합니다"
+    ]
   },
   {
     "name": "CollapsibleIfStatements",
@@ -2102,9 +1855,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n\n    void bar() {\n        if (x) {            // original implementation\n            if (y) {\n                // do stuff\n            }\n        }\n    }\n\n    void bar() {\n        if (x && y) {        // clearer implementation\n            // do stuff\n        }\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 합칠 수 있는 if문 병합은 가독성 선호도에 따라 결정하세요"
+    ]
   },
   {
     "name": "CouplingBetweenObjects",
@@ -2118,9 +1869,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import com.Blah;\nimport org.Bar;\nimport org.Bardo;\n\npublic class Foo {\n    private Blah var1;\n    private Bar var2;\n\n    //followed by many imports of unique objects\n    ObjectC doWork() {\n        Bardo var55;\n        ObjectA var44;\n        ObjectZ var93;\n        return something();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 높은 객체 간 결합도는 유지보수를 어렵게 하며 리팩토링이 필요합니다"
+    ]
   },
   {
     "name": "CyclomaticComplexity",
@@ -2134,9 +1883,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n  void baseCyclo() {                // Cyclo = 1\n    highCyclo();\n  }\n\n  void highCyclo() {                // Cyclo = 10: reported!\n    int x = 0, y = 2;\n    boolean a = false, b = true;\n\n    if (a && (y == 1 ? b : true)) { // +3\n      if (y == x) {                 // +1\n        while (true) {              // +1\n          if (x++ < 20) {           // +1\n            break;                  // +1\n          }\n        }\n      } else if (y == t && !d) {    // +2\n        x = a ? y : x;              // +1\n      } else {\n        x = 2;\n      }\n    }\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 높은 순환 복잡도는 버그 발생 가능성을 높이며 메서드 분리가 필요합니다"
+    ]
   },
   {
     "name": "DataClass",
@@ -2150,9 +1897,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class DataClass {\n\n  // class exposes public attributes\n  public String name = \"\";\n  public int bar = 0;\n  public int na = 0;\n\n  private int bee = 0;\n\n  // and private ones through getters\n  public void setBee(int n) {\n    bee = n;\n  }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - DTO/VO 패턴에서 데이터만 가진 클래스는 합당한 설계입니다"
+    ]
   },
   {
     "name": "DoNotExtendJavaLangError",
@@ -2166,9 +1911,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo extends Error { }"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - java.lang.Error 확장은 시스템 레벨 오류와 혼동을 유발하며 절대 하면 안 됩니다"
+    ]
   },
   {
     "name": "ExceptionAsFlowControl",
@@ -2182,9 +1925,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n    try {\n        try {\n        } catch (Exception e) {\n            throw new WrapperException(e);\n            // this is essentially a GOTO to the WrapperException catch block\n        }\n    } catch (WrapperException e) {\n        // do some more stuff\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 예외를 흐름 제어로 사용하면 성능 저하와 코드 이해도 하락을 유발합니다"
+    ]
   },
   {
     "name": "ExcessiveImports",
@@ -2198,9 +1939,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import blah.blah.Baz;\nimport blah.blah.Bif;\n// 28 others from the same package elided\npublic class Foo {\n    public void doWork() {}\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - import 수 제한은 클래스 역할 범위에 따라 다르며 거짓 양성이 있을 수 있습니다"
+    ]
   },
   {
     "name": "ExcessiveParameterList",
@@ -2214,9 +1953,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void addPerson(      // too many arguments liable to be mixed up\n    int birthYear, int birthMonth, int birthDate, int height, int weight, int ssn) {\n\n    . . . .\n}\n\npublic void addPerson(      // preferred approach\n    Date birthdate, BodyMeasurements measurements, int ssn) {\n\n    . . . .\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 매개변수가 너무 많으면 사용하기 어렵고 객체로 그룹화해야 합니다"
+    ]
   },
   {
     "name": "ExcessivePublicCount",
@@ -2230,9 +1967,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public String value;\n    public Bar something;\n    public Variable var;\n    // [... more more public attributes ...]\n\n    public void doWork() {}\n    public void doMoreWork() {}\n    public void doWorkAgain() {}\n    // [... more more public methods ...]\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - public 멤버 수 제한은 클래스 특성에 따라 조정이 필요합니다"
+    ]
   },
   {
     "name": "FinalFieldCouldBeStatic",
@@ -2246,9 +1981,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  public final int BAR = 42; // this could be static and save some space\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - final 필드를 static으로 변경하는 것은 메모리 최적화이나 의미 변경을 유발할 수 있습니다"
+    ]
   },
   {
     "name": "GodClass",
@@ -2260,9 +1993,7 @@ const RULES_DATA =
     "externalInfoUrl": "https://docs.pmd-code.org/latest/pmd_rules_java_design.html#godclass",
     "description": "갓 클래스 규칙은 메트릭을 사용하여 갓 클래스 설계 결함을 탐지합니다. 갓 클래스는 너무 많은 일을 하고,\n매우 크고 지나치게 복잡합니다. 더 객체 지향적이 되도록 분리해야 합니다.\n이 규칙은 \"Object-Oriented Metrics in Practice\"에 설명된 탐지 전략을 사용합니다.\n위반은 전체 클래스에 대해 보고됩니다.\n\n이 규칙은 메트릭을 사용하여 탐지 전략을 구현합니다. 위반 메시지는\n이러한 메트릭의 값에 대한 정보를 제공합니다:\n* WMC: 클래스 복잡도 측정, {% jdoc java::lang.java.metrics.JavaMetrics#WEIGHED_METHOD_COUNT %} 참조\n* ATFD: 클래스가 외부 데이터를 얼마나 사용하는지 측정, {% jdoc java::lang.java.metrics.JavaMetrics#ACCESS_TO_FOREIGN_DATA %} 참조\n* TCC: 메서드들이 얼마나 밀접하게 관련되어 있는지 측정, {% jdoc java::lang.java.metrics.JavaMetrics#TIGHT_CLASS_COHESION %} 참조\n\n이 규칙은 다음 속성을 모두 가진 클래스를 찾아 갓 클래스를 식별합니다:\n* 높은 WMC\n* 높은 ATFD\n* 낮은 TCC\n\n참고 문헌:\n\nMichele Lanza and Radu Marinescu. *Object-Oriented Metrics in Practice:\nUsing Software Metrics to Characterize, Evaluate, and Improve the Design\nof Object-Oriented Systems.* Springer, Berlin, 1 edition, October 2006. Page 80.",
     "priority": 3,
-    "examples": [],
-    "tier": 2,
-    "claude_comment": "권장 - God Class는 단일 책임 원칙을 위반하며 분리 리팩토링이 필요합니다"
+    "examples": []
   },
   {
     "name": "ImmutableField",
@@ -2276,9 +2007,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  private int x; // could be final\n  public Foo() {\n      x = 7;\n  }\n  public void foo() {\n     int a = x + 2;\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 변경되지 않는 필드는 final로 선언하여 불변성을 보장하세요"
+    ]
   },
   {
     "name": "InvalidJavaBean",
@@ -2292,9 +2021,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "package org.example.beans;\npublic class MyBean {        // <-- bean is not serializable, missing \"implements Serializable\"\n    private String label;    // <-- missing setter for property \"label\"\n\n    public String getLabel() {\n        return label;\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - JavaBean 규약 준수는 프레임워크 요구사항에 따라 다릅니다"
+    ]
   },
   {
     "name": "LawOfDemeter",
@@ -2308,9 +2035,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    /**\n     * This example will result in one violation.\n     */\n    public void example(Bar b) { // b has degree 1\n        // `b.getC()` has degree 2, it's breaking a boundary of abstraction and so is reported.\n        b.getC().doIt();\n        // To respect the law of Demeter, Bar should encapsulate its\n        // C member more properly, eg by exposing a method like this:\n        b.callDoItOnC();\n\n        // a constructor call, not a method call.\n        D d = new D();\n        // this method call is ok, because we have create the new\n        // instance of D locally.\n        d.doSomethingElse();\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 디미터 법칙 엄격 적용은 거짓 양성이 매우 많아 실용적이지 않습니다"
+    ]
   },
   {
     "name": "LogicInversion",
@@ -2324,9 +2049,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public boolean bar(int a, int b) {\n\n    if (!(a == b)) { // use !=\n         return false;\n     }\n\n    if (!(a < b)) { // use >=\n         return false;\n    }\n\n    return true;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 논리 반전 제거는 가독성 선호도에 따라 결정하세요"
+    ]
   },
   {
     "name": "LoosePackageCoupling",
@@ -2340,9 +2063,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "package some.package;\n\nimport some.other.package.subpackage.subsubpackage.DontUseThisClass;\n\npublic class Bar {\n    DontUseThisClass boo = new DontUseThisClass();\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 패키지 간 결합도 제한은 설정이 복잡하고 프로젝트 구조에 따라 다릅니다"
+    ]
   },
   {
     "name": "MutableStaticState",
@@ -2356,9 +2077,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Greeter { public static Foo foo = new Foo(); ... }       // avoid this\npublic class Greeter { public static final Foo FOO = new Foo(); ... } // use this instead"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 가변 static 상태는 스레드 안전성 문제와 예측 불가능한 동작을 유발합니다"
+    ]
   },
   {
     "name": "NcssCount",
@@ -2372,9 +2091,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.Collections;       // +0\nimport java.io.IOException;         // +0\n\nclass Foo {                         // +1, total Ncss = 12\n\n  public void bigMethod()           // +1\n      throws IOException {\n    int x = 0, y = 2;               // +1\n    boolean a = false, b = true;    // +1\n\n    if (a || b) {                   // +1\n      try {                         // +1\n        do {                        // +1\n          x += 2;                   // +1\n        } while (x < 12);\n\n        System.exit(0);             // +1\n      } catch (IOException ioe) {   // +1\n        throw new PatheticFailException(ioe); // +1\n      }\n    } else {\n      assert false;                 // +1\n    }\n  }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 코드 행 수 제한은 메서드 특성에 따라 유연하게 조정이 필요합니다"
+    ]
   },
   {
     "name": "NPathComplexity",
@@ -2388,9 +2105,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  public static void bar() { // Ncss = 252: reported!\n    boolean a, b = true;\n    try { // 2 * 2 + 2 = 6\n      if (true) { // 2\n        List buz = new ArrayList();\n      }\n\n      for(int i = 0; i < 19; i++) { // * 2\n        List buz = new ArrayList();\n      }\n    } catch(Exception e) {\n      if (true) { // 2\n        e.printStackTrace();\n      }\n    }\n\n    while (j++ < 20) { //  * 2\n      List buz = new ArrayList();\n    }\n\n    switch(j) { // * 7\n      case 1:\n      case 2: break;\n      case 3: j = 5; break;\n      case 4: if (b && a) { bar(); } break;\n      default: break;\n    }\n\n    do { // * 3\n        List buz = new ArrayList();\n    } while (a && j++ < 30);\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 높은 NPath 복잡도는 테스트하기 어려운 코드를 의미하며 리팩토링이 필요합니다"
+    ]
   },
   {
     "name": "PublicMemberInNonPublicType",
@@ -2404,9 +2119,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Wrong {\n    public void method() {} // violation\n    public int field; // violation\n}\n\nclass Correct {\n    void method() {}\n    // or even\n    private void privateMethod() {}\n\n    int field;\n    // or even\n    private int privateField;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 비공개 타입의 public 멤버는 접근 수준 불일치이나 인터페이스 구현 시 필요할 수 있습니다"
+    ]
   },
   {
     "name": "SignatureDeclareThrowsException",
@@ -2420,9 +2133,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void foo() throws Exception {\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - throws Exception 선언은 호출자가 적절한 예외 처리를 할 수 없게 만듭니다"
+    ]
   },
   {
     "name": "SimplifiedTernary",
@@ -2436,9 +2147,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public boolean test() {\n        return condition ? true : something(); // can be as simple as return condition || something();\n    }\n\n    public void test2() {\n        final boolean value = condition ? false : something(); // can be as simple as value = !condition && something();\n    }\n\n    public boolean test3() {\n        return condition ? something() : true; // can be as simple as return !condition || something();\n    }\n\n    public void test4() {\n        final boolean otherValue = condition ? something() : false; // can be as simple as condition && something();\n    }\n\n    public boolean test5() {\n        return condition ? true : false; // can be as simple as return condition;\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 삼항 연산자 단순화는 마이너한 가독성 개선입니다"
+    ]
   },
   {
     "name": "SimplifyBooleanExpressions",
@@ -2452,9 +2161,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar {\n  // can be simplified to\n  // bar = isFoo();\n  private boolean bar = (isFoo() == true);\n\n  public isFoo() { return false;}\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 복잡한 boolean 표현식 단순화는 가독성과 유지보수성을 크게 향상시킵니다"
+    ]
   },
   {
     "name": "SimplifyBooleanReturns",
@@ -2468,9 +2175,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public boolean isBarEqualTo(int x) {\n    if (bar == x) {      // this bit of code...\n        return true;\n    } else {\n        return false;\n    }\n}\n\npublic boolean isBarEqualTo(int x) {\n    return bar == x;    // can be replaced with this\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - if(cond) return true; else return false; 패턴은 return cond;로 단순화하세요"
+    ]
   },
   {
     "name": "SimplifyConditional",
@@ -2484,9 +2189,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Foo {\n  void bar(Object x) {\n    if (x != null && x instanceof Bar) {\n      // just drop the \"x != null\" check\n    }\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 조건문 단순화는 코드 이해도를 높이고 버그 발생 가능성을 줄입니다"
+    ]
   },
   {
     "name": "SingularField",
@@ -2500,9 +2203,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    private int x; // this will be reported\n\n    public int foo(int y) {\n       x = y + 5; // assigned before any read\n       return x;\n    }\n\n    public int fooOk(int y) {\n       int z = y + 5; // might as well be a local like here\n       return z;\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 하나의 메서드에서만 사용되는 필드는 지역 변수로 변경하세요"
+    ]
   },
   {
     "name": "SwitchDensity",
@@ -2516,9 +2217,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  public void bar(int x) {\n    switch (x) {\n      case 1: {\n        // lots of statements\n        break;\n      } case 2: {\n        // lots of statements\n        break;\n      }\n    }\n  }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - switch 밀도 측정은 메트릭 기반 규칙이며 컨텍스트에 따라 다릅니다"
+    ]
   },
   {
     "name": "TooManyFields",
@@ -2539,9 +2238,7 @@ const RULES_DATA =
         "defaultValue": "15",
         "description": "허용되는 최대 필드 수"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 필드가 너무 많은 클래스는 분리가 필요하며 단일 책임 원칙을 위반합니다"
+    ]
   },
   {
     "name": "TooManyMethods",
@@ -2560,9 +2257,7 @@ const RULES_DATA =
         "defaultValue": "10",
         "description": "메서드 수 보고 임계값"
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 메서드 수 제한은 getter/setter 포함 시 거짓 양성이 많습니다"
+    ]
   },
   {
     "name": "UselessOverridingMethod",
@@ -2576,9 +2271,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void foo(String bar) {\n    super.foo(bar);      // why bother overriding?\n}\n\npublic String foo() {\n    return super.foo();  // why bother overriding?\n}\n\n@Id\npublic Long getId() {\n    return super.getId();  // OK if 'ignoreAnnotations' is false, which is the default behavior\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 부모 메서드를 그대로 호출하는 오버라이딩은 불필요한 코드입니다"
+    ]
   },
   {
     "name": "UseObjectForClearerAPI",
@@ -2592,9 +2285,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyClass {\n    public void connect(String username,\n        String pssd,\n        String databaseName,\n        String databaseAddress)\n        // Instead of those parameters object\n        // would ensure a cleaner API and permit\n        // to add extra data transparently (no code change):\n        // void connect(UserData data);\n    {\n\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 매개변수 객체화 제안은 유용하나 모든 경우에 적합하지 않습니다"
+    ]
   },
   {
     "name": "UseUtilityClass",
@@ -2608,9 +2299,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MaybeAUtility {\n  public static void foo() {}\n  public static void bar() {}\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - static 메서드만 있는 클래스는 유틸리티 클래스로 만들어 인스턴스 생성을 방지하세요"
+    ]
   },
   {
     "name": "CommentContent",
@@ -2624,9 +2313,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "//OMG, this is horrible, Bob is an idiot !!!"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 주석 내용 검사는 특정 단어 필터링으로 팀 정책에 따라 적용하세요"
+    ]
   },
   {
     "name": "CommentRequired",
@@ -2640,9 +2327,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "/**\n*\n*\n* @author Jon Doe\n*/"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 주석 필수화는 무의미한 주석을 양산할 수 있어 코드 자체가 문서가 되도록 작성하세요"
+    ]
   },
   {
     "name": "CommentSize",
@@ -2656,9 +2341,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "/**\n*\n*   too many lines!\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*\n*/"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 주석 크기 제한은 팀 컨벤션에 따라 유연하게 설정하세요"
+    ]
   },
   {
     "name": "DanglingJavadoc",
@@ -2672,9 +2355,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  /**\n   * Public methods // wrong\n   */\n\n  /**\n   * A setter // OK\n   */\n   public void setFoo() {\n\n   }\n\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 대상 없는 Javadoc 주석은 정리하는 것이 좋으나 마이너 이슈입니다"
+    ]
   },
   {
     "name": "UncommentedEmptyConstructor",
@@ -2695,9 +2376,7 @@ const RULES_DATA =
         "defaultValue": "false",
         "description": "빈 생성자 여부를 판단할 때 명시적 생성자 호출을 무시할지 설정합니다"
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 빈 생성자에 주석을 다는 것은 좋은 관행이나 강제할 필요는 없습니다"
+    ]
   },
   {
     "name": "UncommentedEmptyMethodBody",
@@ -2711,9 +2390,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void doSomething() {\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 빈 메서드 바디는 의도적임을 주석으로 명시하지 않으면 실수로 오인될 수 있습니다"
+    ]
   },
   {
     "name": "ConstructorCallsOverridableMethod",
@@ -2727,9 +2404,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class SeniorClass {\n  public SeniorClass(){\n      toString(); //may throw NullPointerException if overridden\n  }\n  public String toString(){\n    return \"IAmSeniorClass\";\n  }\n}\npublic class JuniorClass extends SeniorClass {\n  private String name;\n  public JuniorClass(){\n    super(); //Automatic call leads to NullPointerException\n    name = \"JuniorClass\";\n  }\n  public String toString(){\n    return name.toUpperCase();\n  }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 생성자에서 오버라이드 가능한 메서드 호출은 초기화 오류와 NPE를 유발합니다"
+    ]
   },
   {
     "name": "EqualsNull",
@@ -2743,9 +2418,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "String x = \"foo\";\n\nif (x.equals(null)) {   // bad form\n    doSomething();\n}\n\nif (x == null) {        // preferred\n    doSomething();\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - x.equals(null) 대신 x == null을 사용하세요. equals(null)은 항상 false이며 NPE 위험이 있습니다"
+    ]
   },
   {
     "name": "ReturnEmptyCollectionRatherThanNull",
@@ -2759,9 +2432,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class Example {\n    // Not a good idea...\n    public int[] badBehavior() {\n        // ...\n        return null;\n    }\n\n    // Good behavior\n    public String[] bonnePratique() {\n        //...\n        return new String[0];\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - null 대신 빈 컬렉션 반환으로 호출자의 NPE를 방지하세요"
+    ]
   },
   {
     "name": "AvoidAssertAsIdentifier",
@@ -2776,9 +2447,7 @@ const RULES_DATA =
     "examples": [
       "public class A {\n    public class Foo {\n        String assert = \"foo\";\n    }\n}"
     ],
-    "maxLanguageVersion": "1.3",
-    "tier": 2,
-    "claude_comment": "권장 - assert는 Java 예약어이므로 식별자로 사용하면 호환성 문제가 발생합니다"
+    "maxLanguageVersion": "1.3"
   },
   {
     "name": "AvoidBranchingStatementAsLastInLoop",
@@ -2792,9 +2461,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "// unusual use of branching statement in a loop\nfor (int i = 0; i < 10; i++) {\n    if (i*i <= 25) {\n        continue;\n    }\n    break;\n}\n\n// this makes more sense...\nfor (int i = 0; i < 10; i++) {\n    if (i*i > 25) {\n        break;\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 루프 마지막의 break/continue는 논리 오류의 징후일 가능성이 높습니다"
+    ]
   },
   {
     "name": "AvoidEnumAsIdentifier",
@@ -2809,9 +2476,7 @@ const RULES_DATA =
     "examples": [
       "public class A {\n    public class Foo {\n        String enum = \"foo\";\n    }\n}"
     ],
-    "maxLanguageVersion": "1.4",
-    "tier": 2,
-    "claude_comment": "권장 - enum은 Java 예약어이므로 식별자로 사용하면 호환성 문제가 발생합니다"
+    "maxLanguageVersion": "1.4"
   },
   {
     "name": "AvoidLosingExceptionInformation",
@@ -2825,9 +2490,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public void bar() {\n    try {\n        // do something\n    } catch (SomeException se) {\n        se.getMessage();\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 예외 정보 손실은 장애 분석을 불가능하게 만듭니다. 원인 예외를 항상 포함하세요"
+    ]
   },
   {
     "name": "AvoidMultipleUnaryOperators",
@@ -2841,9 +2504,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "// These are typo bugs, or at best needlessly complex and confusing:\nint i = - -1;\nint j = + - +1;\nint z = ~~2;\nboolean b = !!true;\nboolean c = !!!true;\n\n// These are better:\nint i = 1;\nint j = -1;\nint z = 2;\nboolean b = true;\nboolean c = false;\n\n// And these just make your brain hurt:\nint i = ~-2;\nint j = -~7;"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 다중 단항 연산자(!!x, ~~y)는 가독성을 심각하게 해치며 버그 유발 가능성이 높습니다"
+    ]
   },
   {
     "name": "BrokenNullCheck",
@@ -2857,9 +2518,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public String bar(String string) {\n  // should be &&\n    if (string!=null || !string.equals(\"\"))\n        return string;\n  // should be ||\n    if (string==null && string.equals(\"\"))\n        return string;\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 잘못된 null 체크(&&와 || 혼동)는 NPE를 직접 유발하는 버그입니다"
+    ]
   },
   {
     "name": "DoNotCallGarbageCollectionExplicitly",
@@ -2873,9 +2532,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class GCCall {\n    public GCCall() {\n        // Explicit gc call !\n        System.gc();\n    }\n\n    public void doSomething() {\n        // Explicit gc call !\n        Runtime.getRuntime().gc();\n    }\n\n    public explicitGCcall() {\n        // Explicit gc call !\n        System.gc();\n    }\n\n    public void doSomething() {\n        // Explicit gc call !\n        Runtime.getRuntime().gc();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - System.gc() 명시적 호출은 성능을 저하시키며 JVM에 맡겨야 합니다"
+    ]
   },
   {
     "name": "MoreThanOneLogger",
@@ -2889,9 +2546,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class Foo {\n    Logger log = Logger.getLogger(Foo.class.getName());\n    // It is very rare to see two loggers on a class, normally\n    // log information is multiplexed by levels\n    Logger log2= Logger.getLogger(Foo.class.getName());\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 다중 로거 사용은 특수한 경우 필요할 수 있어 컨텍스트에 따라 판단하세요"
+    ]
   },
   {
     "name": "ProperCloneImplementation",
@@ -2905,9 +2560,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "class Foo{\n    public Object clone(){\n        return new Foo(); // This is bad\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - clone() 구현 시 super.clone() 호출은 올바른 클론 체인을 보장합니다"
+    ]
   },
   {
     "name": "SingleMethodSingleton",
@@ -2921,9 +2574,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class Singleton {\n\n    private static Singleton singleton = new Singleton( );\n\n    private Singleton(){ }\n\n    public static Singleton getInstance( ) {\n        return singleton;\n    }\n\n    public static Singleton getInstance(Object obj){\n        Singleton singleton = (Singleton) obj;\n        return singleton;           //violation\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 싱글톤 패턴에서 단일 메서드 접근 보장은 인스턴스 일관성에 중요합니다"
+    ]
   },
   {
     "name": "SingletonClassReturningNewInstance",
@@ -2937,9 +2588,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "class Singleton {\n    private static Singleton instance = null;\n    public static Singleton getInstance() {\n        synchronized(Singleton.class) {\n            return new Singleton(); // this should be assigned to the field\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 싱글톤에서 새 인스턴스 반환은 싱글톤 계약을 위반하는 심각한 버그입니다"
+    ]
   },
   {
     "name": "SuspiciousEqualsMethodName",
@@ -2953,9 +2602,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class Foo {\n   public int equals(Object o) {\n     // oops, this probably was supposed to be boolean equals\n   }\n   public boolean equals(String s) {\n     // oops, this probably was supposed to be equals(Object)\n   }\n   public boolean equals(Object o1, Object o2) {\n     // oops, this probably was supposed to be equals(Object)\n   }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - equals 메서드명 오타(equal, Equals 등)는 동등성 비교가 실패하는 심각한 버그를 유발합니다"
+    ]
   },
   {
     "name": "AssignmentInOperand",
@@ -2969,9 +2616,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n    int x = 2;\n    if ((x = getX()) == 3) {\n      System.out.println(\"3!\");\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 조건문 내 할당은 비교(==)와 혼동되기 쉬운 일반적인 실수입니다"
+    ]
   },
   {
     "name": "AssignmentToNonFinalStatic",
@@ -2985,9 +2630,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class StaticField {\n   static int x;\n   public FinalFields(int y) {\n    x = y; // unsafe\n   }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 비final static 변수에 대한 할당은 스레드 안전성 문제를 유발합니다"
+    ]
   },
   {
     "name": "AvoidAccessibilityAlteration",
@@ -3001,9 +2644,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.lang.reflect.Constructor;\nimport java.lang.reflect.Field;\nimport java.lang.reflect.Method;\nimport java.security.AccessController;\nimport java.security.PrivilegedAction;\n\npublic class Violation {\n    private void invalidSetAccessCalls() throws NoSuchMethodException, SecurityException {\n        Constructor<?> constructor = this.getClass().getDeclaredConstructor(String.class);\n        // call to forbidden setAccessible\n        constructor.setAccessible(true);\n\n        Method privateMethod = this.getClass().getDeclaredMethod(\"aPrivateMethod\");\n        // call to forbidden setAccessible\n        privateMethod.setAccessible(true);\n\n        // deliberate accessibility alteration\n        String privateField = AccessController.doPrivileged(new PrivilegedAction<String>() {\n            @Override\n            public String run() {\n                try {\n                    Field field = Violation.class.getDeclaredField(\"aPrivateField\");\n                    field.setAccessible(true);\n                    return (String) field.get(null);\n                } catch (ReflectiveOperationException | SecurityException e) {\n                    throw new RuntimeException(e);\n                }\n            }\n        });\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 리플렉션으로 접근성을 변경하면 캡슐화와 보안이 깨집니다"
+    ]
   },
   {
     "name": "AvoidCallingFinalize",
@@ -3017,9 +2658,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "void foo() {\n    Bar b = new Bar();\n    b.finalize();\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - finalize()는 Java 9에서 deprecated되었으며 현대 Java에서는 사용하지 않습니다"
+    ]
   },
   {
     "name": "AvoidCatchingGenericException",
@@ -3040,9 +2679,7 @@ const RULES_DATA =
         "defaultValue": "java.lang.NullPointerException,\n                    java.lang.Exception,\n                    java.lang.RuntimeException,\n                    java.lang.Throwable,\n                    java.lang.Error",
         "description": "catch 절에서 사용될 경우 위반을 트리거하는 정규화된 타입 이름 목록입니다."
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - catch(Exception e)는 예기치 않은 예외까지 삼키므로 구체적 예외를 캐치하세요"
+    ]
   },
   {
     "name": "AvoidCatchingNPE",
@@ -3056,9 +2693,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void bar() {\n        try {\n            // do something\n        } catch (NullPointerException npe) {\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - NPE를 catch하는 것은 null 체크로 방지해야 할 버그를 숨기는 행위입니다"
+    ]
   },
   {
     "name": "AvoidCatchingThrowable",
@@ -3072,9 +2707,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n    try {\n        // do something\n    } catch (Throwable th) {  // should not catch Throwable\n        th.printStackTrace();\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - Throwable catch는 Error까지 잡아 시스템 안정성을 해칩니다"
+    ]
   },
   {
     "name": "AvoidDecimalLiteralsInBigDecimalConstructor",
@@ -3088,9 +2721,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "BigDecimal bd = new BigDecimal(1.123);       // loss of precision, this would trigger the rule\n\nBigDecimal bd = new BigDecimal(\"1.123\");     // preferred approach\n\nBigDecimal bd = new BigDecimal(12);          // preferred approach, ok for integer values"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - new BigDecimal(0.1)은 정밀도 문제가 있습니다. BigDecimal.valueOf() 또는 문자열 생성자를 사용하세요"
+    ]
   },
   {
     "name": "AvoidDuplicateLiterals",
@@ -3104,9 +2735,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "private void bar() {\n     buz(\"Howdy\");\n     buz(\"Howdy\");\n     buz(\"Howdy\");\n     buz(\"Howdy\");\n}\nprivate void buz(String x) {}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 중복 리터럴은 상수로 추출하여 유지보수성을 높이세요"
+    ]
   },
   {
     "name": "AvoidFieldNameMatchingMethodName",
@@ -3120,9 +2749,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    Object bar;\n    // bar is data or an action or both?\n    void bar() {\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 필드명과 메서드명이 같으면 코드 이해에 혼란을 줍니다"
+    ]
   },
   {
     "name": "AvoidFieldNameMatchingTypeName",
@@ -3136,9 +2763,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo extends Bar {\n    int foo;    // There is probably a better name that can be used\n}\npublic interface Operation {\n    int OPERATION = 1; // There is probably a better name that can be used\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 필드명과 타입명이 같으면 코드 가독성이 저하됩니다"
+    ]
   },
   {
     "name": "AvoidInstanceofChecksInCatchClause",
@@ -3152,9 +2777,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "try { // Avoid this\n    // do something\n} catch (Exception ee) {\n    if (ee instanceof IOException) {\n        cleanup();\n    }\n}\n\ntry {  // Prefer this:\n    // do something\n} catch (IOException ee) {\n    cleanup();\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - catch에서 instanceof 대신 multi-catch 사용은 좋으나 레거시 호환 시 필요할 수 있습니다"
+    ]
   },
   {
     "name": "AvoidLiteralsInIfCondition",
@@ -3175,9 +2798,7 @@ const RULES_DATA =
         "defaultValue": "-1,0",
         "description": "무시해야 할 매직 넘버의 쉼표로 구분된 목록"
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - if 조건의 리터럴 사용 금지는 -1, 0, 1 등에서 거짓 양성이 많습니다"
+    ]
   },
   {
     "name": "AvoidUsingOctalValues",
@@ -3191,9 +2812,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "// Bad: These look like decimal but are actually octal\nint timeout = 060;     // Actually 48 in decimal, not 60!\nint count = 012;       // Actually 10 in decimal, not 12!\n\n// Good: Use decimal literals\nint timeout = 60;      // Clear decimal value\nint count = 12;        // Clear decimal value\n\n// Good: Use explicit prefixes for other bases\nint hexValue = 0xFF;   // Clearly hexadecimal\nint binaryValue = 0b1010; // Clearly binary (Java 7+)"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 8진수 리터럴(0으로 시작)은 의도치 않은 값을 생성하는 흔한 실수입니다"
+    ]
   },
   {
     "name": "CallSuperFirst",
@@ -3207,9 +2826,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import android.app.Activity;\nimport android.os.Bundle;\n\npublic class DummyActivity extends Activity {\n    public void onCreate(Bundle bundle) {\n        // missing call to super.onCreate(bundle)\n        foo();\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - Android Activity 전용 규칙으로 일반 엔터프라이즈 프로젝트에서는 해당되지 않을 수 있습니다"
+    ]
   },
   {
     "name": "CallSuperLast",
@@ -3223,9 +2840,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import android.app.Activity;\n\npublic class DummyActivity extends Activity {\n    public void onPause() {\n        foo();\n        // missing call to super.onPause()\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - Android Activity 전용 규칙으로 일반 엔터프라이즈 프로젝트에서는 해당되지 않을 수 있습니다"
+    ]
   },
   {
     "name": "CheckSkipResult",
@@ -3239,9 +2854,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n\n   private FileInputStream _s = new FileInputStream(\"file\");\n\n   public void skip(int n) throws IOException {\n      _s.skip(n); // You are not sure that exactly n bytes are skipped\n   }\n\n   public void skipExactly(int n) throws IOException {\n      while (n != 0) {\n         long skipped = _s.skip(n);\n         if (skipped == 0)\n            throw new EOFException();\n         n -= skipped;\n      }\n   }"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - InputStream.skip()의 반환값 미확인은 데이터 처리 오류를 유발합니다"
+    ]
   },
   {
     "name": "ClassCastExceptionWithToArray",
@@ -3255,9 +2868,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "Collection c = new ArrayList();\nInteger obj = new Integer(1);\nc.add(obj);\n\n    // this would trigger the rule (and throw a ClassCastException if executed)\nInteger[] a = (Integer [])c.toArray();\n\n   // this is fine and will not trigger the rule\nInteger[] b = (Integer [])c.toArray(new Integer[0]);"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - toArray()의 잘못된 사용은 런타임 ClassCastException을 유발합니다"
+    ]
   },
   {
     "name": "CloneMethodMustBePublic",
@@ -3271,9 +2882,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo implements Cloneable {\n    @Override\n    protected Object clone() throws CloneNotSupportedException { // Violation, must be public\n    }\n}\n\npublic class Foo implements Cloneable {\n    @Override\n    protected Foo clone() { // Violation, must be public\n    }\n}\n\npublic class Foo implements Cloneable {\n    @Override\n    public Object clone() // Ok\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - clone() 메서드는 Cloneable 계약에 따라 public이어야 합니다"
+    ]
   },
   {
     "name": "CloneMethodMustImplementCloneable",
@@ -3287,9 +2896,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyClass {\n public Object clone() throws CloneNotSupportedException {\n  return foo;\n }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Cloneable 미구현 시 clone() 호출은 CloneNotSupportedException을 발생시킵니다"
+    ]
   },
   {
     "name": "CloneMethodReturnTypeMustMatchClassName",
@@ -3304,9 +2911,7 @@ const RULES_DATA =
     "examples": [
       "public class Foo implements Cloneable {\n    @Override\n    protected Object clone() { // Violation, Object must be Foo\n    }\n}\n\npublic class Foo implements Cloneable {\n    @Override\n    public Foo clone() { //Ok\n    }\n}"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 2,
-    "claude_comment": "권장 - clone() 반환 타입이 현재 클래스와 일치해야 공변 반환 타입의 이점을 활용할 수 있습니다"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "CloseResource",
@@ -3320,9 +2925,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar {\n    public void withSQL() {\n        Connection c = pool.getConnection();\n        try {\n            // do stuff\n        } catch (SQLException ex) {\n           // handle exception\n        } finally {\n            // oops, should close the connection using 'close'!\n            // c.close();\n        }\n    }\n\n    public void withFile() {\n        InputStream file = new FileInputStream(new File(\"/tmp/foo\"));\n        try {\n            int c = file.in();\n        } catch (IOException e) {\n            // handle exception\n        } finally {\n            // TODO: close file\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 리소스 미닫기는 메모리 누수, 커넥션 고갈 등 운영 장애를 직접 유발합니다"
+    ]
   },
   {
     "name": "CollectionTypeMismatch",
@@ -3336,9 +2939,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "List<Integer> numbers = Arrays.asList(1, 2, 3);\nnumbers.remove(\"string\"); // violation: String cannot be in Integer list\n\nMap<String, Integer> map = new HashMap<>();\nmap.get(42); // violation: Integer key cannot be in String-keyed map\n\nSet<String> names = new HashSet<>();\nnames.contains(123); // violation: Integer cannot be in String set"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 컬렉션 타입 불일치는 런타임 ClassCastException이나 항상 false를 반환하는 버그입니다"
+    ]
   },
   {
     "name": "CompareObjectsWithEquals",
@@ -3359,9 +2960,7 @@ const RULES_DATA =
         "defaultValue": "java.lang.Enum,java.lang.Class",
         "description": "참조 비교가 허용되는 정규화된 타입 이름 목록입니다."
       }
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 객체를 == 대신 equals()로 비교해야 합니다. == 는 참조만 비교합니다"
+    ]
   },
   {
     "name": "ComparisonWithNaN",
@@ -3375,9 +2974,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "boolean x = (y == Double.NaN);"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - NaN과의 비교는 항상 false입니다. Double.isNaN()을 사용하세요"
+    ]
   },
   {
     "name": "ConfusingArgumentToVarargsMethod",
@@ -3391,9 +2988,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.Arrays;\n\n            abstract class C {\n                abstract void varargs(Object... args);\n                static {\n                    varargs(new String[] { \"a\" });\n                    varargs(null);\n                }\n            }"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 가변인자 메서드에 혼동되는 인자 전달은 의도치 않은 동작을 유발할 수 있습니다"
+    ]
   },
   {
     "name": "DetachedTestCase",
@@ -3407,9 +3002,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyTest {\n    @Test\n    public void someTest() {\n    }\n\n    // violation: Not annotated\n    public void someOtherTest () {\n    }\n\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - @Test 어노테이션 없는 test 접두사 메서드는 실행되지 않는 테스트입니다"
+    ]
   },
   {
     "name": "DoNotExtendJavaLangThrowable",
@@ -3423,9 +3016,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo extends Throwable { }"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - Throwable 직접 확장은 Exception이나 RuntimeException을 확장하세요"
+    ]
   },
   {
     "name": "DoNotHardCodeSDCard",
@@ -3439,9 +3030,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyActivity extends Activity {\n    protected void foo() {\n        String storageLocation = \"/sdcard/mypackage\";   // hard-coded, poor approach\n\n       storageLocation = Environment.getExternalStorageDirectory() + \"/mypackage\"; // preferred approach\n    }\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - Android 전용 규칙으로 서버사이드 엔터프라이즈 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "DoNotTerminateVM",
@@ -3455,9 +3044,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n    System.exit(0);                 // never call this when running in an application server!\n}\npublic void foo() {\n    Runtime.getRuntime().exit(0);   // never stop the JVM manually, the container will do this.\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - System.exit() 호출은 서버 애플리케이션을 예기치 않게 종료시킵니다"
+    ]
   },
   {
     "name": "DontUseFloatTypeForLoopIndices",
@@ -3471,9 +3058,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Count {\n  public static void main(String[] args) {\n    final int START = 2000000000;\n    int count = 0;\n    for (float f = START; f < START + 50; f++)\n      count++;\n      //Prints 0 because (float) START == (float) (START + 50).\n      System.out.println(count);\n      //The termination test misbehaves due to floating point granularity.\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - float 타입 루프 인덱스는 부동소수점 오차로 무한 루프를 유발합니다"
+    ]
   },
   {
     "name": "EmptyCatchBlock",
@@ -3499,9 +3084,7 @@ const RULES_DATA =
         "defaultValue": "^(ignored|expected)$",
         "description": "이 정규식과 일치하는 이름의 예외를 캐치하는 빈 블록을 건너뜁니다"
       }
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 빈 catch 블록은 예외를 삼켜 장애 원인 분석을 불가능하게 만듭니다"
+    ]
   },
   {
     "name": "EmptyFinalizer",
@@ -3515,9 +3098,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n   protected void finalize() {}\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - finalize()는 Java 9에서 deprecated되었으며 현대 Java에서는 사용하지 않습니다"
+    ]
   },
   {
     "name": "FinalizeDoesNotCallSuperFinalize",
@@ -3531,9 +3112,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "protected void finalize() {\n    something();\n    // neglected to call super.finalize()\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - finalize()는 Java 9에서 deprecated되었으며 현대 Java에서는 사용하지 않습니다"
+    ]
   },
   {
     "name": "FinalizeOnlyCallsSuperFinalize",
@@ -3547,9 +3126,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "protected void finalize() {\n    super.finalize();\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - finalize()는 Java 9에서 deprecated되었으며 현대 Java에서는 사용하지 않습니다"
+    ]
   },
   {
     "name": "FinalizeOverloaded",
@@ -3563,9 +3140,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    // this is confusing and probably a bug\n    protected void finalize(int a) {\n    }\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - finalize()는 Java 9에서 deprecated되었으며 현대 Java에서는 사용하지 않습니다"
+    ]
   },
   {
     "name": "FinalizeShouldBeProtected",
@@ -3579,9 +3154,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void finalize() {\n    // do something\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - finalize()는 Java 9에서 deprecated되었으며 현대 Java에서는 사용하지 않습니다"
+    ]
   },
   {
     "name": "IdempotentOperations",
@@ -3595,9 +3168,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n public void bar() {\n  int x = 2;\n  x = x;\n }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 멱등 연산(x = x, x + 0)은 논리 오류의 명확한 징후입니다"
+    ]
   },
   {
     "name": "IdenticalConditionalBranches",
@@ -3611,9 +3182,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Test {\n    int method1() {\n        if (Math.random() > 0.5) {\n            return 1;\n        } else {\n            return 1;\n        }\n    }\n    int method2() {\n        return Math.random() > 0.5 ? 1 : 1;\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - if/else의 동일한 브랜치는 복사-붙여넣기 실수이며 논리 오류입니다"
+    ]
   },
   {
     "name": "ImplicitSwitchFallThrough",
@@ -3627,9 +3196,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar(int status) {\n    switch(status) {\n      case CANCELLED:\n        doCancelled();\n        // break; hm, should this be commented out?\n      case NEW:\n        doNew();\n        // is this really a fall-through?\n        // what happens if you add another case after this one?\n      case REMOVED:\n        doRemoved();\n        // fallthrough - this comment just clarifies that you want a fallthrough\n      case OTHER: // empty case - this is interpreted as an intentional fall-through\n      case ERROR:\n        doErrorHandling();\n        break;\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - switch fall-through 누락은 의도치 않은 동작을 유발하는 흔한 버그입니다"
+    ]
   },
   {
     "name": "JumbledIncrementer",
@@ -3643,9 +3210,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class JumbledIncrementerRule1 {\n    public void foo() {\n        for (int i = 0; i < 10; i++) {          // only references 'i'\n            for (int k = 0; k < 20; i++) {      // references both 'i' and 'k'\n                System.out.println(\"Hello\");\n            }\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 중첩 루프에서 잘못된 증감자 사용은 무한 루프나 잘못된 결과를 유발합니다"
+    ]
   },
   {
     "name": "JUnitSpelling",
@@ -3659,9 +3224,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import junit.framework.*;\n\npublic class Foo extends TestCase {\n    public void setup() {}    // oops, should be setUp\n    public void TearDown() {} // oops, should be tearDown\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - setUp/tearDown 오타는 테스트 초기화가 실행되지 않는 문제를 유발합니다"
+    ]
   },
   {
     "name": "JUnitStaticSuite",
@@ -3676,9 +3239,7 @@ const RULES_DATA =
     "examples": [
       "import junit.framework.*;\n\npublic class Foo extends TestCase {\n    public void suite() {}         // oops, should be static\n}",
       "import junit.framework.*;\n\npublic class Foo extends TestCase {\n    private static void suite() {} // oops, should be public\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - JUnit3 스타일의 suite() 메서드 규칙으로 JUnit5에서는 해당되지 않습니다"
+    ]
   },
   {
     "name": "MethodWithSameNameAsEnclosingClass",
@@ -3692,9 +3253,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyClass {\n\n    public MyClass() {}         // this is OK because it is a constructor\n\n    public void MyClass() {}    // this is bad because it is a method\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 클래스명과 같은 메서드는 생성자와 혼동되어 심각한 버그를 유발합니다"
+    ]
   },
   {
     "name": "MisplacedNullCheck",
@@ -3709,9 +3268,7 @@ const RULES_DATA =
     "examples": [
       "public class Foo {\n    void bar() {\n        if (a.equals(baz) && a != null) {} // a could be null, misplaced null check\n\n        if (a != null && a.equals(baz)) {} // correct null check\n    }\n}",
       "public class Foo {\n    void bar() {\n        if (a.equals(baz) || a == null) {} // a could be null, misplaced null check\n\n        if (a == null || a.equals(baz)) {} // correct null check\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - null 체크가 사용 이후에 있으면 NPE가 이미 발생한 후입니다"
+    ]
   },
   {
     "name": "MissingSerialVersionUID",
@@ -3725,9 +3282,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo implements java.io.Serializable {\n    String name;\n    // Define serialization id to avoid serialization related bugs\n    // i.e., public static final long serialVersionUID = 4328743;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - serialVersionUID 누락은 직렬화 호환성에 영향을 주나, 직렬화를 사용하지 않으면 불필요합니다"
+    ]
   },
   {
     "name": "MissingStaticMethodInNonInstantiatableClass",
@@ -3748,9 +3303,7 @@ const RULES_DATA =
         "defaultValue": "org.springframework.beans.factory.annotation.Autowired,javax.inject.Inject,com.google.inject.Inject,lombok.Builder",
         "description": "생성자가 이 어노테이션 중 하나로 표시된 경우 클래스는 무시됩니다."
       }
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 인스턴스화 불가 클래스에 static 메서드가 없는 것은 설계 문제의 징후이나 거짓 양성이 있습니다"
+    ]
   },
   {
     "name": "NonSerializableClass",
@@ -3764,9 +3317,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "class Buzz implements java.io.Serializable {\n    private static final long serialVersionUID = 1L;\n\n    private transient int someFoo;          // good, it's transient\n    private static int otherFoo;            // also OK, it's static\n    private java.io.FileInputStream stream; // bad - FileInputStream is not serializable\n\n    public void setStream(FileInputStream stream) {\n        this.stream = stream;\n    }\n\n    public int getSomeFoo() {\n          return this.someFoo;\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - Serializable 미구현 경고는 직렬화 사용 여부에 따라 결정하세요"
+    ]
   },
   {
     "name": "NonStaticInitializer",
@@ -3780,9 +3331,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class MyClass {\n  // this block gets run before any call to a constructor\n  {\n    System.out.println(\"I am about to construct myself\");\n  }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 인스턴스 초기화 블록은 가독성이 낮아 생성자에서 초기화하는 것이 좋습니다"
+    ]
   },
   {
     "name": "NullAssignment",
@@ -3796,9 +3345,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar() {\n  Object x = null; // this is OK\n  x = new Object();\n     // big, complex piece of code here\n  x = null; // this is not required\n     // big, complex piece of code here\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - null 할당 자체는 GC 힌트로 의도적일 수 있어 컨텍스트 판단이 필요합니다"
+    ]
   },
   {
     "name": "OverrideBothEqualsAndHashcode",
@@ -3812,9 +3359,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar {        // poor, missing a hashcode() method\n    public boolean equals(Object o) {\n      // do some comparison\n    }\n}\n\npublic class Baz {        // poor, missing an equals() method\n    public int hashCode() {\n      // return some hash value\n    }\n}\n\npublic class Foo {        // perfect, both methods provided\n    public boolean equals(Object other) {\n      // do some comparison\n    }\n    public int hashCode() {\n      // return some hash value\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - equals()와 hashCode()를 함께 오버라이드하지 않으면 HashMap 등에서 심각한 버그가 발생합니다"
+    ]
   },
   {
     "name": "OverrideBothEqualsAndHashCodeOnComparable",
@@ -3828,9 +3373,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar implements Comparable<Bar> {  // poor - missing equals() and hashCode()\n    public int compareTo(Bar other) {\n        // some comparison\n    }\n}\n\npublic class Baz implements Comparable<Baz> {  // poor - missing hashCode()\n    public int compareTo(Baz other) {\n        // some comparison\n    }\n    public boolean equals(Object o) {\n        if (o == null || getClass() != o.getClass()) {\n            return false;\n        }\n        return compareTo((Baz) o) == 0;\n    }\n}\n\npublic class Foo implements Comparable<Foo> {  // correct\n    public int compareTo(Foo other) {\n        // some comparison\n    }\n    public boolean equals(Object o) {\n        if (o == null || getClass() != o.getClass()) {\n            return false;\n        }\n        return compareTo((Foo) o) == 0;\n    }\n    public int hashCode() {\n        // return hash code\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - Comparable 구현 시 equals/hashCode 미오버라이드는 정렬과 동등성 비교 불일치를 유발합니다"
+    ]
   },
   {
     "name": "ProperLogger",
@@ -3861,9 +3404,7 @@ const RULES_DATA =
         "defaultValue": "org.apache.commons.logging.Log",
         "description": "로거의 클래스 이름"
       }
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 로거는 클래스별로 올바르게 생성해야 로그 추적이 가능합니다"
+    ]
   },
   {
     "name": "ReplaceJavaUtilCalendar",
@@ -3878,9 +3419,7 @@ const RULES_DATA =
     "examples": [
       "import java.util.Calendar;\nimport java.util.GregorianCalendar;\nimport java.time.LocalDate;\nimport java.time.LocalDateTime;\nimport java.time.ZonedDateTime;\n\npublic class Foo {\n    void problematic() {\n        // Problematic - using legacy Calendar API\n        Calendar cal = Calendar.getInstance();\n        cal.set(2024, Calendar.JANUARY, 15); // Month indexing is confusing (0-based)\n        cal.add(Calendar.DAY_OF_MONTH, 7);\n\n        Calendar specific = new GregorianCalendar(2024, 0, 15); // Also problematic\n    }\n\n    void preferred() {\n        // Preferred - using modern java.time API\n        LocalDate date = LocalDate.of(2024, 1, 15); // Month indexing is intuitive (1-based)\n        LocalDate weekLater = date.plusDays(7);\n\n        LocalDateTime dateTime = LocalDateTime.now();\n        ZonedDateTime zonedDateTime = ZonedDateTime.now();\n    }\n}"
     ],
-    "minLanguageVersion": "1.8",
-    "tier": 2,
-    "claude_comment": "권장 - java.util.Calendar은 레거시 API입니다. java.time 패키지를 사용하세요"
+    "minLanguageVersion": "1.8"
   },
   {
     "name": "ReplaceJavaUtilDate",
@@ -3895,9 +3434,7 @@ const RULES_DATA =
     "examples": [
       "import java.util.Date;\nimport java.time.Instant;\nimport java.time.LocalDate;\nimport java.time.LocalDateTime;\nimport java.time.ZonedDateTime;\n\npublic class Foo {\n    void problematic() {\n        // Problematic - using legacy Date API\n        Date now = new Date();\n        Date epoch = new Date(0L);\n        Date custom = new Date(124, 0, 15); // Deprecated constructor: year=1900+124=2024, month=0=January\n\n        // Mutable operations are error-prone\n        now.setTime(System.currentTimeMillis());\n    }\n\n    void preferred() {\n        // Preferred - using modern java.time API\n        Instant now = Instant.now(); // For timestamps\n        LocalDate today = LocalDate.now(); // For date only\n        LocalDateTime dateTime = LocalDateTime.now(); // For date and time\n        ZonedDateTime zonedDateTime = ZonedDateTime.now(); // With timezone\n\n        // Immutable operations are safer\n        LocalDate tomorrow = today.plusDays(1);\n        LocalDateTime nextHour = dateTime.plusHours(1);\n    }\n}"
     ],
-    "minLanguageVersion": "1.8",
-    "tier": 2,
-    "claude_comment": "권장 - java.util.Date는 레거시 API입니다. java.time 패키지를 사용하세요"
+    "minLanguageVersion": "1.8"
   },
   {
     "name": "ReturnFromFinallyBlock",
@@ -3911,9 +3448,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar {\n    public String foo() {\n        try {\n            throw new Exception( \"My Exception\" );\n        } catch (Exception e) {\n            throw e;\n        } finally {\n            return \"A. O. K.\"; // return not recommended here\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - finally에서 return하면 try/catch의 예외가 삼켜져 장애 분석이 불가능합니다"
+    ]
   },
   {
     "name": "SimpleDateFormatNeedsLocale",
@@ -3927,9 +3462,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n  // Should specify Locale.US (or whatever)\n  private SimpleDateFormat sdf = new SimpleDateFormat(\"pattern\");\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Locale 없는 SimpleDateFormat은 환경에 따라 다른 결과를 생성합니다"
+    ]
   },
   {
     "name": "StaticEJBFieldShouldBeFinal",
@@ -3943,9 +3476,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class SomeEJB extends EJBObject implements EJBLocalHome {\n\n    private static int CountA;          // poor, field can be edited\n\n    private static final int CountB;    // preferred, read-only access\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - EJB 전용 규칙으로 현대적인 Spring 기반 프로젝트에는 불필요합니다"
+    ]
   },
   {
     "name": "SuspiciousHashcodeMethodName",
@@ -3959,9 +3490,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public int hashcode() { // oops, this probably was supposed to be 'hashCode'\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - hashcode()/HashCode() 오타는 hashCode() 오버라이드 실패로 해시 기반 컬렉션에서 버그를 유발합니다"
+    ]
   },
   {
     "name": "SuspiciousOctalEscape",
@@ -3975,9 +3504,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void foo() {\n  // interpreted as octal 12, followed by character '8'\n  System.out.println(\"suspicious: \\128\");\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 의심스러운 8진수 이스케이프는 문자열에서 예기치 않은 문자를 생성합니다"
+    ]
   },
   {
     "name": "TestClassWithoutTestCases",
@@ -3991,9 +3518,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "//Consider changing the name of the class if it is not a test\n//Consider adding test methods if it is a test\npublic class CarTest {\n   public static void main(String[] args) {\n    // do something\n   }\n   // code\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 테스트 메서드 없는 테스트 클래스는 테스트가 실행되지 않는 문제를 나타냅니다"
+    ]
   },
   {
     "name": "UnconditionalIfStatement",
@@ -4007,9 +3532,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    public void close() {\n        if (true) {        // fixed conditional, not recommended\n            // ...\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - if(true)/if(false)는 명백한 논리 오류이며 데드 코드입니다"
+    ]
   },
   {
     "name": "UnnecessaryBooleanAssertion",
@@ -4023,9 +3546,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class SimpleTest extends TestCase {\n    public void testX() {\n        assertTrue(true);            // serves no real purpose - remove it\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - assertTrue(true) 같은 무의미한 단언은 테스트 품질을 저하시킵니다"
+    ]
   },
   {
     "name": "UnnecessaryCaseChange",
@@ -4039,9 +3560,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "boolean answer1 = buz.toUpperCase().equals(\"BAZ\");              // should be buz.equalsIgnoreCase(\"BAZ\")\n\nboolean answer2 = buz.toUpperCase().equalsIgnoreCase(\"BAZ\");    // another unnecessary toUpperCase()"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - equalsIgnoreCase 사용으로 불필요한 대소문자 변환을 제거하는 것은 마이너 개선입니다"
+    ]
   },
   {
     "name": "UnnecessaryConversionTemporary",
@@ -4055,9 +3574,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public String convert(int x) {\n    String foo = new Integer(x).toString(); // this wastes an object\n\n    return Integer.toString(x);             // preferred approach\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 변환용 임시 객체 제거는 마이너한 코드 정리입니다"
+    ]
   },
   {
     "name": "UnsupportedJdkApiUsage",
@@ -4071,9 +3588,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public final class MemoryWiper {\n  public static void main(final String[] args) throws NoSuchFieldException, IllegalAccessException {\n    for (final String s : args) {\n      sun.misc.Unsafe.getUnsafe().putAddress(Long.parseLong(s), 0L); // bad\n    }\n  }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 지원되지 않는 JDK API 사용은 런타임 오류를 유발합니다"
+    ]
   },
   {
     "name": "UnusedNullCheckInEquals",
@@ -4087,9 +3602,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Test {\n\n    public String method1() { return \"ok\";}\n    public String method2() { return null;}\n\n    public void method(String a) {\n        String b;\n        // I don't know it method1() can be \"null\"\n        // but I know \"a\" is not null..\n        // I'd better write a.equals(method1())\n\n        if (a!=null && method1().equals(a)) { // will trigger the rule\n            //whatever\n        }\n\n        if (method1().equals(a) && a != null) { // won't trigger the rule\n            //whatever\n        }\n\n        if (a!=null && method1().equals(b)) { // won't trigger the rule\n            //whatever\n        }\n\n        if (a!=null && \"LITERAL\".equals(a)) { // won't trigger the rule\n            //whatever\n        }\n\n        if (a!=null && !a.equals(\"go\")) { // won't trigger the rule\n            a=method2();\n            if (method1().equals(a)) {\n                //whatever\n            }\n        }\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - equals() 내 불필요한 null 체크는 코드를 복잡하게 만듭니다"
+    ]
   },
   {
     "name": "UseCorrectExceptionLogging",
@@ -4103,9 +3616,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Main {\n    private static final Log _LOG = LogFactory.getLog( Main.class );\n    void bar() {\n        try {\n        } catch( Exception e ) {\n            _LOG.error( e ); //Wrong!\n        } catch( OtherException oe ) {\n            _LOG.error( oe.getMessage(), oe ); //Correct\n        }\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 올바른 예외 로깅 패턴을 사용해야 스택 트레이스가 보존됩니다"
+    ]
   },
   {
     "name": "UseEqualsToCompareStrings",
@@ -4119,9 +3630,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public boolean test(String s) {\n    if (s == \"one\") return true;        // unreliable\n    if (\"two\".equals(s)) return true;   // better\n    return false;\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 문자열을 == 로 비교하면 동일 내용이라도 false가 반환되는 심각한 버그입니다"
+    ]
   },
   {
     "name": "UselessOperationOnImmutable",
@@ -4135,9 +3644,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.math.*;\n\nclass Test {\n    void method1() {\n        BigDecimal bd=new BigDecimal(10);\n        bd.add(new BigDecimal(5));      // this will trigger the rule\n    }\n    void method2() {\n        BigDecimal bd=new BigDecimal(10);\n        bd = bd.add(new BigDecimal(5)); // this won't trigger the rule\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 불변 객체(String, BigDecimal 등)에 대한 무의미한 연산은 결과가 버려지는 버그입니다"
+    ]
   },
   {
     "name": "UselessPureMethodCall",
@@ -4151,9 +3658,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Something {\n    public void foo() {\n        List.of(\"foo\").size(); // result unused\n        Stream.of(\"bar\").map(item -> System.out.format(\"%s\", item)); // result unused\n        Stream.of(\"bar\").forEach(item -> System.out.format(\"%s\", item)); // better\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 순수 메서드 호출 결과를 사용하지 않으면 의도한 동작이 수행되지 않습니다"
+    ]
   },
   {
     "name": "UseLocaleWithCaseConversions",
@@ -4167,9 +3672,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "// violation - implicitly system-dependent conversion\nif (x.toLowerCase().equals(\"list\")) {}\n\n// The above will not match \"LIST\" on a system with a Turkish locale.\n// It could be replaced with\nif (x.toLowerCase(Locale.US).equals(\"list\")) { }\n// or simply\nif (x.equalsIgnoreCase(\"list\")) { }\n\n// ok - system independent conversion\nString z = a.toLowerCase(Locale.ROOT);\n\n// ok - explicit system-dependent conversion\nString z2 = a.toLowerCase(Locale.getDefault());"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Locale 없는 대소문자 변환은 터키어 등에서 예기치 않은 결과를 생성합니다"
+    ]
   },
   {
     "name": "UseProperClassLoader",
@@ -4183,9 +3686,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    ClassLoader cl = Bar.class.getClassLoader();\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 올바른 ClassLoader 사용은 서버 환경에서 클래스 로딩 문제를 방지합니다"
+    ]
   },
   {
     "name": "DoNotThrowExceptionInFinally",
@@ -4199,9 +3700,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "public class Foo {\n    public void bar() {\n        try {\n            // Here do some stuff\n        } catch( Exception e) {\n            // Handling the issue\n        } finally {\n            // is this really a good idea ?\n            throw new Exception();\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - finally에서 예외를 던지면 원래 예외가 소실되어 장애 분석이 불가능합니다"
+    ]
   },
   {
     "name": "DontImportSun",
@@ -4215,9 +3714,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "import sun.misc.foo;\npublic class Foo {}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - sun.* 패키지는 비공식 API이며 JDK 버전 간 호환이 보장되지 않습니다"
+    ]
   },
   {
     "name": "InstantiationToGetClass",
@@ -4231,9 +3728,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "// replace this\nClass c = new String().getClass();\n\n// with this:\nClass c = String.class;"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - new Foo().getClass() 대신 Foo.class 사용은 마이너 최적화입니다"
+    ]
   },
   {
     "name": "StringBufferInstantiationWithChar",
@@ -4247,9 +3742,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "// misleading instantiation, these buffers\n// are actually sized to 99 characters long\nStringBuffer  sb1 = new StringBuffer('c');\nStringBuilder sb2 = new StringBuilder('c');\n\n// in these forms, just single characters are allocated\nStringBuffer  sb3 = new StringBuffer(\"c\");\nStringBuilder sb4 = new StringBuilder(\"c\");"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - new StringBuffer('c')는 char를 int로 변환하여 용량으로 사용하는 흔한 실수입니다"
+    ]
   },
   {
     "name": "InvalidLogMessageFormat",
@@ -4263,9 +3756,7 @@ const RULES_DATA =
     "priority": 5,
     "examples": [
       "LOGGER.error(\"forget the arg {}\");\nLOGGER.error(\"forget the arg %s\");\nLOGGER.error(\"too many args {}\", \"arg1\", \"arg2\");\nLOGGER.error(\"param {}\", \"arg1\", new IllegalStateException(\"arg\")); //The exception is shown separately, so is correct."
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 잘못된 로그 메시지 포맷은 파라미터 불일치로 로그가 올바르게 기록되지 않습니다"
+    ]
   },
   {
     "name": "DoubleCheckedLocking",
@@ -4279,9 +3770,7 @@ const RULES_DATA =
     "priority": 1,
     "examples": [
       "public class Foo {\n    /*volatile */ Object baz = null; // fix for Java5 and later: volatile\n    Object bar() {\n        if (baz == null) { // baz may be non-null yet not fully created\n            synchronized(this) {\n                if (baz == null) {\n                    baz = new Object();\n                }\n              }\n        }\n        return baz;\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - DCL 패턴은 volatile 없이 사용하면 스레드 안전성이 보장되지 않는 유명한 동시성 버그입니다"
+    ]
   },
   {
     "name": "AvoidUsingVolatile",
@@ -4295,9 +3784,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "public class Data {\n  private volatile String var1; // not suggested\n  private          String var2; // preferred\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - volatile은 올바르게 사용하면 유용한 동시성 도구이며 금지할 이유가 없습니다"
+    ]
   },
   {
     "name": "AvoidSynchronizedAtMethodLevel",
@@ -4311,9 +3798,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    // Try to avoid this:\n    synchronized void foo() {\n        // code, that doesn't need synchronization\n        // ...\n        // code, that requires synchronization\n        if (!sharedData.has(\"bar\")) {\n            sharedData.add(\"bar\");\n        }\n        // more code, that doesn't need synchronization\n        // ...\n    }\n    // Prefer this:\n    Lock instanceLock = new ReentrantLock();\n\n    void bar() {\n        // code, that doesn't need synchronization\n        // ...\n        try {\n            instanceLock.lock();  // or instanceLock.tryLock(long time, TimeUnit unit)\n            if (!sharedData.has(\"bar\")) {\n                sharedData.add(\"bar\");\n            }\n        } finally {\n            instanceLock.unlock();\n        }\n        // more code, that doesn't need synchronization\n        // ...\n    }\n\n    // Try to avoid this for static methods:\n    static synchronized void fooStatic() {\n    }\n\n    // Prefer this:\n    private static Lock CLASS_LOCK = new ReentrantLock();\n\n    static void barStatic() {\n        // code, that doesn't need synchronization\n        // ...\n        try {\n            CLASS_LOCK.lock();\n            // code, that requires synchronization\n        } finally {\n            CLASS_LOCK.unlock();\n        }\n        // more code, that doesn't need synchronization\n        // ...\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 메서드 수준 synchronized 회피는 성능 최적화이나 간단한 경우 메서드 수준이 더 명확합니다"
+    ]
   },
   {
     "name": "AvoidSynchronizedStatement",
@@ -4327,9 +3812,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    // Try to avoid this:\n    void foo() {\n        // code that doesn't need mutual exclusion\n        synchronized(this) {\n            // code that requires mutual exclusion\n        }\n        // more code that doesn't need mutual exclusion\n    }\n    // Prefer this:\n    Lock instanceLock = new ReentrantLock();\n\n    void foo() {\n        // code that doesn't need mutual exclusion\n        try {\n            instanceLock.lock();  // or instanceLock.tryLock(long time, TimeUnit unit)\n            // code that requires mutual exclusion\n        } finally {\n            instanceLock.unlock();\n        }\n        // more code that doesn't need mutual exclusion\n    }\n}"
-    ],
-    "tier": "skip",
-    "claude_comment": "스킵 - synchronized 문 자체를 금지하는 것은 너무 제한적이며 올바른 동기화에 필요합니다"
+    ]
   },
   {
     "name": "AvoidThreadGroup",
@@ -4343,9 +3826,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Bar {\n    void buz() {\n        ThreadGroup tg = new ThreadGroup(\"My threadgroup\");\n        tg = new ThreadGroup(tg, \"my thread group\");\n        tg = Thread.currentThread().getThreadGroup();\n        tg = System.getSecurityManager().getThreadGroup();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - ThreadGroup은 레거시 API이며 스레드 관리에 ExecutorService를 사용하세요"
+    ]
   },
   {
     "name": "DoNotUseThreads",
@@ -4359,9 +3840,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "// This is not allowed\npublic class UsingThread extends Thread {\n\n}\n\n// Neither this,\npublic class UsingExecutorService {\n\n    public void methodX() {\n        ExecutorService executorService = Executors.newFixedThreadPool(5);\n    }\n}\n\n// Nor this,\npublic class Example implements ExecutorService {\n\n}\n\n// Nor this,\npublic class Example extends AbstractExecutorService {\n\n}\n\n// Nor this\npublic class UsingExecutors {\n\n    public void methodX() {\n        Executors.newSingleThreadExecutor().submit(() -> System.out.println(\"Hello!\"));\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - EJB/서블릿 컨테이너 전용 규칙이나, 일반적으로 ExecutorService 사용을 권장합니다"
+    ]
   },
   {
     "name": "NonThreadSafeSingleton",
@@ -4375,9 +3854,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "private static Foo foo = null;\n\n//multiple simultaneous callers may see partially initialized objects\npublic static Foo getFoo() {\n    if (foo==null) {\n        foo = new Foo();\n    }\n    return foo;\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 스레드 안전하지 않은 싱글톤은 동시 접근 시 다중 인스턴스 생성 버그를 유발합니다"
+    ]
   },
   {
     "name": "UnsynchronizedStaticFormatter",
@@ -4391,9 +3868,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    private static final SimpleDateFormat sdf = new SimpleDateFormat();\n    void bar() {\n        sdf.format(); // poor, no thread-safety\n    }\n    void foo() {\n        synchronized (sdf) { // preferred\n            sdf.format();\n        }\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 동기화되지 않은 static DateFormat은 멀티스레드 환경에서 잘못된 결과를 생성합니다"
+    ]
   },
   {
     "name": "UseConcurrentHashMap",
@@ -4408,9 +3883,7 @@ const RULES_DATA =
     "examples": [
       "public class ConcurrentApp {\n  public void getMyInstance() {\n    Map map1 = new HashMap();           // fine for single-threaded access\n    Map map2 = new ConcurrentHashMap(); // preferred for use with multiple threads\n\n    // the following case will be ignored by this rule\n    Map map3 = someModule.methodThatReturnMap(); // might be OK, if the returned map is already thread-safe\n  }\n}"
     ],
-    "minLanguageVersion": "1.5",
-    "tier": 2,
-    "claude_comment": "권장 - 멀티스레드 환경에서 HashMap 대신 ConcurrentHashMap을 사용하세요"
+    "minLanguageVersion": "1.5"
   },
   {
     "name": "UseNotifyAllInsteadOfNotify",
@@ -4424,9 +3897,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "void bar() {\n    x.notify();\n    // If many threads are monitoring x, only one (and you won't know which) will be notified.\n    // use instead:\n    x.notifyAll();\n  }"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - notify() 대신 notifyAll()을 사용해야 데드락을 방지합니다"
+    ]
   },
   {
     "name": "DontCallThreadRun",
@@ -4440,9 +3911,7 @@ const RULES_DATA =
     "priority": 4,
     "examples": [
       "Thread t = new Thread();\nt.run();            // use t.start() instead\nnew Thread().run(); // same violation"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - thread.run() 직접 호출은 새 스레드를 시작하지 않는 흔한 실수입니다. start()를 사용하세요"
+    ]
   },
   {
     "name": "AvoidFileStream",
@@ -4457,9 +3926,7 @@ const RULES_DATA =
     "examples": [
       "// these instantiations cause garbage collection pauses, even if properly closed\n\n    FileInputStream fis = new FileInputStream(fileName);\n    FileOutputStream fos = new FileOutputStream(fileName);\n    FileReader fr = new FileReader(fileName);\n    FileWriter fw = new FileWriter(fileName);\n\n    // the following instantiations help prevent Garbage Collection pauses, no finalization\n\n    try(InputStream is = Files.newInputStream(Paths.get(fileName))) {\n    }\n    try(OutputStream os = Files.newOutputStream(Paths.get(fileName))) {\n    }\n    try(BufferedReader br = Files.newBufferedReader(Paths.get(fileName), StandardCharsets.UTF_8)) {\n    }\n    try(BufferedWriter wr = Files.newBufferedWriter(Paths.get(fileName), StandardCharsets.UTF_8)) {\n    }"
     ],
-    "minLanguageVersion": "1.7",
-    "tier": 2,
-    "claude_comment": "권장 - FileInputStream/FileOutputStream은 finalizer가 있어 GC 부하를 유발합니다. NIO Files 사용을 권장합니다"
+    "minLanguageVersion": "1.7"
   },
   {
     "name": "StringInstantiation",
@@ -4473,9 +3940,7 @@ const RULES_DATA =
     "priority": 2,
     "examples": [
       "private String bar = new String(\"bar\"); // just do a String bar = \"bar\";"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - new String()은 불필요한 객체를 생성합니다. 문자열 리터럴을 직접 사용하세요"
+    ]
   },
   {
     "name": "AddEmptyString",
@@ -4489,9 +3954,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "String s = \"\" + 123;                // inefficient\nString t = Integer.toString(456);   // preferred approach"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - \"\" + x 대신 String.valueOf(x) 사용은 마이너 성능 개선입니다"
+    ]
   },
   {
     "name": "AppendCharacterWithChar",
@@ -4505,9 +3968,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "StringBuffer sb = new StringBuffer();\nsb.append(\"a\");     // avoid this\n\nStringBuffer sb = new StringBuffer();\nsb.append('a');     // use this instead"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - append(\"x\") 대신 append('x') 사용은 마이너 성능 개선입니다"
+    ]
   },
   {
     "name": "AvoidArrayLoops",
@@ -4522,9 +3983,7 @@ const RULES_DATA =
     "examples": [
       "class Scratch {\n    void copy_a_to_b() {\n        int[] a = new int[10];\n        int[] b = new int[10];\n        for (int i = 0; i < a.length; i++) {\n            b[i] = a[i];\n        }\n        // equivalent\n        b = Arrays.copyOf(a, a.length);\n        // equivalent\n        System.arraycopy(a, 0, b, 0, a.length);\n\n        int[] c = new int[10];\n        // this will not trigger the rule\n        for (int i = 0; i < c.length; i++) {\n            b[i] = a[c[i]];\n        }\n    }\n}",
       "class Scratch {\n    void shift_left(int[] a) {\n        for (int i = 0; i < a.length - 1; i++) {\n            a[i] = a[i + 1];\n        }\n        // equivalent\n        System.arraycopy(a, 1, a, 0, a.length - 1);\n    }\n    void shift_right(int[] a) {\n        for (int i = a.length - 1; i > 0; i--) {\n            a[i] = a[i - 1];\n        }\n        // equivalent\n        System.arraycopy(a, 0, a, 1, a.length - 1);\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 배열 복사에 루프 대신 System.arraycopy() 또는 Arrays.copyOf()를 사용하세요"
+    ]
   },
   {
     "name": "AvoidCalendarDateCreation",
@@ -4538,9 +3997,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.time.LocalDateTime;\nimport java.util.Calendar;\nimport java.util.Date;\n\npublic class DateStuff {\n    private Date bad1() {\n        return Calendar.getInstance().getTime(); // now\n    }\n    private Date good1a() {\n        return new Date(); // now\n    }\n    private LocalDateTime good1b() {\n        return LocalDateTime.now();\n    }\n    private long bad2() {\n        return Calendar.getInstance().getTimeInMillis();\n    }\n    private long good2() {\n        return System.currentTimeMillis();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Calendar 인스턴스 생성은 비용이 높습니다. java.time API를 사용하세요"
+    ]
   },
   {
     "name": "AvoidInstantiatingObjectsInLoops",
@@ -4554,9 +4011,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Something {\n    public static void main( String as[] ) {\n        for (int i = 0; i < 10; i++) {\n            Foo f = new Foo(); // Avoid this whenever you can it's really expensive\n        }\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 루프 내 객체 생성은 GC 부하를 유발하며, 가능하면 루프 밖으로 이동하세요"
+    ]
   },
   {
     "name": "BigIntegerInstantiation",
@@ -4570,9 +4025,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "BigInteger bi1 = new BigInteger(\"1\");    // reference BigInteger.ONE instead\nBigInteger bi2 = new BigInteger(\"0\");    // reference BigInteger.ZERO instead\nBigInteger bi3;\nbi3 = new BigInteger(\"0\");               // reference BigInteger.ZERO instead\n\nBigDecimal bd1 = new BigDecimal(0);      // reference BigDecimal.ZERO instead\nBigDecimal bd2 = new BigDecimal(\"0.\") ;  // reference BigDecimal.ZERO instead\nBigDecimal bd3 = new BigDecimal(10);     // reference BigDecimal.TEN instead"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - BigInteger.ZERO/ONE/TEN 상수를 사용하여 불필요한 인스턴스 생성을 방지하세요"
+    ]
   },
   {
     "name": "ConsecutiveAppendsShouldReuse",
@@ -4586,9 +4039,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "String foo = \" \";\n\nStringBuffer buf = new StringBuffer();\nbuf.append(\"Hello\"); // poor\nbuf.append(foo);\nbuf.append(\"World\");\n\nStringBuffer buf = new StringBuffer();\nbuf.append(\"Hello\").append(foo).append(\"World\"); // good"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 연속 append() 체이닝은 마이너 성능 개선이며 가독성과 트레이드오프입니다"
+    ]
   },
   {
     "name": "ConsecutiveLiteralAppends",
@@ -4602,9 +4053,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "StringBuilder buf = new StringBuilder();\nbuf.append(\"Hello\").append(\" \").append(\"World\");    // poor\nbuf.append(\"Hello World\");                          // good\n\nbuf.append('h').append('e').append('l').append('l').append('o'); // poor\nbuf.append(\"hello\");                                             // good\n\nbuf.append(1).append('m');  // poor\nbuf.append(\"1m\");           // good"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 연속 리터럴 append를 하나로 합치는 것은 마이너 최적화입니다"
+    ]
   },
   {
     "name": "InefficientEmptyStringCheck",
@@ -4618,9 +4067,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public void bar(String string) {\n    if (string != null && string.trim().length() > 0) {\n        doSomething();\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 비효율적인 빈 문자열 체크 대신 isEmpty() 사용은 마이너 개선입니다"
+    ]
   },
   {
     "name": "InefficientStringBuffering",
@@ -4634,9 +4081,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "// Avoid this, two buffers are actually being created here\nStringBuffer sb = new StringBuffer(\"tmp = \"+System.getProperty(\"java.io.tmpdir\"));\n\n// do this instead\nStringBuffer sb = new StringBuffer(\"tmp = \");\nsb.append(System.getProperty(\"java.io.tmpdir\"));"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - StringBuilder 안에서 + 연산을 사용하면 StringBuilder 사용 목적이 무효화됩니다"
+    ]
   },
   {
     "name": "InsufficientStringBufferDeclaration",
@@ -4650,9 +4095,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "StringBuilder bad = new StringBuilder();\nbad.append(\"This is a long string that will exceed the default 16 characters\");\n\nStringBuilder good = new StringBuilder(41);\ngood.append(\"This is a long string, which is pre-sized\");"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - StringBuffer 초기 용량 부족은 마이너 성능 이슈이며 자동 확장됩니다"
+    ]
   },
   {
     "name": "OptimizableToArrayCall",
@@ -4667,9 +4110,7 @@ const RULES_DATA =
     "examples": [
       "List<Foo> foos = getFoos();\n\n// much better; this one allows the jvm to allocate an array of the correct size and effectively skip\n// the zeroing, since each array element will be overridden anyways\nFoo[] fooArray = foos.toArray(new Foo[0]);\n\n// inefficient, the array needs to be zeroed out by the jvm before it is handed over to the toArray method\nFoo[] fooArray = foos.toArray(new Foo[foos.size()]);"
     ],
-    "minLanguageVersion": "1.6",
-    "tier": 3,
-    "claude_comment": "선택 - toArray() 최적화는 마이너 성능 개선입니다"
+    "minLanguageVersion": "1.6"
   },
   {
     "name": "RedundantFieldInitializer",
@@ -4683,9 +4124,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class C {\n    boolean b   = false;    // examples of redundant initializers\n    byte by     = 0;\n    short s     = 0;\n    char c      = 0;\n    int i       = 0;\n    long l      = 0;\n\n    float f     = .0f;    // all possible float literals\n    double d    = 0d;     // all possible double literals\n    Object o    = null;\n\n    MyClass mca[] = null;\n    int i1 = 0, ia1[] = null;\n\n    class Nested {\n        boolean b = false;\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 기본값과 동일한 필드 초기화 제거는 스타일 선호도입니다"
+    ]
   },
   {
     "name": "StringToString",
@@ -4699,9 +4138,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "private String baz() {\n    String bar = \"howdy\";\n    return bar.toString();\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - String.toString()은 무의미한 호출이며 제거해야 합니다"
+    ]
   },
   {
     "name": "UseArrayListInsteadOfVector",
@@ -4715,9 +4152,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import java.util.*;\npublic class SimpleTest extends TestCase {\n    public void testX() {\n    Collection c1 = new Vector();\n    Collection c2 = new ArrayList();    // achieves the same with much better performance\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - Vector는 레거시 동기화 컬렉션입니다. ArrayList 또는 CopyOnWriteArrayList를 사용하세요"
+    ]
   },
   {
     "name": "UseArraysAsList",
@@ -4731,9 +4166,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Test {\n    public void foo(Integer[] ints) {\n        // could just use Arrays.asList(ints)\n        List<Integer> l = new ArrayList<>(100);\n        for (int i = 0; i < ints.length; i++) {\n            l.add(ints[i]);\n        }\n\n        List<Integer> anotherList = new ArrayList<>();\n        for (int i = 0; i < ints.length; i++) {\n            anotherList.add(ints[i].toString()); // won't trigger the rule\n        }\n    }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - Arrays.asList() 사용은 코드 간결성을 위한 마이너 개선입니다"
+    ]
   },
   {
     "name": "UseIndexOfChar",
@@ -4747,9 +4180,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "String s = \"hello world\";\n// avoid this\nif (s.indexOf(\"d\") {}\n// instead do this\nif (s.indexOf('d') {}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - indexOf(String) 대신 indexOf(char) 사용은 마이너 성능 개선입니다"
+    ]
   },
   {
     "name": "UseIOStreamsWithApacheCommonsFileItem",
@@ -4763,9 +4194,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "import org.apache.commons.fileupload.FileItem;\n\npublic class FileStuff {\n   private String bad(FileItem fileItem) {\n        return fileItem.getString();\n   }\n\n   private InputStream good(FileItem fileItem) {\n        return fileItem.getInputStream();\n   }\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - Apache Commons FileItem 사용 시 스트림 기반 처리는 메모리 효율성을 위한 것입니다"
+    ]
   },
   {
     "name": "UselessStringValueOf",
@@ -4779,9 +4208,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public String convert(int i) {\n    String s;\n    s = \"a\" + String.valueOf(i);    // not required\n    s = \"a\" + i;                    // preferred approach\n    return s;\n}"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - 불필요한 String.valueOf() 제거는 마이너 코드 정리입니다"
+    ]
   },
   {
     "name": "UseStringBufferForStringAppends",
@@ -4795,9 +4222,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    String inefficientConcatenation() {\n        String result = \"\";\n        for (int i = 0; i < 10; i++) {\n            // warning: this concatenation will create one new StringBuilder per iteration\n            result += getStringFromSomeWhere(i);\n        }\n        return result;\n    }\n\n    String efficientConcatenation() {\n        // better would be to use one StringBuilder for the entire loop\n        StringBuilder result = new StringBuilder();\n        for (int i = 0; i < 10; i++) {\n            result.append(getStringFromSomeWhere(i));\n        }\n        return result.toString();\n    }\n}"
-    ],
-    "tier": 2,
-    "claude_comment": "권장 - 루프 내 문자열 연결은 StringBuilder를 사용하여 성능을 개선하세요"
+    ]
   },
   {
     "name": "UseStringBufferLength",
@@ -4811,9 +4236,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "StringBuffer sb = new StringBuffer();\n\nif (sb.toString().equals(\"\")) {}        // inefficient\n\nif (sb.length() == 0) {}                // preferred"
-    ],
-    "tier": 3,
-    "claude_comment": "선택 - toString().length() 대신 length() 직접 사용은 마이너 최적화입니다"
+    ]
   },
   {
     "name": "HardCodedCryptoKey",
@@ -4827,9 +4250,7 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void good() {\n        SecretKeySpec secretKeySpec = new SecretKeySpec(Properties.getKey(), \"AES\");\n    }\n\n    void bad() {\n        SecretKeySpec secretKeySpec = new SecretKeySpec(\"my secret here\".getBytes(), \"AES\");\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 하드코딩된 암호화 키는 심각한 보안 취약점입니다. 키 관리 시스템을 사용하세요"
+    ]
   },
   {
     "name": "InsecureCryptoIv",
@@ -4843,8 +4264,6 @@ const RULES_DATA =
     "priority": 3,
     "examples": [
       "public class Foo {\n    void good() {\n        SecureRandom random = new SecureRandom();\n        byte iv[] = new byte[16];\n        random.nextBytes(bytes);\n    }\n\n    void bad() {\n        byte[] iv = new byte[] { 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, };\n    }\n\n    void alsoBad() {\n        byte[] iv = \"secret iv in here\".getBytes();\n    }\n}"
-    ],
-    "tier": 1,
-    "claude_comment": "필수 - 안전하지 않은 초기화 벡터(IV)는 암호화를 무력화하는 보안 취약점입니다"
+    ]
   }
-];
+]

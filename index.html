@@ -19,8 +19,43 @@
         <h2>PMD 규칙</h2>
       </div>
       <nav class="filter-list">
-        <div class="filter-section">
-          <h3>카테고리</h3>
+        <div class="filter-section" id="filter-tier">
+          <div class="filter-section-header">
+            <h3>추천 등급</h3>
+            <label class="toggle-all">
+              <input type="checkbox" checked id="toggleTier">
+              전체
+            </label>
+          </div>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-tier="1">
+            <span class="tier-badge tier-1">1</span> 필수
+            <span class="filter-count" id="count-tier-1">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-tier="2">
+            <span class="tier-badge tier-2">2</span> 권장
+            <span class="filter-count" id="count-tier-2">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-tier="3">
+            <span class="tier-badge tier-3">3</span> 선택
+            <span class="filter-count" id="count-tier-3">0</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" checked data-tier="skip">
+            <span class="tier-badge tier-skip">&mdash;</span> 스킵
+            <span class="filter-count" id="count-tier-skip">0</span>
+          </label>
+        </div>
+        <div class="filter-section" id="filter-category">
+          <div class="filter-section-header">
+            <h3>카테고리</h3>
+            <label class="toggle-all">
+              <input type="checkbox" checked id="toggleCategory">
+              전체
+            </label>
+          </div>
           <label class="filter-checkbox">
             <input type="checkbox" checked data-category="bestpractices">
             <span class="category-icon bestpractices">&#x2705;</span> 모범 사례
@@ -62,8 +97,14 @@
             <span class="filter-count" id="count-security">0</span>
           </label>
         </div>
-        <div class="filter-section">
-          <h3>우선순위</h3>
+        <div class="filter-section" id="filter-priority">
+          <div class="filter-section-header">
+            <h3>우선순위</h3>
+            <label class="toggle-all">
+              <input type="checkbox" checked id="togglePriority">
+              전체
+            </label>
+          </div>
           <label class="filter-checkbox">
             <input type="checkbox" checked data-priority="1">
             <span class="priority-dot p1"></span> P1 - 즉시 수정
